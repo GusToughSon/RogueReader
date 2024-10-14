@@ -15,7 +15,7 @@ $MaxHPOffset = 0x9BE98C ; Memory offset for MaxHP
 Global $pottimer = 2000
 
 ; Create the GUI with the title "RogueReader" and position it at X=15, Y=15
-$Gui = GUICreate("RogueReader", 400, 450, 15, 15) ; Width = 400, Height = 450, X = 15, Y = 15
+$Gui = GUICreate("RogueReader", 450, 500, 15, 15) ; Width = 450, Height = 500, X = 15, Y = 15
 $TypeLabel = GUICtrlCreateLabel("Type: N/A", 20, 30, 250, 20)
 $AttackModeLabel = GUICtrlCreateLabel("Attack Mode: N/A", 20, 60, 250, 20)
 $PosXLabel = GUICtrlCreateLabel("Pos X: N/A", 20, 90, 250, 20)
@@ -24,14 +24,17 @@ $HPLabel = GUICtrlCreateLabel("HP: N/A", 20, 150, 250, 20)
 $HP2Label = GUICtrlCreateLabel("HP2: N/A", 20, 180, 250, 20)
 $MaxHPLabel = GUICtrlCreateLabel("MaxHP: N/A", 20, 210, 250, 20)
 $HealerLabel = GUICtrlCreateLabel("Healer: OFF", 20, 240, 250, 20)
-$HotkeyLabel = GUICtrlCreateLabel("Hotkey: `", 20, 270, 250, 20)
-$PotsNote = GUICtrlCreateLabel("Pots go in #2", 20, 300, 250, 20) ; Added note
-$KillButton = GUICtrlCreateButton("Kill Rogue", 20, 330, 100, 30)
-$ExitButton = GUICtrlCreateButton("Exit", 150, 330, 100, 30)
+$HotkeyLabel = GUICtrlCreateLabel("Hotkey: ", 20, 270, 250, 20)
+$PotsNote = GUICtrlCreateLabel("Pots go in #2", 20, 300, 250, 20)
+$MapLabel = GUICtrlCreateLabel("Map: Off", 20, 340, 250, 20) ; Map variable label
+$MapButton = GUICtrlCreateButton("Toggle Map", 300, 340, 100, 20) ; Toggle button for Map
+$KillButton = GUICtrlCreateButton("Kill Rogue", 20, 380, 100, 30)
+$ExitButton = GUICtrlCreateButton("Exit", 150, 380, 100, 30)
 GUISetState(@SW_SHOW)
 
 ; Healer toggle variable
 Global $HealerStatus = False
+Global $MapStatus = False ; Map toggle variable
 
 ; Get the process ID
 $ProcessID = ProcessExists($ProcessName)
@@ -58,8 +61,8 @@ If $ProcessID Then
     While 1
         $msg = GUIGetMsg()
 
-        ; Check if the hotkey ` is pressed to toggle the Healer status
-        If _IsPressed("C0") Then ; C0 is the virtual key code for the backtick (`) key
+        ; Check if the hotkey  is pressed to toggle the Healer status
+        If _IsPressed("C0") Then ; C0 is the virtual key code for the backtick () key
             $HealerStatus = Not $HealerStatus
             If $HealerStatus Then
                 GUICtrlSetData($HealerLabel, "Healer: ON")
@@ -67,6 +70,16 @@ If $ProcessID Then
                 GUICtrlSetData($HealerLabel, "Healer: OFF")
             EndIf
             Sleep(300) ; Prevent rapid toggling
+        EndIf
+
+        ; Toggle the Map status when the MapButton is pressed
+        If $msg = $MapButton Then
+            $MapStatus = Not $MapStatus
+            If $MapStatus Then
+                GUICtrlSetData($MapLabel, "Map: Debug")
+            Else
+                GUICtrlSetData($MapLabel, "Map: Off")
+            EndIf
         EndIf
 
         ; Exit the script if the Exit button is clicked
@@ -122,8 +135,8 @@ If $ProcessID Then
         $MaxHP = _MemoryRead($MaxHPAddress, $MemOpen, "dword")
         GUICtrlSetData($MaxHPLabel, "MaxHP: " & $MaxHP)
 
-        ; If Healer is ON and HP2 is <= 80% of MaxHP, send "2" key with pottimer delay
-        If $HealerStatus And $HP2 <= (0.8 * $MaxHP) Then
+        ; If Healer is ON and HP2 is <= 95% of MaxHP, send "2" key with pottimer delay
+        If $HealerStatus And $HP2 <= (0.95 * $MaxHP) Then
             ControlSend("", "", "", "2")
             Sleep($pottimer) ; Wait for pottimer (2000 ms)
         EndIf
