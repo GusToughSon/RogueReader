@@ -24,17 +24,36 @@ $HPLabel = GUICtrlCreateLabel("HP: N/A", 20, 150, 250, 20)
 $HP2Label = GUICtrlCreateLabel("HP2: N/A", 20, 180, 250, 20)
 $MaxHPLabel = GUICtrlCreateLabel("MaxHP: N/A", 20, 210, 250, 20)
 $HealerLabel = GUICtrlCreateLabel("Healer: OFF", 20, 240, 250, 20)
-$HotkeyLabel = GUICtrlCreateLabel("Hotkey: ", 20, 270, 250, 20)
-$PotsNote = GUICtrlCreateLabel("Pots go in #2", 20, 300, 250, 20)
-$MapLabel = GUICtrlCreateLabel("Map: Off", 20, 340, 250, 20) ; Map variable label
-$MapButton = GUICtrlCreateButton("Toggle Map", 300, 340, 100, 20) ; Toggle button for Map
+$HotkeyLabel = GUICtrlCreateLabel("Hotkey: Tilday", 20, 270, 250, 20) ; Added " Tilday" after Hotkey
+$PotsNote = GUICtrlCreateLabel("Pots go in #2", 20, 295, 250, 20) ; Moved up 5 pixels
 $KillButton = GUICtrlCreateButton("Kill Rogue", 20, 380, 100, 30)
 $ExitButton = GUICtrlCreateButton("Exit", 150, 380, 100, 30)
+
+; Add slider for setting heal threshold
+$ThresholdLabel = GUICtrlCreateLabel("Heal Threshold: 95%", 20, 310, 250, 20)
+$ThresholdSlider = GUICtrlCreateSlider(20, 330, 200, 30)
+GUICtrlSetLimit($ThresholdSlider, 100, 0) ; Slider range between 0 and 100
+GUICtrlSetData($ThresholdSlider, 95) ; Default set to 95%
+
 GUISetState(@SW_SHOW)
 
 ; Healer toggle variable
 Global $HealerStatus = False
-Global $MapStatus = False ; Map toggle variable
+
+; Define _EnumProcessModules function before it's used
+Func _EnumProcessModules($hProcess)
+    Local $hMod = DllStructCreate("ptr") ; 64-bit pointer
+    Local $moduleSize = DllStructGetSize($hMod)
+
+    ; Call EnumProcessModules to list modules
+    Local $aModules = DllCall("psapi.dll", "int", "EnumProcessModulesEx", "ptr", $hProcess, "ptr", DllStructGetPtr($hMod), "dword", $moduleSize, "dword*", 0, "dword", 0x03)
+
+    If IsArray($aModules) And $aModules[0] <> 0 Then
+        Return DllStructGetData($hMod, 1) ; Return base address
+    Else
+        Return 0
+    EndIf
+EndFunc
 
 ; Get the process ID
 $ProcessID = ProcessExists($ProcessName)
@@ -61,8 +80,8 @@ If $ProcessID Then
     While 1
         $msg = GUIGetMsg()
 
-        ; Check if the hotkey  is pressed to toggle the Healer status
-        If _IsPressed("C0") Then ; C0 is the virtual key code for the backtick () key
+        ; Check if the hotkey is pressed to toggle the Healer status
+        If _IsPressed("C0") Then ; C0 is the virtual key code for the backtick (`) key
             $HealerStatus = Not $HealerStatus
             If $HealerStatus Then
                 GUICtrlSetData($HealerLabel, "Healer: ON")
@@ -70,16 +89,6 @@ If $ProcessID Then
                 GUICtrlSetData($HealerLabel, "Healer: OFF")
             EndIf
             Sleep(300) ; Prevent rapid toggling
-        EndIf
-
-        ; Toggle the Map status when the MapButton is pressed
-        If $msg = $MapButton Then
-            $MapStatus = Not $MapStatus
-            If $MapStatus Then
-                GUICtrlSetData($MapLabel, "Map: Debug")
-            Else
-                GUICtrlSetData($MapLabel, "Map: Off")
-            EndIf
         EndIf
 
         ; Exit the script if the Exit button is clicked
@@ -135,8 +144,12 @@ If $ProcessID Then
         $MaxHP = _MemoryRead($MaxHPAddress, $MemOpen, "dword")
         GUICtrlSetData($MaxHPLabel, "MaxHP: " & $MaxHP)
 
-        ; If Healer is ON and HP2 is <= 95% of MaxHP, send "2" key with pottimer delay
-        If $HealerStatus And $HP2 <= (0.95 * $MaxHP) Then
+        ; Get current value from slider (healing threshold)
+        $HealThreshold = GUICtrlRead($ThresholdSlider)
+        GUICtrlSetData($ThresholdLabel, "Heal Threshold: " & $HealThreshold & "%")
+
+        ; If Healer is ON and HP2 is <= HealThreshold% of MaxHP, send "2" key with pottimer delay
+        If $HealerStatus And $HP2 <= ($HealThreshold / 100 * $MaxHP) Then
             ControlSend("", "", "", "2")
             Sleep($pottimer) ; Wait for pottimer (2000 ms)
         EndIf
@@ -151,18 +164,3 @@ EndIf
 
 ; Clean up GUI on exit
 GUIDelete($Gui)
-
-; Function to get the base address using EnumProcessModules
-Func _EnumProcessModules($hProcess)
-    Local $hMod = DllStructCreate("ptr") ; 64-bit pointer
-    Local $moduleSize = DllStructGetSize($hMod)
-
-    ; Call EnumProcessModules to list modules
-    Local $aModules = DllCall("psapi.dll", "int", "EnumProcessModulesEx", "ptr", $hProcess, "ptr", DllStructGetPtr($hMod), "dword", $moduleSize, "dword*", 0, "dword", 0x03)
-
-    If IsArray($aModules) And $aModules[0] <> 0 Then
-        Return DllStructGetData($hMod, 1) ; Return base address
-    Else
-        Return 0
-    EndIf
-EndFunc
