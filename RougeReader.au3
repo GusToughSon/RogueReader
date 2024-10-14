@@ -83,8 +83,8 @@ If $ProcessID Then
         $PosY = _MemoryRead($PosYAddress, $MemOpen, "dword")
         GUICtrlSetData($PosYLabel, "Pos Y: " & $PosY)
 
-        ; Refresh every 500 ms
-        Sleep(500)
+        ; Refresh every 100 ms
+        Sleep(100)
     WEnd
 
 Else
