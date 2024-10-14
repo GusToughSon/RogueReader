@@ -5,13 +5,17 @@
 $ProcessName = "Project Rogue Client.exe"
 $TypeOffset = 0xBEEA34 ; Memory offset for Type
 $AttackModeOffset = 0xAC0D60 ; Memory offset for Attack Mode
+$PosXOffset = 0xBF1C6C ; Memory offset for Pos X
+$PosYOffset = 0xBF1C64 ; Memory offset for Pos Y
 
 ; Create the GUI with the title "RougeReader"
-$Gui = GUICreate("RougeReader", 400, 250)
+$Gui = GUICreate("RougeReader", 400, 300)
 $TypeLabel = GUICtrlCreateLabel("Type: N/A", 20, 30, 250, 20)
 $AttackModeLabel = GUICtrlCreateLabel("Attack Mode: N/A", 20, 60, 250, 20)
-$KillButton = GUICtrlCreateButton("Kill Rogue", 20, 130, 100, 30)
-$ExitButton = GUICtrlCreateButton("Exit", 150, 130, 100, 30)
+$PosXLabel = GUICtrlCreateLabel("Pos X: N/A", 20, 90, 250, 20)
+$PosYLabel = GUICtrlCreateLabel("Pos Y: N/A", 20, 120, 250, 20)
+$KillButton = GUICtrlCreateButton("Kill Rogue", 20, 160, 100, 30)
+$ExitButton = GUICtrlCreateButton("Exit", 150, 160, 100, 30)
 GUISetState(@SW_SHOW)
 
 ; Get the process ID
@@ -30,6 +34,8 @@ If $ProcessID Then
     ; Calculate the target addresses by adding the offsets to the base address
     $TypeAddress = $BaseAddress + $TypeOffset
     $AttackModeAddress = $BaseAddress + $AttackModeOffset
+    $PosXAddress = $BaseAddress + $PosXOffset
+    $PosYAddress = $BaseAddress + $PosYOffset
 
     ; Main loop for the GUI and memory reading
     While 1
@@ -68,6 +74,14 @@ If $ProcessID Then
         Else
             GUICtrlSetData($AttackModeLabel, "Attack Mode: No Target")
         EndIf
+
+        ; Read the Pos X value
+        $PosX = _MemoryRead($PosXAddress, $MemOpen, "dword")
+        GUICtrlSetData($PosXLabel, "Pos X: " & $PosX)
+
+        ; Read the Pos Y value
+        $PosY = _MemoryRead($PosYAddress, $MemOpen, "dword")
+        GUICtrlSetData($PosYLabel, "Pos Y: " & $PosY)
 
         ; Refresh every 500 ms
         Sleep(500)
