@@ -1,17 +1,5 @@
-; Global variable declarations
-Global $MemOpen, $PosXAddress, $PosYAddress, $LoggingStatus = "Off" ; Ensure $LoggingStatus is declared
-Global $HealerStatus = False
-Global $HealerLabel, $LoggingStatusLabel ; Declare these GUI controls as global
-
-; Function to toggle the healer status
-Func ToggleHealer()
-    $HealerStatus = Not $HealerStatus
-    If $HealerStatus Then
-        GUICtrlSetData($HealerLabel, "Healer: ON")
-    Else
-        GUICtrlSetData($HealerLabel, "Healer: OFF")
-    EndIf
-EndFunc
+Global $LoggingStatus = "Off" ; Initialize the logging status
+Global $MemOpen, $PosXAddress, $PosYAddress, $HealerStatus ; Declare globals to avoid warnings
 
 ; Function to toggle map logging status
 Func ToggleMapLogging()
@@ -23,7 +11,7 @@ Func ToggleMapLogging()
 
     Local $PosX = _MemoryRead($PosXAddress, $MemOpen, "dword")
     Local $PosY = _MemoryRead($PosYAddress, $MemOpen, "dword")
-    LogCoordinatesToJson($PosX, $PosY, True) ; Call to log the coordinates
+    LogCoordinatesToBinary($PosX, $PosY, True) ; Call to log the coordinates in binary
 
     ; Toggle the logging status
     If $LoggingStatus = "Off" Then
@@ -35,27 +23,25 @@ Func ToggleMapLogging()
     EndIf
 EndFunc
 
-; Function to log coordinates to a JSON-like file
-Func LogCoordinatesToJson($x, $y, $isPassable)
-    Local $jsonFile = @ScriptDir & "\coordinates.json"
-    Local $fileContents = ""
-
-    ; Check if file exists and read its contents
-    If FileExists($jsonFile) Then
-        $fileContents = FileRead($jsonFile)
-    EndIf
-
-    ; Prepare new entry for X and Y coordinates
+; Function to log coordinates in binary
+Func LogCoordinatesToBinary($x, $y, $isPassable)
     Local $status = $isPassable ? "passable" : "solid"
-    Local $entry = '{ "X": ' & $x & ', "Y": ' & $y & ', "status": "' & $status & '" },' & @CRLF
-
-    ; Append the new entry to the file
-    FileWrite($jsonFile, $fileContents & $entry)
+    UpdateBinaryCoordinate($x, $y, $status)
 EndFunc
 
 ; Function to check if logging is enabled and log the coordinates
 Func LogCoordinatesIfEnabled($PosX, $PosY)
     If $LoggingStatus = "On" Then
-        LogCoordinatesToJson($PosX, $PosY, True)
+        LogCoordinatesToBinary($PosX, $PosY, True)
+    EndIf
+EndFunc
+
+; Function to toggle the healer status
+Func ToggleHealer()
+    $HealerStatus = Not $HealerStatus
+    If $HealerStatus Then
+        GUICtrlSetData($HealerLabel, "Healer: ON")
+    Else
+        GUICtrlSetData($HealerLabel, "Healer: OFF")
     EndIf
 EndFunc

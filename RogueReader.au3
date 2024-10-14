@@ -18,7 +18,7 @@ Global $HPOffset = 0x9BE988
 Global $MaxHPOffset = 0x9BE98C
 
 ; Initialize coordinate files
-InitializeCoordinateFiles()
+InitializeBinaryCoordinateFiles() ; Use binary initialization
 
 ; Create the main GUI and display it
 $Gui = CreateMainGUI()
