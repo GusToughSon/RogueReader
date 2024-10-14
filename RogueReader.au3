@@ -4,10 +4,12 @@
 #include "HealerAndLogging.au3"
 #include <Misc.au3> ; Required for _IsPressed()
 
-; Declare GUI control variables globally
-Global $HealerLabel, $LoggingStatusLabel, $MapLogButton, $ExitButton, $KillButton
+; Global variable declarations
+Global $PosXAddress, $PosYAddress, $MemOpen
+Global $LoggingStatus = "Off" ; Initialize the logging status
+Global $MapLogButton, $KillButton, $ExitButton ; Declare these GUI controls as global
 
-; Main Script Logic for RogueReader.au3
+; Game process and memory offsets
 Global $ProcessName = "Project Rogue Client.exe"
 Global $TypeOffset = 0xBEEA34
 Global $PosXOffset = 0xBF1C6C
@@ -15,7 +17,8 @@ Global $PosYOffset = 0xBF1C64
 Global $HPOffset = 0x9BE988
 Global $MaxHPOffset = 0x9BE98C
 
-InitializeCoordinateFile() ; Initialize the coordinates file at the start
+; Initialize coordinate files
+InitializeCoordinateFiles()
 
 ; Create the main GUI and display it
 $Gui = CreateMainGUI()
@@ -25,6 +28,12 @@ GUISetState(@SW_SHOW, $Gui) ; Ensure the GUI is shown
 $ProcessID = ProcessExists($ProcessName)
 If $ProcessID Then
     $MemOpen = _MemoryOpen($ProcessID)
+    If $MemOpen = 0 Then
+        ; Memory could not be opened, display a popup and exit
+        MsgBox(0, "Error", "Failed to open memory for the process.")
+        Exit
+    EndIf
+
     $BaseAddress = _EnumProcessModules($MemOpen)
     If $BaseAddress = 0 Then
         MsgBox(0, "Error", "Failed to get base address")
@@ -59,7 +68,7 @@ If $ProcessID Then
             Exit
         EndIf
 
-        ; Log coordinates
+        ; Log coordinates if logging is enabled
         LogCoordinatesIfEnabled(_MemoryRead($PosXAddress, $MemOpen, "dword"), _MemoryRead($PosYAddress, $MemOpen, "dword"))
 
         ; Exit the script if Exit button is clicked
@@ -73,5 +82,5 @@ If $ProcessID Then
         Sleep(100)
     WEnd
 Else
-    MsgBox(0, "Error", "Project Rogue Client.exe not found.")
+    MsgBox(0, "Error", "Project Rogue Client.exe not found.") ; Show error popup if the process is not found
 EndIf
