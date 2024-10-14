@@ -49,7 +49,9 @@ If $ProcessID Then
 
         ; Read the Type value
         $Type = _MemoryRead($TypeAddress, $MemOpen, "dword")
-        If $Type = 1 Then
+        If $Type = 0 Then
+            GUICtrlSetData($TypeLabel, "Type: Player (" & $Type & ")")
+        ElseIf $Type = 1 Then
             GUICtrlSetData($TypeLabel, "Type: Monster (" & $Type & ")")
         ElseIf $Type = 2 Then
             GUICtrlSetData($TypeLabel, "Type: NPC (" & $Type & ")")
