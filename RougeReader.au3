@@ -6,8 +6,8 @@ $ProcessName = "Project Rogue Client.exe"
 $TypeOffset = 0xBEEA34 ; Memory offset for Type
 $AttackModeOffset = 0xAC0D60 ; Memory offset for Attack Mode
 
-; Create a simple GUI
-$Gui = GUICreate("Memory Reader", 400, 250)
+; Create the GUI with the title "RougeReader"
+$Gui = GUICreate("RougeReader", 400, 250)
 $TypeLabel = GUICtrlCreateLabel("Type: N/A", 20, 30, 250, 20)
 $AttackModeLabel = GUICtrlCreateLabel("Attack Mode: N/A", 20, 60, 250, 20)
 $KillButton = GUICtrlCreateButton("Kill Rogue", 20, 130, 100, 30)
@@ -44,18 +44,17 @@ If $ProcessID Then
         ; Kill the Rogue process if the Kill button is clicked
         If $msg = $KillButton Then
             ProcessClose($ProcessID)
-            MsgBox(0, "Info", "Rogue process terminated.")
             Exit
         EndIf
 
         ; Read the Type value
         $Type = _MemoryRead($TypeAddress, $MemOpen, "dword")
         If $Type = 1 Then
-            GUICtrlSetData($TypeLabel, "Type: Monster")
+            GUICtrlSetData($TypeLabel, "Type: Monster (" & $Type & ")")
         ElseIf $Type = 2 Then
-            GUICtrlSetData($TypeLabel, "Type: NPC")
+            GUICtrlSetData($TypeLabel, "Type: NPC (" & $Type & ")")
         Else
-            GUICtrlSetData($TypeLabel, "Type: No Target")
+            GUICtrlSetData($TypeLabel, "Type: No Target (" & $Type & ")")
         EndIf
 
         ; Read the Attack Mode value
