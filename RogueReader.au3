@@ -15,7 +15,7 @@ $MaxHPOffset = 0x9BE98C ; Memory offset for MaxHP
 Global $pottimer = 2000
 
 ; Create the GUI with the title "RogueReader" and position it at X=15, Y=15
-$Gui = GUICreate("RogueReader", 400, 400, 15, 15) ; Width = 400, Height = 400, X = 15, Y = 15
+$Gui = GUICreate("RogueReader", 400, 450, 15, 15) ; Width = 400, Height = 450, X = 15, Y = 15
 $TypeLabel = GUICtrlCreateLabel("Type: N/A", 20, 30, 250, 20)
 $AttackModeLabel = GUICtrlCreateLabel("Attack Mode: N/A", 20, 60, 250, 20)
 $PosXLabel = GUICtrlCreateLabel("Pos X: N/A", 20, 90, 250, 20)
@@ -25,8 +25,9 @@ $HP2Label = GUICtrlCreateLabel("HP2: N/A", 20, 180, 250, 20)
 $MaxHPLabel = GUICtrlCreateLabel("MaxHP: N/A", 20, 210, 250, 20)
 $HealerLabel = GUICtrlCreateLabel("Healer: OFF", 20, 240, 250, 20)
 $HotkeyLabel = GUICtrlCreateLabel("Hotkey: `", 20, 270, 250, 20)
-$KillButton = GUICtrlCreateButton("Kill Rogue", 20, 300, 100, 30)
-$ExitButton = GUICtrlCreateButton("Exit", 150, 300, 100, 30)
+$PotsNote = GUICtrlCreateLabel("Pots go in #2", 20, 300, 250, 20) ; Added note
+$KillButton = GUICtrlCreateButton("Kill Rogue", 20, 330, 100, 30)
+$ExitButton = GUICtrlCreateButton("Exit", 150, 330, 100, 30)
 GUISetState(@SW_SHOW)
 
 ; Healer toggle variable
