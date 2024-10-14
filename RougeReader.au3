@@ -8,8 +8,8 @@ $AttackModeOffset = 0xAC0D60 ; Memory offset for Attack Mode
 $PosXOffset = 0xBF1C6C ; Memory offset for Pos X
 $PosYOffset = 0xBF1C64 ; Memory offset for Pos Y
 
-; Create the GUI with the title "RougeReader"
-$Gui = GUICreate("RougeReader", 400, 300)
+; Create the GUI with the title "RougeReader" and position it at X=15, Y=15
+$Gui = GUICreate("RougeReader", 400, 300, 15, 15) ; Width = 400, Height = 300, X = 15, Y = 15
 $TypeLabel = GUICtrlCreateLabel("Type: N/A", 20, 30, 250, 20)
 $AttackModeLabel = GUICtrlCreateLabel("Attack Mode: N/A", 20, 60, 250, 20)
 $PosXLabel = GUICtrlCreateLabel("Pos X: N/A", 20, 90, 250, 20)
