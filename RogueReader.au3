@@ -27,8 +27,7 @@ $MaxHPLabel = GUICtrlCreateLabel("MaxHP: N/A", 20, 210, 250, 20)
 $HealerLabel = GUICtrlCreateLabel("Healer: OFF", 20, 240, 250, 20)
 $HotkeyLabel = GUICtrlCreateLabel("Hotkey: ", 20, 270, 250, 20)
 $PotsNote = GUICtrlCreateLabel("Pots go in #2", 20, 300, 250, 20)
-$MapLabel = GUICtrlCreateLabel("Map: Off", 20, 340, 250, 20)
-$MapButton = GUICtrlCreateButton("Toggle Map", 300, 340, 100, 20)
+$MapLabel = GUICtrlCreateLabel("Map: Off", 20, 340, 250, 20) ; Label remains to display map status
 $MapLogButton = GUICtrlCreateButton("Map", 20, 380, 100, 30)
 $KillButton = GUICtrlCreateButton("Kill Rogue", 140, 380, 100, 30)
 $ExitButton = GUICtrlCreateButton("Exit", 260, 380, 100, 30)
@@ -36,7 +35,6 @@ GUISetState(@SW_SHOW)
 
 ; Healer toggle variable
 Global $HealerStatus = False
-Global $MapStatus = False ; Map toggle variable
 
 ; Get the process ID
 $ProcessID = ProcessExists($ProcessName)
@@ -72,16 +70,6 @@ If $ProcessID Then
                 GUICtrlSetData($HealerLabel, "Healer: OFF")
             EndIf
             Sleep(300) ; Prevent rapid toggling
-        EndIf
-
-        ; Toggle the Map status when the MapButton is pressed
-        If $msg = $MapButton Then
-            $MapStatus = Not $MapStatus
-            If $MapStatus Then
-                GUICtrlSetData($MapLabel, "Map: Debug")
-            Else
-                GUICtrlSetData($MapLabel, "Map: Off")
-            EndIf
         EndIf
 
         ; Log X and Y coordinates when MapLogButton is pressed
