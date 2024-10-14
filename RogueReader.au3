@@ -24,8 +24,8 @@ $HPLabel = GUICtrlCreateLabel("HP: N/A", 20, 150, 250, 20)
 $HP2Label = GUICtrlCreateLabel("HP2: N/A", 20, 180, 250, 20)
 $MaxHPLabel = GUICtrlCreateLabel("MaxHP: N/A", 20, 210, 250, 20)
 $HealerLabel = GUICtrlCreateLabel("Healer: OFF", 20, 240, 250, 20)
-$HotkeyLabel = GUICtrlCreateLabel("Hotkey: Tilday", 20, 270, 250, 20) ; Added " Tilday" after Hotkey
-$PotsNote = GUICtrlCreateLabel("Pots go in #2", 20, 295, 250, 20) ; Moved up 5 pixels
+$HotkeyLabel = GUICtrlCreateLabel("Hotkey: Tilday", 20, 270, 250, 20)
+$PotsNote = GUICtrlCreateLabel("Pots go in #2", 20, 295, 250, 20)
 $KillButton = GUICtrlCreateButton("Kill Rogue", 20, 380, 100, 30)
 $ExitButton = GUICtrlCreateButton("Exit", 150, 380, 100, 30)
 
@@ -103,7 +103,7 @@ If $ProcessID Then
             Exit
         EndIf
 
-        ; Read the Type value
+        ; Read the Type value (Target)
         $Type = _MemoryRead($TypeAddress, $MemOpen, "dword")
         If $Type = 0 Then
             GUICtrlSetData($TypeLabel, "Type: Player (" & $Type & ")")
@@ -125,14 +125,7 @@ If $ProcessID Then
             GUICtrlSetData($AttackModeLabel, "Attack Mode: No Target")
         EndIf
 
-        ; Read the Pos X value
-        $PosX = _MemoryRead($PosXAddress, $MemOpen, "dword")
-        GUICtrlSetData($PosXLabel, "Pos X: " & $PosX)
-
-        ; Read the Pos Y value
-        $PosY = _MemoryRead($PosYAddress, $MemOpen, "dword")
-        GUICtrlSetData($PosYLabel, "Pos Y: " & $PosY)
-
+        ; Concurrent Healer Logic
         ; Read the HP and MaxHP values
         $HP = _MemoryRead($HPAddress, $MemOpen, "dword")
         GUICtrlSetData($HPLabel, "HP: " & $HP)
@@ -152,6 +145,18 @@ If $ProcessID Then
         If $HealerStatus And $HP2 <= ($HealThreshold / 100 * $MaxHP) Then
             ControlSend("", "", "", "2")
             Sleep($pottimer) ; Wait for pottimer (2000 ms)
+        EndIf
+
+        ; Attack Mode and No Target Logic
+        If $AttackMode = 1 Then
+            If $Type = -1 Then
+                ; No target found, send Tab key to switch targets
+                ControlSend("", "", "", "{TAB}")
+                Sleep(500)
+            ElseIf $Type = 0 Or $Type = 1 Then
+                ; If target is Player or Monster, wait for 500 ms
+                Sleep(500)
+            EndIf
         EndIf
 
         ; Refresh every 100 ms
