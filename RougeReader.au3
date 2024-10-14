@@ -1,5 +1,6 @@
 #include "NomadMemory.au3"
 #include <GUIConstantsEx.au3>
+#include <Misc.au3>
 
 ; Define the game process and memory offsets
 $ProcessName = "Project Rogue Client.exe"
@@ -11,7 +12,7 @@ $HPOffset = 0x9BE988 ; Memory offset for HP
 $MaxHPOffset = 0x9BE98C ; Memory offset for MaxHP
 
 ; Create the GUI with the title "RougeReader" and position it at X=15, Y=15
-$Gui = GUICreate("RougeReader", 400, 370, 15, 15) ; Width = 400, Height = 370, X = 15, Y = 15
+$Gui = GUICreate("RougeReader", 400, 400, 15, 15) ; Width = 400, Height = 400, X = 15, Y = 15
 $TypeLabel = GUICtrlCreateLabel("Type: N/A", 20, 30, 250, 20)
 $AttackModeLabel = GUICtrlCreateLabel("Attack Mode: N/A", 20, 60, 250, 20)
 $PosXLabel = GUICtrlCreateLabel("Pos X: N/A", 20, 90, 250, 20)
@@ -19,9 +20,14 @@ $PosYLabel = GUICtrlCreateLabel("Pos Y: N/A", 20, 120, 250, 20)
 $HPLabel = GUICtrlCreateLabel("HP: N/A", 20, 150, 250, 20)
 $HP2Label = GUICtrlCreateLabel("HP2: N/A", 20, 180, 250, 20)
 $MaxHPLabel = GUICtrlCreateLabel("MaxHP: N/A", 20, 210, 250, 20)
-$KillButton = GUICtrlCreateButton("Kill Rogue", 20, 250, 100, 30)
-$ExitButton = GUICtrlCreateButton("Exit", 150, 250, 100, 30)
+$HealerLabel = GUICtrlCreateLabel("Healer: OFF", 20, 240, 250, 20)
+$HotkeyLabel = GUICtrlCreateLabel("Hotkey: `", 20, 270, 250, 20)
+$KillButton = GUICtrlCreateButton("Kill Rogue", 20, 300, 100, 30)
+$ExitButton = GUICtrlCreateButton("Exit", 150, 300, 100, 30)
 GUISetState(@SW_SHOW)
+
+; Healer toggle variable
+Global $HealerStatus = False
 
 ; Get the process ID
 $ProcessID = ProcessExists($ProcessName)
@@ -47,6 +53,17 @@ If $ProcessID Then
     ; Main loop for the GUI and memory reading
     While 1
         $msg = GUIGetMsg()
+
+        ; Check if the hotkey ` is pressed to toggle the Healer status
+        If _IsPressed("C0") Then ; C0 is the virtual key code for the backtick (`) key
+            $HealerStatus = Not $HealerStatus
+            If $HealerStatus Then
+                GUICtrlSetData($HealerLabel, "Healer: ON")
+            Else
+                GUICtrlSetData($HealerLabel, "Healer: OFF")
+            EndIf
+            Sleep(300) ; Prevent rapid toggling
+        EndIf
 
         ; Exit the script if the Exit button is clicked
         If $msg = $ExitButton Then
