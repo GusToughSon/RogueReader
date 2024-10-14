@@ -1,6 +1,7 @@
 #include "NomadMemory.au3"
 #include <GUIConstantsEx.au3>
 #include <Misc.au3>
+#include <File.au3>
 
 ; Define the game process and memory offsets
 $ProcessName = "Project Rogue Client.exe"
@@ -26,10 +27,11 @@ $MaxHPLabel = GUICtrlCreateLabel("MaxHP: N/A", 20, 210, 250, 20)
 $HealerLabel = GUICtrlCreateLabel("Healer: OFF", 20, 240, 250, 20)
 $HotkeyLabel = GUICtrlCreateLabel("Hotkey: ", 20, 270, 250, 20)
 $PotsNote = GUICtrlCreateLabel("Pots go in #2", 20, 300, 250, 20)
-$MapLabel = GUICtrlCreateLabel("Map: Off", 20, 340, 250, 20) ; Map variable label
-$MapButton = GUICtrlCreateButton("Toggle Map", 300, 340, 100, 20) ; Toggle button for Map
-$KillButton = GUICtrlCreateButton("Kill Rogue", 20, 380, 100, 30)
-$ExitButton = GUICtrlCreateButton("Exit", 150, 380, 100, 30)
+$MapLabel = GUICtrlCreateLabel("Map: Off", 20, 340, 250, 20)
+$MapButton = GUICtrlCreateButton("Toggle Map", 300, 340, 100, 20)
+$MapLogButton = GUICtrlCreateButton("Map", 20, 380, 100, 30)
+$KillButton = GUICtrlCreateButton("Kill Rogue", 140, 380, 100, 30)
+$ExitButton = GUICtrlCreateButton("Exit", 260, 380, 100, 30)
 GUISetState(@SW_SHOW)
 
 ; Healer toggle variable
@@ -61,8 +63,8 @@ If $ProcessID Then
     While 1
         $msg = GUIGetMsg()
 
-        ; Check if the hotkey  is pressed to toggle the Healer status
-        If _IsPressed("C0") Then ; C0 is the virtual key code for the backtick () key
+        ; Check if the hotkey is pressed to toggle the Healer status
+        If _IsPressed("C0") Then
             $HealerStatus = Not $HealerStatus
             If $HealerStatus Then
                 GUICtrlSetData($HealerLabel, "Healer: ON")
@@ -80,6 +82,13 @@ If $ProcessID Then
             Else
                 GUICtrlSetData($MapLabel, "Map: Off")
             EndIf
+        EndIf
+
+        ; Log X and Y coordinates when MapLogButton is pressed
+        If $msg = $MapLogButton Then
+            $PosX = _MemoryRead($PosXAddress, $MemOpen, "dword")
+            $PosY = _MemoryRead($PosYAddress, $MemOpen, "dword")
+            LogCoordinatesToJson($PosX, $PosY, True)
         EndIf
 
         ; Exit the script if the Exit button is clicked
@@ -106,16 +115,6 @@ If $ProcessID Then
             GUICtrlSetData($TypeLabel, "Type: No Target (" & $Type & ")")
         EndIf
 
-        ; Read the Attack Mode value
-        $AttackMode = _MemoryRead($AttackModeAddress, $MemOpen, "dword")
-        If $AttackMode = 0 Then
-            GUICtrlSetData($AttackModeLabel, "Attack Mode: Safe")
-        ElseIf $AttackMode = 1 Then
-            GUICtrlSetData($AttackModeLabel, "Attack Mode: Attack")
-        Else
-            GUICtrlSetData($AttackModeLabel, "Attack Mode: No Target")
-        EndIf
-
         ; Read the Pos X value
         $PosX = _MemoryRead($PosXAddress, $MemOpen, "dword")
         GUICtrlSetData($PosXLabel, "Pos X: " & $PosX)
@@ -123,6 +122,11 @@ If $ProcessID Then
         ; Read the Pos Y value
         $PosY = _MemoryRead($PosYAddress, $MemOpen, "dword")
         GUICtrlSetData($PosYLabel, "Pos Y: " & $PosY)
+
+        ; Log the coordinates as solid if they aren't shown
+        If $PosX = 0 Or $PosY = 0 Then
+            LogCoordinatesToJson($PosX, $PosY, False)
+        EndIf
 
         ; Read the HP and MaxHP values
         $HP = _MemoryRead($HPAddress, $MemOpen, "dword")
@@ -151,6 +155,24 @@ EndIf
 
 ; Clean up GUI on exit
 GUIDelete($Gui)
+
+; Function to log X and Y coordinates to a JSON-like file
+Func LogCoordinatesToJson($x, $y, $isPassable)
+    Local $jsonFile = @ScriptDir & "\coordinates.json"
+    Local $fileContents = ""
+
+    ; Check if file exists and read its contents
+    If FileExists($jsonFile) Then
+        $fileContents = FileRead($jsonFile)
+    EndIf
+
+    ; Prepare new entry for X and Y coordinates
+    Local $status = $isPassable ? "passable" : "solid"
+    Local $entry = '{ "X": ' & $x & ', "Y": ' & $y & ', "status": "' & $status & '" },' & @CRLF
+
+    ; Append the new entry to the file
+    FileWrite($jsonFile, $fileContents & $entry)
+EndFunc
 
 ; Function to get the base address using EnumProcessModules
 Func _EnumProcessModules($hProcess)
