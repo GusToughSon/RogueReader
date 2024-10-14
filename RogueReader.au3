@@ -11,6 +11,9 @@ $PosYOffset = 0xBF1C64 ; Memory offset for Pos Y
 $HPOffset = 0x9BE988 ; Memory offset for HP
 $MaxHPOffset = 0x9BE98C ; Memory offset for MaxHP
 
+; Pot timer (pottimer) set to 2000 ms
+Global $pottimer = 2000
+
 ; Create the GUI with the title "RogueReader" and position it at X=15, Y=15
 $Gui = GUICreate("RogueReader", 400, 400, 15, 15) ; Width = 400, Height = 400, X = 15, Y = 15
 $TypeLabel = GUICtrlCreateLabel("Type: N/A", 20, 30, 250, 20)
@@ -107,7 +110,7 @@ If $ProcessID Then
         $PosY = _MemoryRead($PosYAddress, $MemOpen, "dword")
         GUICtrlSetData($PosYLabel, "Pos Y: " & $PosY)
 
-        ; Read the HP value
+        ; Read the HP and MaxHP values
         $HP = _MemoryRead($HPAddress, $MemOpen, "dword")
         GUICtrlSetData($HPLabel, "HP: " & $HP)
 
@@ -115,9 +118,14 @@ If $ProcessID Then
         $HP2 = $HP / 65536
         GUICtrlSetData($HP2Label, "HP2: " & $HP2)
 
-        ; Read the MaxHP value
         $MaxHP = _MemoryRead($MaxHPAddress, $MemOpen, "dword")
         GUICtrlSetData($MaxHPLabel, "MaxHP: " & $MaxHP)
+
+        ; If Healer is ON and HP2 is <= 80% of MaxHP, send "2" key with pottimer delay
+        If $HealerStatus And $HP2 <= (0.8 * $MaxHP) Then
+            ControlSend("", "", "", "2")
+            Sleep($pottimer) ; Wait for pottimer (2000 ms)
+        EndIf
 
         ; Refresh every 100 ms
         Sleep(100)
