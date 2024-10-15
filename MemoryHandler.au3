@@ -125,8 +125,8 @@ Func StartNavigation()
         GUICtrlSetData($CurrentWaypointLabel, "Navigating to Waypoint: " & $CurrentWaypoint)
         MoveToWaypoint($Waypoints[$i][0], $Waypoints[$i][1])
 
-        ; Random pause between 2-5 seconds
-        Sleep(Random(2000, 5000))
+        ; Random pause between waypoints
+        Sleep(Random(500, 1500))  ; Reduced from 2000-5000 ms to 500-1500 ms
     Next
 
     ; Navigate in reverse back to the first waypoint
@@ -136,7 +136,7 @@ Func StartNavigation()
         $CurrentWaypoint = $i + 1
         GUICtrlSetData($CurrentWaypointLabel, "Navigating to Waypoint: " & $CurrentWaypoint)
         MoveToWaypoint($Waypoints[$i][0], $Waypoints[$i][1])
-        Sleep(Random(2000, 5000))
+        Sleep(Random(500, 1500))  ; Reduced from 2000-5000 ms to 500-1500 ms
     Next
 
     $Navigating = False
@@ -181,35 +181,43 @@ Func MoveToWaypoint($TargetX, $TargetY)
         ; Log the calculated deltas
         ConsoleWrite("Calculated Delta - X: " & $DeltaX & ", Y: " & $DeltaY & @CRLF)
 
-        ; Check if we've reached the target
-        If Abs($DeltaX) <= 5 And Abs($DeltaY) <= 5 Then
+        ; Stricter condition to check if we've reached the target (within ±1 range)
+        If Abs($DeltaX) <= 1 And Abs($DeltaY) <= 1 Then
             ConsoleWrite("Reached waypoint. Stopping movement." & @CRLF)
             ExitLoop
         EndIf
 
         ; Prioritize movement based on the larger delta (either X or Y)
         If Abs($DeltaX) > Abs($DeltaY) Then
-            ; Handle X movement first
-            If $DeltaX < -5 Then
-                ConsoleWrite("Moving up (W = -X)" & @CRLF)
-                Send("w")  ; Move up by decreasing X
-            ElseIf $DeltaX > 5 Then
-                ConsoleWrite("Moving down (S = +X)" & @CRLF)
-                Send("s")  ; Move down by increasing X
+            ; Handle X movement first (A and D control X-axis)
+            If $DeltaX < -1 Then
+                ConsoleWrite("Moving left (A = -X)" & @CRLF)
+                Send("{a down}")
+                Sleep(100)
+                Send("{a up}")
+            ElseIf $DeltaX > 1 Then
+                ConsoleWrite("Moving right (D = +X)" & @CRLF)
+                Send("{d down}")
+                Sleep(100)
+                Send("{d up}")
             EndIf
         Else
-            ; Handle Y movement
-            If $DeltaY < -5 Then
-                ConsoleWrite("Moving left (A = -Y)" & @CRLF)
-                Send("a")  ; Move left by decreasing Y
-            ElseIf $DeltaY > 5 Then
-                ConsoleWrite("Moving right (D = +Y)" & @CRLF)
-                Send("d")  ; Move right by increasing Y
+            ; Handle Y movement (W and S control Y-axis)
+            If $DeltaY < -1 Then
+                ConsoleWrite("Moving up (W = -Y)" & @CRLF)
+                Send("{w down}")
+                Sleep(100)
+                Send("{w up}")
+            ElseIf $DeltaY > 1 Then
+                ConsoleWrite("Moving down (S = +Y)" & @CRLF)
+                Send("{s down}")
+                Sleep(100)
+                Send("{s up}")
             EndIf
         EndIf
 
         ; Sleep briefly before checking again
-        Sleep(200)
+        Sleep(100)  ; Reduced delay for faster response
     WEnd
 
     ConsoleWrite("Finished navigating to waypoint." & @CRLF)
