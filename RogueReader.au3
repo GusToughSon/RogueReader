@@ -4,6 +4,9 @@
 #include <Misc.au3>
 
 Global $ProcessID, $MemOpen, $BaseAddress, $HealerStatus, $ThresholdSlider, $ProcessName, $ExitButton, $WaypointCountLabel, $CurrentWaypointLabel
+Global $TargetFound = False     ; Flag to determine if a target exists
+Global $Navigating = False      ; Flag to track if navigation is active
+Global $DebugMode = True       ; Flag to control Debug Mode
 
 ; Process Name
 $ProcessName = "Project Rogue Client.exe"
@@ -23,34 +26,43 @@ HotKeySet("]", "WipeWaypoints") ; Hotkey to wipe waypoints
 HotKeySet("/", "StartNavigation") ; Hotkey to start navigation
 HotKeySet("'", "TogglePauseNavigation") ; Hotkey to pause/resume navigation
 HotKeySet("`", "ToggleHealer") ; Set the hotkey for healer functionality (backtick key)
+HotKeySet("F12", "ToggleDebugMode") ; Set F12 as the hotkey to toggle Debug Mode
 
+; Debugging process identification
+DebugWrite("Attempting to find process: " & $ProcessName & @CRLF)
 $ProcessID = ProcessExists($ProcessName)
-$MemOpen = OpenMemoryProcess($ProcessID) ; Calls MemoryReader to open the process
+
+If $ProcessID = 0 Then
+    DebugWrite("Error: Process not found: " & $ProcessName & @CRLF)
+    MsgBox(0, "Error", "Process not found: " & $ProcessName)
+    Exit
+Else
+    DebugWrite("Process found with ID: " & $ProcessID & @CRLF)
+EndIf
+
+; Open the memory process
+DebugWrite("Attempting to open memory for process ID: " & $ProcessID & @CRLF)
+$MemOpen = OpenMemoryProcess($ProcessID)
 
 If $MemOpen = 0 Then
-    ConsoleWrite("Error: Project Rogue Client.exe not found." & @CRLF)
+    DebugWrite("Error: Failed to open memory for process ID: " & $ProcessID & @CRLF)
+    MsgBox(0, "Error", "Failed to open memory for process.")
     Exit
+Else
+    DebugWrite("Memory process opened successfully." & @CRLF)
 EndIf
-
-; Use the correct window title: "Project Rogue"
-$WindowTitle = "Project Rogue"
-
-If $WindowTitle = "" Then
-    ConsoleWrite("Error: Could not find the window for Project Rogue." & @CRLF)
-    Exit
-EndIf
-
-ConsoleWrite("Window found: " & $WindowTitle & @CRLF)
 
 ; Ensure base address is retrieved here and shared
+DebugWrite("Attempting to retrieve base address for process..." & @CRLF)
 $BaseAddress = GetBaseAddress($MemOpen)
 
 If $BaseAddress = 0 Then
-    ConsoleWrite("Error: Failed to get base address. Exiting." & @CRLF)
+    DebugWrite("Error: Failed to retrieve base address." & @CRLF)
+    MsgBox(0, "Error", "Failed to retrieve base address.")
     Exit
+Else
+    DebugWrite("Base address retrieved successfully: 0x" & Hex($BaseAddress) & @CRLF)
 EndIf
-
-ConsoleWrite("Base address retrieved: " & Hex($BaseAddress) & @CRLF)
 
 ; Main loop for handling logic and memory reading
 While 1
@@ -58,49 +70,36 @@ While 1
 
     ; Check if the Exit button is clicked
     If $msg = $ExitButton Then
+        DebugWrite("Exit button clicked. Closing memory handle and exiting..." & @CRLF)
         _MemoryClose($MemOpen)  ; Close memory handle
-        ConsoleWrite("Exiting script." & @CRLF)
         Exit                    ; Exit the script
     EndIf
 
-    ; Read the current target type (0 = Player, 1 = Monster, 2 = NPC)
+    ; Check if we have a valid target before proceeding to waypoints
+    DebugWrite("Reading target type from memory..." & @CRLF)
     $Type = _MemoryRead($BaseAddress + $TypeOffset, $MemOpen, "dword")
-    ConsoleWrite("Target Type: " & $Type & @CRLF)
 
-    ; Check if attack mode switches to safe, stop navigation
-    $AttackMode = _MemoryRead($BaseAddress + $AttackModeOffset, $MemOpen, "dword")
-    ConsoleWrite("Attack Mode: " & $AttackMode & @CRLF)
-
-    If $AttackMode = 0 Then
-        $Navigating = False
-        GUICtrlSetData($CurrentWaypointLabel, "Navigating to Waypoint: N/A")
-        ConsoleWrite("Attack mode set to Safe. Stopping navigation." & @CRLF)
-    EndIf
-
-    ; Handle attack logic based on the target type (attack monsters or NPCs)
-    If $AttackMode = 1 Then
-        If $Type = 1 Then
-            ConsoleWrite("Target is a Monster. Initiating attack..." & @CRLF)
-            Send("{2}") ; Example key for attacking
-        ElseIf $Type = 2 Then
-            ConsoleWrite("Target is an NPC. Initiating attack..." & @CRLF)
-            Send("{2}") ; Example key for attacking
-        ElseIf $Type = 0 Then
-            ConsoleWrite("Target is a Player. No attack." & @CRLF)
-        Else
-            ; Check if the Project Rogue window is active
-            If WinActive($WindowTitle) Then
-                ConsoleWrite("No valid target. Switching target..." & @CRLF)
-                Send("{Tab}") ; Switch target
-                Sleep(50) ; Small delay
-            Else
-                ConsoleWrite("Project Rogue is not the active window. Skipping tab switch." & @CRLF)
-            EndIf
+    If $Type > 0 Then
+        ; We found a valid target (Player, Monster, NPC)
+        DebugWrite("Target found with type: " & $Type & @CRLF)
+        $TargetFound = True
+        ProcessTargeting($Type) ; Handle targeting logic
+    Else
+        ; No valid target found, prioritize waypoints
+        DebugWrite("No valid target found. Proceeding with waypoint navigation if active." & @CRLF)
+        $TargetFound = False
+        If $Navigating Then
+            ContinueNavigation()  ; Proceed with waypoint navigation if no target
         EndIf
     EndIf
 
-    ; Handle healer logic and other memory operations
-    ProcessLogic($MemOpen, $pottimer, $BaseAddress)  ; Call memory reader logic
+    ; Handle healer logic only if it's "on"
+    If $HealerStatus Then
+        DebugWrite("Healer is ON. Processing healer logic..." & @CRLF)
+        ProcessHealer($MemOpen, $pottimer, $BaseAddress)
+    Else
+        DebugWrite("Healer is OFF." & @CRLF)
+    EndIf
 
     ; Sleep for a short period to avoid hogging CPU
     Sleep(50)
@@ -109,10 +108,57 @@ WEnd
 Func ToggleHealer()
     $HealerStatus = Not $HealerStatus
     If $HealerStatus Then
-        ConsoleWrite("Healer ON" & @CRLF)
+        DebugWrite("Healer ON" & @CRLF)
         GUICtrlSetData($HealerLabel, "Healer: ON")
     Else
-        ConsoleWrite("Healer OFF" & @CRLF)
+        DebugWrite("Healer OFF" & @CRLF)
         GUICtrlSetData($HealerLabel, "Healer: OFF")
+    EndIf
+EndFunc
+
+Func ProcessHealer($MemOpen, $pottimer, $BaseAddress)
+    ; Ensure healer is only working when it's supposed to be "on"
+    DebugWrite("Reading HP and MaxHP from memory..." & @CRLF)
+    $HP = _MemoryRead($BaseAddress + $HPOffset, $MemOpen, "dword")
+    $MaxHP = _MemoryRead($BaseAddress + $MaxHPOffset, $MemOpen, "dword")
+    $HP2 = $HP / 65536
+
+    DebugWrite("HP: " & $HP & " | MaxHP: " & $MaxHP & " | HP2: " & $HP2 & @CRLF)
+
+    If $HealerStatus And ($HP2 <= (GUICtrlRead($ThresholdSlider) / 100)) Then
+        DebugWrite("HP is below the threshold. Sending heal action (2)..." & @CRLF)
+        Send("2")  ; Send the healing action
+        Sleep($pottimer)
+    Else
+        DebugWrite("HP is above the threshold. No heal action needed." & @CRLF)
+    EndIf
+EndFunc
+
+Func ProcessTargeting($Type)
+    ; Placeholder targeting logic
+    DebugWrite("Processing target of type: " & $Type & @CRLF)
+
+    ; Add targeting logic based on $Type here (e.g., player, monster, etc.)
+    If $Type = 1 Then
+        ; Monster
+        Send("{tab}")  ; Example key to target
+    ElseIf $Type = 2 Then
+        ; NPC
+        ; Add relevant action here
+    EndIf
+EndFunc
+
+Func ToggleDebugMode()
+    $DebugMode = Not $DebugMode
+    If $DebugMode Then
+        ConsoleWrite("Debug Mode: ON" & @CRLF)
+    Else
+        ConsoleWrite("Debug Mode: OFF" & @CRLF)
+    EndIf
+EndFunc
+
+Func DebugWrite($text)
+    If $DebugMode Then
+        ConsoleWrite($text)
     EndIf
 EndFunc

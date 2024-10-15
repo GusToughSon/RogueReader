@@ -2,8 +2,11 @@
 
 Global $Gui, $TypeLabel, $AttackModeLabel, $PosXLabel, $PosYLabel, $HPLabel, $HP2Label, $MaxHPLabel, $HealerLabel, $ThresholdSlider, $KillButton, $ExitButton
 Global $WaypointCountLabel, $CurrentWaypointLabel
+Global $DebugMode = True    ; Control Debug Mode here
 
 Func CreateGUI()
+    DebugWrite("Creating GUI..." & @CRLF)
+
     ; Create the GUI with the title "RogueReader"
     $Gui = GUICreate("RogueReader", 450, 550, 15, 15)
 
@@ -40,9 +43,12 @@ Func CreateGUI()
 
     ; Show the GUI
     GUISetState(@SW_SHOW)
+    DebugWrite("GUI created successfully." & @CRLF)
 EndFunc
 
 Func UpdateGUI($Type, $AttackMode, $PosX, $PosY, $HP, $MaxHP)
+    DebugWrite("Updating GUI with new memory values..." & @CRLF)
+
     ; Update the GUI with new values from memory
     If $Type = 0 Then
         GUICtrlSetData($TypeLabel, "Type: Player (" & $Type & ")")
@@ -68,4 +74,12 @@ Func UpdateGUI($Type, $AttackMode, $PosX, $PosY, $HP, $MaxHP)
     GUICtrlSetData($MaxHPLabel, "MaxHP: " & $MaxHP)
     $HP2 = $HP / 65536
     GUICtrlSetData($HP2Label, "HP2: " & $HP2)
+
+    DebugWrite("GUI updated with values - Type: " & $Type & ", AttackMode: " & $AttackMode & ", Pos X: " & $PosX & ", Pos Y: " & $PosY & ", HP: " & $HP & ", MaxHP: " & $MaxHP & @CRLF)
+EndFunc
+
+Func DebugWrite($text)
+    If $DebugMode Then
+        ConsoleWrite($text)
+    EndIf
 EndFunc
