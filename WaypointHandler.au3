@@ -1,12 +1,13 @@
-Global $Waypoints[20][2]  ; Array to store up to 20 waypoints (X and Y)
+Global $Waypoints[50][2]  ; Array to store up to 50 waypoints (X and Y)
 Global $WaypointCount = 0  ; Keep track of how many waypoints are set
 Global $CurrentWaypoint = 0  ; Track the current waypoint being navigated to
 Global $Navigating = False  ; Flag to track if navigation is active
 Global $Paused = False  ; Flag to track if navigation is paused
+Global $Direction = -1  ; Direction for ping-pong navigation (-1 for down, 1 for up)
 Global $BaseAddress, $MemOpen, $WaypointCountLabel, $CurrentWaypointLabel
 
 Func SetWaypoint()
-    If $WaypointCount < 20 Then
+    If $WaypointCount < 50 Then
         $PosX = _MemoryRead($BaseAddress + $PosXOffset, $MemOpen, "dword")
         $PosY = _MemoryRead($BaseAddress + $PosYOffset, $MemOpen, "dword")
 
@@ -24,13 +25,13 @@ Func SetWaypoint()
         GUICtrlSetData($WaypointCountLabel, "Waypoints: " & $WaypointCount)
 
     Else
-        MsgBox(0, "Error", "Maximum number of waypoints reached.")
+        MsgBox(0, "Error", "Maximum number of waypoints (50) reached.")
     EndIf
 EndFunc
 
 Func WipeWaypoints()
     ; Reset all waypoints
-    For $i = 0 To 19
+    For $i = 0 To 49
         $Waypoints[$i][0] = 0
         $Waypoints[$i][1] = 0
     Next
@@ -52,37 +53,40 @@ Func StartNavigation()
     EndIf
 
     $Navigating = True
-    $CurrentWaypoint = 0
+    $CurrentWaypoint = $WaypointCount - 1  ; Start at the last waypoint set
+    $Direction = -1  ; Start moving down the list of waypoints
 
-    For $i = 0 To $WaypointCount - 1
-        ; Break if navigation is stopped or paused
-        If Not $Navigating Then ExitLoop
+    While $Navigating
+        ; Update GUI with current waypoint information
+        GUICtrlSetData($CurrentWaypointLabel, "Navigating to Waypoint: " & ($CurrentWaypoint + 1))
 
-        ; Navigate to each waypoint
-        $CurrentWaypoint = $i + 1
-        GUICtrlSetData($CurrentWaypointLabel, "Navigating to Waypoint: " & $CurrentWaypoint)
-        MoveToWaypoint($Waypoints[$i][0], $Waypoints[$i][1])
+        ; Move to the current waypoint
+        MoveToWaypoint($Waypoints[$CurrentWaypoint][0], $Waypoints[$CurrentWaypoint][1])
 
         ; Random pause between waypoints
         Sleep(Random(500, 1500))
-    Next
 
-    ; Navigate in reverse back to the first waypoint
-    For $i = $WaypointCount - 1 To 0 Step -1
-        If Not $Navigating Then ExitLoop
-
-        $CurrentWaypoint = $i + 1
-        GUICtrlSetData($CurrentWaypointLabel, "Navigating to Waypoint: " & $CurrentWaypoint)
-        MoveToWaypoint($Waypoints[$i][0], $Waypoints[$i][1])
-        Sleep(Random(500, 1500))
-    Next
-
-    $Navigating = False
-    GUICtrlSetData($CurrentWaypointLabel, "Navigating to Waypoint: N/A")
+        ; Adjust current waypoint for ping-pong navigation
+        If $Direction = -1 Then
+            $CurrentWaypoint -= 1
+            If $CurrentWaypoint < 0 Then
+                $CurrentWaypoint = 1
+                $Direction = 1  ; Change direction to up
+            EndIf
+        ElseIf $Direction = 1 Then
+            $CurrentWaypoint += 1
+            If $CurrentWaypoint >= $WaypointCount Then
+                $CurrentWaypoint = $WaypointCount - 2
+                $Direction = -1  ; Change direction to down
+            EndIf
+        EndIf
+    WEnd
 EndFunc
 
 Func MoveToWaypoint($TargetX, $TargetY)
     ConsoleWrite("Starting navigation to Waypoint - Target X: " & $TargetX & ", Target Y: " & $TargetY & @CRLF)
+
+    Local $LastPosX = 0, $LastPosY = 0, $StuckCount = 0
 
     While True
         ; Check if navigation is paused or stopped
@@ -104,6 +108,34 @@ Func MoveToWaypoint($TargetX, $TargetY)
 
         ; Log the calculated deltas
         ConsoleWrite("Calculated Delta - X: " & $DeltaX & ", Y: " & $DeltaY & @CRLF)
+
+        ; Stuck detection: check if the player is in the same spot repeatedly
+        If $PosX = $LastPosX And $PosY = $LastPosY Then
+            $StuckCount += 1
+        Else
+            $StuckCount = 0
+        EndIf
+
+        $LastPosX = $PosX
+        $LastPosY = $PosY
+
+        ; If stuck for more than 10 iterations, attempt alternate movement
+        If $StuckCount > 10 Then
+            ConsoleWrite("Stuck detected, attempting alternate movement." & @CRLF)
+            If $DeltaX <> 0 Then
+                ; Try moving perpendicular if stuck on X axis
+                Send("{w down}")
+                Sleep(100)
+                Send("{w up}")
+            ElseIf $DeltaY <> 0 Then
+                ; Try moving perpendicular if stuck on Y axis
+                Send("{d down}")
+                Sleep(100)
+                Send("{d up}")
+            EndIf
+            $StuckCount = 0 ; Reset stuck counter after attempt
+            ContinueLoop
+        EndIf
 
         ; Stricter condition to check if we've reached the target (within ±1 range)
         If Abs($DeltaX) <= 1 And Abs($DeltaY) <= 1 Then
@@ -141,7 +173,7 @@ Func MoveToWaypoint($TargetX, $TargetY)
         EndIf
 
         ; Sleep briefly before checking again
-        Sleep(100)  ; Reduced delay for faster response
+        Sleep(100)
     WEnd
 
     ConsoleWrite("Finished navigating to waypoint." & @CRLF)
