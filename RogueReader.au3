@@ -1,175 +1,52 @@
-#include "NomadMemory.au3"
-#include <GUIConstantsEx.au3>
-#include <Misc.au3>
+#include "MemoryHandler.au3"  ; Handles memory operations
+#include "GUIHandler.au3"      ; Handles GUI creation
 
-; Define the game process and memory offsets
-$ProcessName = "Project Rogue Client.exe"
-$TypeOffset = 0xBEEA34 ; Memory offset for Type
-$AttackModeOffset = 0xAC0D60 ; Memory offset for Attack Mode
-$PosXOffset = 0xBF1C6C ; Memory offset for Pos X
-$PosYOffset = 0xBF1C64 ; Memory offset for Pos Y
-$HPOffset = 0x9BE988 ; Memory offset for HP
-$MaxHPOffset = 0x9BE98C ; Memory offset for MaxHP
+Global $ProcessID, $MemOpen, $BaseAddress, $HealerStatus, $ThresholdSlider  ; Declare necessary global variables
 
 ; Pot timer (pottimer) set to 2000 ms
 Global $pottimer = 2000
 
-; Create the GUI with the title "RogueReader" and position it at X=15, Y=15
-$Gui = GUICreate("RogueReader", 450, 500, 15, 15) ; Width = 450, Height = 500, X = 15, Y = 15
-$TypeLabel = GUICtrlCreateLabel("Type: N/A", 20, 30, 250, 20)
-$AttackModeLabel = GUICtrlCreateLabel("Attack Mode: N/A", 20, 60, 250, 20)
-$PosXLabel = GUICtrlCreateLabel("Pos X: N/A", 20, 90, 250, 20)
-$PosYLabel = GUICtrlCreateLabel("Pos Y: N/A", 20, 120, 250, 20)
-$HPLabel = GUICtrlCreateLabel("HP: N/A", 20, 150, 250, 20)
-$HP2Label = GUICtrlCreateLabel("HP2: N/A", 20, 180, 250, 20)
-$MaxHPLabel = GUICtrlCreateLabel("MaxHP: N/A", 20, 210, 250, 20)
-$HealerLabel = GUICtrlCreateLabel("Healer: OFF", 20, 240, 250, 20)
-$HotkeyLabel = GUICtrlCreateLabel("Hotkey: Tilday", 20, 270, 250, 20)
-$PotsNote = GUICtrlCreateLabel("Pots go in #2", 20, 295, 250, 20)
-$KillButton = GUICtrlCreateButton("Kill Rogue", 20, 380, 100, 30)
-$ExitButton = GUICtrlCreateButton("Exit", 150, 380, 100, 30)
+; Initialize HealerStatus and other necessary variables
+$HealerStatus = False
 
-; Add slider for setting heal threshold
-$ThresholdLabel = GUICtrlCreateLabel("Heal Threshold: 95%", 20, 310, 250, 20)
-$ThresholdSlider = GUICtrlCreateSlider(20, 330, 200, 30)
-GUICtrlSetLimit($ThresholdSlider, 100, 0) ; Slider range between 0 and 100
-GUICtrlSetData($ThresholdSlider, 95) ; Default set to 95%
+; Create GUI and start the main loop
+CreateGUI()  ; Calls GUIHandler to create the GUI
 
-GUISetState(@SW_SHOW)
-
-; Healer toggle variable
-Global $HealerStatus = False
-
-; Define _EnumProcessModules function before it's used
-Func _EnumProcessModules($hProcess)
-    Local $hMod = DllStructCreate("ptr") ; 64-bit pointer
-    Local $moduleSize = DllStructGetSize($hMod)
-
-    ; Call EnumProcessModules to list modules
-    Local $aModules = DllCall("psapi.dll", "int", "EnumProcessModulesEx", "ptr", $hProcess, "ptr", DllStructGetPtr($hMod), "dword", $moduleSize, "dword*", 0, "dword", 0x03)
-
-    If IsArray($aModules) And $aModules[0] <> 0 Then
-        Return DllStructGetData($hMod, 1) ; Return base address
-    Else
-        Return 0
-    EndIf
-EndFunc
-
-; Get the process ID
 $ProcessID = ProcessExists($ProcessName)
-If $ProcessID Then
-    ; Open the process memory
-    $MemOpen = _MemoryOpen($ProcessID)
+$MemOpen = OpenMemoryProcess($ProcessID) ; Calls MemoryHandler to open the process
 
-    ; Get the base address of the module using EnumProcessModules
-    $BaseAddress = _EnumProcessModules($MemOpen)
-    If $BaseAddress = 0 Then
-        MsgBox(0, "Error", "Failed to get base address")
+If $MemOpen = 0 Then
+    MsgBox(0, "Error", "Project Rogue Client.exe not found.")
+    Exit
+EndIf
+
+; Ensure base address is retrieved here and shared
+$BaseAddress = GetBaseAddress($MemOpen)
+
+If $BaseAddress = 0 Then
+    MsgBox(0, "Error", "Failed to get base address. Exiting.")
+    Exit
+EndIf
+
+; Main loop for handling logic and memory reading
+While 1
+    $msg = GUIGetMsg()
+
+    ; Handle memory reading and logic
+    ProcessLogic($MemOpen, $pottimer, $BaseAddress)  ; Pass the base address to the handler
+
+    ; Exit the script if the Exit button is clicked
+    If $msg = $ExitButton Then
+        _MemoryClose($MemOpen) ; Close memory handle
         Exit
     EndIf
 
-    ; Calculate the target addresses by adding the offsets to the base address
-    $TypeAddress = $BaseAddress + $TypeOffset
-    $AttackModeAddress = $BaseAddress + $AttackModeOffset
-    $PosXAddress = $BaseAddress + $PosXOffset
-    $PosYAddress = $BaseAddress + $PosYOffset
-    $HPAddress = $BaseAddress + $HPOffset
-    $MaxHPAddress = $BaseAddress + $MaxHPOffset
-
-    ; Main loop for the GUI and memory reading
-    While 1
-        $msg = GUIGetMsg()
-
-        ; Check if the hotkey is pressed to toggle the Healer status
-        If _IsPressed("C0") Then ; C0 is the virtual key code for the backtick (`) key
-            $HealerStatus = Not $HealerStatus
-            If $HealerStatus Then
-                GUICtrlSetData($HealerLabel, "Healer: ON")
-            Else
-                GUICtrlSetData($HealerLabel, "Healer: OFF")
-            EndIf
-            Sleep(300) ; Prevent rapid toggling
-        EndIf
-
-        ; Exit the script if the Exit button is clicked
-        If $msg = $ExitButton Then
-            _MemoryClose($MemOpen) ; Close memory handle
-            Exit
-        EndIf
-
-        ; Kill the Rogue process if the Kill button is clicked
-        If $msg = $KillButton Then
-            ProcessClose($ProcessID)
-            Exit
-        EndIf
-
-        ; Read the Type value (Target)
-        $Type = _MemoryRead($TypeAddress, $MemOpen, "dword")
-        If $Type = 0 Then
-            GUICtrlSetData($TypeLabel, "Type: Player (" & $Type & ")")
-        ElseIf $Type = 1 Then
-            GUICtrlSetData($TypeLabel, "Type: Monster (" & $Type & ")")
-        ElseIf $Type = 2 Then
-            GUICtrlSetData($TypeLabel, "Type: NPC (" & $Type & ")")
-        Else
-            GUICtrlSetData($TypeLabel, "Type: No Target (" & $Type & ")")
-        EndIf
-
-        ; Read the Attack Mode value
-        $AttackMode = _MemoryRead($AttackModeAddress, $MemOpen, "dword")
-        If $AttackMode = 0 Then
-            GUICtrlSetData($AttackModeLabel, "Attack Mode: Safe")
-        ElseIf $AttackMode = 1 Then
-            GUICtrlSetData($AttackModeLabel, "Attack Mode: Attack")
-        Else
-            GUICtrlSetData($AttackModeLabel, "Attack Mode: No Target")
-        EndIf
-
-        ; Concurrent Healer Logic
-        ; Read the HP and MaxHP values
-        $HP = _MemoryRead($HPAddress, $MemOpen, "dword")
-        GUICtrlSetData($HPLabel, "HP: " & $HP)
-
-        ; Calculate and display HP2 (HP / 65536)
-        $HP2 = $HP / 65536
-        GUICtrlSetData($HP2Label, "HP2: " & $HP2)
-
-        $MaxHP = _MemoryRead($MaxHPAddress, $MemOpen, "dword")
-        GUICtrlSetData($MaxHPLabel, "MaxHP: " & $MaxHP)
-
-        ; Get current value from slider (healing threshold)
-        $HealThreshold = GUICtrlRead($ThresholdSlider)
-        GUICtrlSetData($ThresholdLabel, "Heal Threshold: " & $HealThreshold & "%")
-
-        ; If Healer is ON and HP2 is <= HealThreshold% of MaxHP, send "2" key with pottimer delay
-        If $HealerStatus And $HP2 <= ($HealThreshold / 100 * $MaxHP) Then
-            ControlSend("", "", "", "2")
-            Sleep($pottimer) ; Wait for pottimer (2000 ms)
-        EndIf
-
-        ; Attack Mode and No Target Logic
-        If $AttackMode = 1 Then
-            If $Type = -1 Then
-                ; No target found, send Tab key to "Project Rogue Client.exe" window
-                ControlSend("Project Rogue Client.exe", "", "", "{TAB}")
-                Sleep(500)
-            ElseIf $Type = 0 Or $Type = 1 Then
-                ; If target is Player or Monster, wait for 500 ms
-                Sleep(500)
-            ElseIf $Type = 2 Then
-                ; If target is NPC, send "Q" key to "Project Rogue Client.exe" window
-                ControlSend("Project Rogue Client.exe", "", "", "q")
-                Sleep(500)
-            EndIf
-        EndIf
-
-        ; Refresh every 100 ms
-        Sleep(100)
-    WEnd
-
-Else
-    MsgBox(0, "Error", "Project Rogue Client.exe not found.")
-EndIf
+    ; Kill the Rogue process if the Kill button is clicked
+    If $msg = $KillButton Then
+        ProcessClose($ProcessID)
+        Exit
+    EndIf
+WEnd
 
 ; Clean up GUI on exit
 GUIDelete($Gui)
