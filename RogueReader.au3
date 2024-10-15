@@ -150,8 +150,8 @@ If $ProcessID Then
         ; Attack Mode and No Target Logic
         If $AttackMode = 1 Then
             If $Type = -1 Then
-                ; No target found, send Tab key to switch targets
-                ControlSend("", "", "", "{TAB}")
+                ; No target found, send Tab key to "Project Rogue Client.exe" window
+                ControlSend("Project Rogue Client.exe", "", "", "{TAB}")
                 Sleep(500)
             ElseIf $Type = 0 Or $Type = 1 Then
                 ; If target is Player or Monster, wait for 500 ms
