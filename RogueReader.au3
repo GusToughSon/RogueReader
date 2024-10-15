@@ -1,8 +1,9 @@
-#include "MemoryHandler.au3"  ; Handles memory operations
-#include "GUIHandler.au3"      ; Handles GUI creation
+#include "MemoryReader.au3"     ; Memory reading and healer logic
+#include "WaypointHandler.au3"   ; Waypoint navigation and movement logic
+#include "GUIHandler.au3"        ; Handles GUI creation and updates
 #include <Misc.au3>
 
-Global $ProcessID, $MemOpen, $BaseAddress, $HealerStatus, $ThresholdSlider, $ProcessName, $ExitButton  ; Added $ExitButton to global variables
+Global $ProcessID, $MemOpen, $BaseAddress, $HealerStatus, $ThresholdSlider, $ProcessName, $ExitButton, $WaypointCountLabel, $CurrentWaypointLabel
 
 ; Process Name
 $ProcessName = "Project Rogue Client.exe"
@@ -21,9 +22,10 @@ HotKeySet("\", "SetWaypoint")   ; Hotkey to set waypoints
 HotKeySet("]", "WipeWaypoints") ; Hotkey to wipe waypoints
 HotKeySet("/", "StartNavigation") ; Hotkey to start navigation
 HotKeySet("'", "TogglePauseNavigation") ; Hotkey to pause/resume navigation
+HotKeySet("`", "ToggleHealer") ; Set the hotkey for healer functionality (backtick key)
 
 $ProcessID = ProcessExists($ProcessName)
-$MemOpen = OpenMemoryProcess($ProcessID) ; Calls MemoryHandler to open the process
+$MemOpen = OpenMemoryProcess($ProcessID) ; Calls MemoryReader to open the process
 
 If $MemOpen = 0 Then
     MsgBox(0, "Error", "Project Rogue Client.exe not found.")
@@ -55,9 +57,20 @@ While 1
         GUICtrlSetData($CurrentWaypointLabel, "Navigating to Waypoint: N/A")
     EndIf
 
-    ; Handle other logic, such as healer, etc.
-    ProcessLogic($MemOpen, $pottimer, $BaseAddress)  ; Call memory handler
+    ; Handle healer logic and other memory operations
+    ProcessLogic($MemOpen, $pottimer, $BaseAddress)  ; Call memory reader logic
 
     ; Sleep for a short period to avoid hogging CPU
     Sleep(50)
 WEnd
+
+Func ToggleHealer()
+    $HealerStatus = Not $HealerStatus
+    If $HealerStatus Then
+        ConsoleWrite("Healer ON" & @CRLF)
+        GUICtrlSetData($HealerLabel, "Healer: ON")
+    Else
+        ConsoleWrite("Healer OFF" & @CRLF)
+        GUICtrlSetData($HealerLabel, "Healer: OFF")
+    EndIf
+EndFunc

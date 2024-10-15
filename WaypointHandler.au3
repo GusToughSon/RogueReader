@@ -1,71 +1,9 @@
-#include "NomadMemory.au3"
-#include <Misc.au3>
-
 Global $Waypoints[20][2]  ; Array to store up to 20 waypoints (X and Y)
 Global $WaypointCount = 0  ; Keep track of how many waypoints are set
 Global $CurrentWaypoint = 0  ; Track the current waypoint being navigated to
 Global $Navigating = False  ; Flag to track if navigation is active
 Global $Paused = False  ; Flag to track if navigation is paused
-Global $TypeOffset = 0xBEEA34
-Global $AttackModeOffset = 0xAC0D60
-Global $PosXOffset = 0xBF1C58
-Global $PosYOffset = 0xBF1C50
-Global $HPOffset = 0x9BE988
-Global $MaxHPOffset = 0x9BE98C
-Global $WaypointCountLabel, $CurrentWaypointLabel, $BaseAddress, $MemOpen, $ThresholdSlider, $HealerStatus, $ExitButton  ; Declare GUI-related variables and memory access variables
-
-Func OpenMemoryProcess($ProcessID)
-    If $ProcessID Then
-        Return _MemoryOpen($ProcessID)
-    Else
-        Return 0
-    EndIf
-EndFunc
-
-Func GetBaseAddress($hProcess)
-    Local $hMod = DllStructCreate("ptr") ; Create a structure for a pointer (64-bit)
-    Local $moduleSize = DllStructGetSize($hMod)
-
-    ; Call EnumProcessModules to list modules
-    Local $aModules = DllCall("psapi.dll", "int", "EnumProcessModulesEx", "ptr", $hProcess, "ptr", DllStructGetPtr($hMod), "dword", $moduleSize, "dword*", 0, "dword", 0x03)
-
-    If @error Or $aModules[0] = 0 Then
-        Return 0
-    EndIf
-
-    ; Retrieve the base address from the module
-    $BaseAddress = DllStructGetData($hMod, 1)
-    Return $BaseAddress
-EndFunc
-
-Func ProcessLogic($MemOpen, $pottimer, $BaseAddress)
-    ; Ensure $BaseAddress has been properly set
-    If $BaseAddress = 0 Then
-        Return
-    EndIf
-
-    ; Read memory and process game logic
-    $Type = _MemoryRead($BaseAddress + $TypeOffset, $MemOpen, "dword")
-    $AttackMode = _MemoryRead($BaseAddress + $AttackModeOffset, $MemOpen, "dword")
-    $PosX = _MemoryRead($BaseAddress + $PosXOffset, $MemOpen, "dword")
-    $PosY = _MemoryRead($BaseAddress + $PosYOffset, $MemOpen, "dword")
-    $HP = _MemoryRead($BaseAddress + $HPOffset, $MemOpen, "dword")
-    $MaxHP = _MemoryRead($BaseAddress + $MaxHPOffset, $MemOpen, "dword")
-
-    ; Update GUI with the new data (using GUIHandler functions)
-    UpdateGUI($Type, $AttackMode, $PosX, $PosY, $HP, $MaxHP)
-
-    ; Handle healer logic
-    If $HealerStatus And ($HP / 65536) <= (GUICtrlRead($ThresholdSlider) / 100 * $MaxHP) Then
-        Send("2")
-        Sleep($pottimer)
-    EndIf
-
-    ; Handle navigation logic
-    If $Navigating Then
-        ; Perform navigation logic using the waypoints
-    EndIf
-EndFunc
+Global $BaseAddress, $MemOpen, $WaypointCountLabel, $CurrentWaypointLabel
 
 Func SetWaypoint()
     If $WaypointCount < 20 Then
@@ -126,7 +64,7 @@ Func StartNavigation()
         MoveToWaypoint($Waypoints[$i][0], $Waypoints[$i][1])
 
         ; Random pause between waypoints
-        Sleep(Random(500, 1500))  ; Reduced from 2000-5000 ms to 500-1500 ms
+        Sleep(Random(500, 1500))
     Next
 
     ; Navigate in reverse back to the first waypoint
@@ -136,7 +74,7 @@ Func StartNavigation()
         $CurrentWaypoint = $i + 1
         GUICtrlSetData($CurrentWaypointLabel, "Navigating to Waypoint: " & $CurrentWaypoint)
         MoveToWaypoint($Waypoints[$i][0], $Waypoints[$i][1])
-        Sleep(Random(500, 1500))  ; Reduced from 2000-5000 ms to 500-1500 ms
+        Sleep(Random(500, 1500))
     Next
 
     $Navigating = False
@@ -151,20 +89,6 @@ Func MoveToWaypoint($TargetX, $TargetY)
         If Not $Navigating Then
             ConsoleWrite("Navigation stopped." & @CRLF)
             ExitLoop
-        EndIf
-
-        ; Check if the Exit button was clicked
-        $msg = GUIGetMsg()
-        If $msg = $ExitButton Then
-            ConsoleWrite("Exit button clicked. Exiting navigation." & @CRLF)
-            _MemoryClose($MemOpen)  ; Close memory handle
-            Exit                    ; Exit the script
-        EndIf
-
-        If $Paused Then
-            ConsoleWrite("Navigation paused." & @CRLF)
-            Sleep(500)  ; Sleep while paused to avoid hogging CPU
-            ContinueLoop
         EndIf
 
         ; Read current position from memory
