@@ -1,6 +1,7 @@
 #include <GUIConstantsEx.au3>
 
 Global $Gui, $TypeLabel, $AttackModeLabel, $PosXLabel, $PosYLabel, $HPLabel, $HP2Label, $MaxHPLabel, $HealerLabel, $ThresholdSlider, $KillButton, $ExitButton
+Global $WaypointCountLabel, $CurrentWaypointLabel
 
 Func CreateGUI()
     ; Create the GUI with the title "RogueReader"
@@ -13,6 +14,8 @@ Func CreateGUI()
     $HP2Label = GUICtrlCreateLabel("HP2: N/A", 20, 180, 250, 20)
     $MaxHPLabel = GUICtrlCreateLabel("MaxHP: N/A", 20, 210, 250, 20)
     $HealerLabel = GUICtrlCreateLabel("Healer: OFF", 20, 240, 250, 20)
+    $WaypointCountLabel = GUICtrlCreateLabel("Waypoints: 0", 20, 270, 250, 20)
+    $CurrentWaypointLabel = GUICtrlCreateLabel("Navigating to Waypoint: N/A", 20, 300, 250, 20)
     $ThresholdSlider = GUICtrlCreateSlider(20, 330, 200, 30)
     GUICtrlSetLimit($ThresholdSlider, 100, 0)
     GUICtrlSetData($ThresholdSlider, 95)

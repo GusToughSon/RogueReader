@@ -1,7 +1,11 @@
 #include "MemoryHandler.au3"  ; Handles memory operations
 #include "GUIHandler.au3"      ; Handles GUI creation
+#include <Misc.au3>
 
-Global $ProcessID, $MemOpen, $BaseAddress, $HealerStatus, $ThresholdSlider  ; Declare necessary global variables
+Global $ProcessID, $MemOpen, $BaseAddress, $HealerStatus, $ThresholdSlider, $ProcessName  ; Declare necessary global variables
+
+; Process Name
+$ProcessName = "Project Rogue Client.exe"
 
 ; Pot timer (pottimer) set to 2000 ms
 Global $pottimer = 2000
@@ -32,21 +36,22 @@ EndIf
 While 1
     $msg = GUIGetMsg()
 
-    ; Handle memory reading and logic
-    ProcessLogic($MemOpen, $pottimer, $BaseAddress)  ; Pass the base address to the handler
-
-    ; Exit the script if the Exit button is clicked
+    ; Check if the Exit button is clicked
     If $msg = $ExitButton Then
-        _MemoryClose($MemOpen) ; Close memory handle
-        Exit
+        _MemoryClose($MemOpen)  ; Close memory handle
+        Exit                    ; Exit the script
     EndIf
 
-    ; Kill the Rogue process if the Kill button is clicked
-    If $msg = $KillButton Then
-        ProcessClose($ProcessID)
-        Exit
+    ; Check if attack mode switches to safe, stop navigation
+    $AttackMode = _MemoryRead($BaseAddress + $AttackModeOffset, $MemOpen, "dword")
+    If $AttackMode = 0 Then
+        $Navigating = False
+        GUICtrlSetData($CurrentWaypointLabel, "Navigating to Waypoint: N/A")
     EndIf
+
+    ; Handle other logic, such as healer, etc.
+    ProcessLogic($MemOpen, $pottimer, $BaseAddress)  ; Call memory handler
+
+    ; Sleep for a short period to avoid hogging CPU
+    Sleep(50)
 WEnd
-
-; Clean up GUI on exit
-GUIDelete($Gui)
