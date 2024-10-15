@@ -156,6 +156,10 @@ If $ProcessID Then
             ElseIf $Type = 0 Or $Type = 1 Then
                 ; If target is Player or Monster, wait for 500 ms
                 Sleep(500)
+            ElseIf $Type = 2 Then
+                ; If target is NPC, send "Q" key to "Project Rogue Client.exe" window
+                ControlSend("Project Rogue Client.exe", "", "", "q")
+                Sleep(500)
             EndIf
         EndIf
 
