@@ -12,7 +12,7 @@ Global $PosXOffset = 0xBF1C58
 Global $PosYOffset = 0xBF1C50
 Global $HPOffset = 0x9BE988
 Global $MaxHPOffset = 0x9BE98C
-Global $WaypointCountLabel, $CurrentWaypointLabel, $BaseAddress, $MemOpen, $ThresholdSlider, $HealerStatus  ; Declare GUI-related variables and memory access variables
+Global $WaypointCountLabel, $CurrentWaypointLabel, $BaseAddress, $MemOpen, $ThresholdSlider, $HealerStatus, $ExitButton  ; Declare GUI-related variables and memory access variables
 
 Func OpenMemoryProcess($ProcessID)
     If $ProcessID Then
@@ -74,8 +74,7 @@ Func SetWaypoint()
 
         ; Check if the new waypoint is the same as the previous one
         If $WaypointCount > 0 And $Waypoints[$WaypointCount - 1][0] = $PosX And $Waypoints[$WaypointCount - 1][1] = $PosY Then
-            MsgBox(0, "Duplicate Waypoint", "This waypoint is the same as the last one. Please set a different location.")
-            Return
+            Return  ; Ignore if the waypoint is a duplicate
         EndIf
 
         ; Add new waypoint
@@ -86,7 +85,6 @@ Func SetWaypoint()
         ; Update GUI with waypoint count
         GUICtrlSetData($WaypointCountLabel, "Waypoints: " & $WaypointCount)
 
-        MsgBox(0, "Waypoint Set", "Waypoint #" & $WaypointCount & " set at X: " & $PosX & ", Y: " & $PosY)
     Else
         MsgBox(0, "Error", "Maximum number of waypoints reached.")
     EndIf
@@ -146,49 +144,84 @@ Func StartNavigation()
 EndFunc
 
 Func MoveToWaypoint($TargetX, $TargetY)
+    ConsoleWrite("Starting navigation to Waypoint - Target X: " & $TargetX & ", Target Y: " & $TargetY & @CRLF)
+
     While True
-        ; Break if navigation is paused or stopped
-        If Not $Navigating Or $Paused Then ExitLoop
-
-        ; Read current position
-        $PosX = _MemoryRead($BaseAddress + $PosXOffset, $MemOpen, "dword")
-        $PosY = _MemoryRead($BaseAddress + $PosYOffset, $MemOpen, "dword")
-
-        ; Calculate distance to target
-        $DeltaX = $TargetX - $PosX
-        $DeltaY = $TargetY - $PosY
-
-        ; If we are within ±5 coordinates, stop moving
-        If Abs($DeltaX) <= 5 And Abs($DeltaY) <= 5 Then
+        ; Check if navigation is paused or stopped
+        If Not $Navigating Then
+            ConsoleWrite("Navigation stopped." & @CRLF)
             ExitLoop
         EndIf
 
-        ; Move left or right
-        If $DeltaX > 5 Then
-            Send("d")  ; Move right
-        ElseIf $DeltaX < -5 Then
-            Send("a")  ; Move left
+        ; Check if the Exit button was clicked
+        $msg = GUIGetMsg()
+        If $msg = $ExitButton Then
+            ConsoleWrite("Exit button clicked. Exiting navigation." & @CRLF)
+            _MemoryClose($MemOpen)  ; Close memory handle
+            Exit                    ; Exit the script
         EndIf
 
-        ; Move up or down
-        If $DeltaY > 5 Then
-            Send("w")  ; Move up
-        ElseIf $DeltaY < -5 Then
-            Send("s")  ; Move down
+        If $Paused Then
+            ConsoleWrite("Navigation paused." & @CRLF)
+            Sleep(500)  ; Sleep while paused to avoid hogging CPU
+            ContinueLoop
         EndIf
 
-        ; Sleep for a short period before checking again
-        Sleep(100)
+        ; Read current position from memory
+        $PosX = _MemoryRead($BaseAddress + $PosXOffset, $MemOpen, "dword")
+        $PosY = _MemoryRead($BaseAddress + $PosYOffset, $MemOpen, "dword")
+
+        ; Log current position
+        ConsoleWrite("Current Position - X: " & $PosX & ", Y: " & $PosY & @CRLF)
+
+        ; Calculate the differences (deltas) between current and target positions
+        $DeltaX = $TargetX - $PosX
+        $DeltaY = $TargetY - $PosY
+
+        ; Log the calculated deltas
+        ConsoleWrite("Calculated Delta - X: " & $DeltaX & ", Y: " & $DeltaY & @CRLF)
+
+        ; Check if we've reached the target
+        If Abs($DeltaX) <= 5 And Abs($DeltaY) <= 5 Then
+            ConsoleWrite("Reached waypoint. Stopping movement." & @CRLF)
+            ExitLoop
+        EndIf
+
+        ; Prioritize movement based on the larger delta (either X or Y)
+        If Abs($DeltaX) > Abs($DeltaY) Then
+            ; Handle X movement first
+            If $DeltaX < -5 Then
+                ConsoleWrite("Moving up (W = -X)" & @CRLF)
+                Send("w")  ; Move up by decreasing X
+            ElseIf $DeltaX > 5 Then
+                ConsoleWrite("Moving down (S = +X)" & @CRLF)
+                Send("s")  ; Move down by increasing X
+            EndIf
+        Else
+            ; Handle Y movement
+            If $DeltaY < -5 Then
+                ConsoleWrite("Moving left (A = -Y)" & @CRLF)
+                Send("a")  ; Move left by decreasing Y
+            ElseIf $DeltaY > 5 Then
+                ConsoleWrite("Moving right (D = +Y)" & @CRLF)
+                Send("d")  ; Move right by increasing Y
+            EndIf
+        EndIf
+
+        ; Sleep briefly before checking again
+        Sleep(200)
     WEnd
+
+    ConsoleWrite("Finished navigating to waypoint." & @CRLF)
 EndFunc
 
 Func TogglePauseNavigation()
     If $Navigating Then
         $Paused = Not $Paused
         If $Paused Then
-            MsgBox(0, "Navigation Paused", "Navigation has been paused.")
+            ConsoleWrite("Navigation Paused." & @CRLF)
         Else
-            MsgBox(0, "Navigation Resumed", "Navigation has resumed.")
+            ConsoleWrite("Navigation Resumed." & @CRLF)
         EndIf
     EndIf
 EndFunc

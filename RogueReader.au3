@@ -2,7 +2,7 @@
 #include "GUIHandler.au3"      ; Handles GUI creation
 #include <Misc.au3>
 
-Global $ProcessID, $MemOpen, $BaseAddress, $HealerStatus, $ThresholdSlider, $ProcessName  ; Declare necessary global variables
+Global $ProcessID, $MemOpen, $BaseAddress, $HealerStatus, $ThresholdSlider, $ProcessName, $ExitButton  ; Added $ExitButton to global variables
 
 ; Process Name
 $ProcessName = "Project Rogue Client.exe"
@@ -15,6 +15,12 @@ $HealerStatus = False
 
 ; Create GUI and start the main loop
 CreateGUI()  ; Calls GUIHandler to create the GUI
+
+; Set Hotkeys
+HotKeySet("\", "SetWaypoint")   ; Hotkey to set waypoints
+HotKeySet("]", "WipeWaypoints") ; Hotkey to wipe waypoints
+HotKeySet("/", "StartNavigation") ; Hotkey to start navigation
+HotKeySet("'", "TogglePauseNavigation") ; Hotkey to pause/resume navigation
 
 $ProcessID = ProcessExists($ProcessName)
 $MemOpen = OpenMemoryProcess($ProcessID) ; Calls MemoryHandler to open the process
