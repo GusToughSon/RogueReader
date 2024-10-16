@@ -40,9 +40,3 @@
 
 - Make sure you have healing items set to the **"2" key** in your game so that the healer can use them automatically when needed.
 """
-
-# Saving the readme to a file
-with open("/mnt/data/README.md", "w") as readme_file:
-    readme_file.write(readme_content)
-
-"/mnt/data/README.md"
