@@ -6,6 +6,10 @@
 Global $pottimer = 2000
 Global $DebugMode = False ; Debug mode is now set to False by default
 Global $configFile = @ScriptDir & "\config.ini" ; Path to the config file
+Global $HealerStatus = False
+
+; Register the hotkey "`" to toggle healer on and off
+HotKeySet("`", "ToggleHealer")
 
 ; Check if the config file exists, if not, create it and set default slider value to 95
 If Not FileExists($configFile) Then
@@ -37,8 +41,6 @@ $KillButton = GUICtrlCreateButton("Kill Rogue", 20, 400, 100, 30)
 $ExitButton = GUICtrlCreateButton("Exit", 150, 400, 100, 30)
 GUISetState(@SW_SHOW)
 
-Global $HealerStatus = False
-
 $ProcessID = ProcessExists("Project Rogue Client.exe")
 If $ProcessID Then
     If $DebugMode Then ConsoleWrite("Process found. Process ID: " & $ProcessID & @CRLF)
@@ -57,6 +59,7 @@ If $ProcessID Then
 
     $TypeAddress = $BaseAddress + 0xBEEA34
     $AttackModeAddress = $BaseAddress + 0xAC0D60
+    $ChatStatusAddress = $BaseAddress + 0x9B5998 ; Chat memory address
     $PosXAddress = $BaseAddress + 0xBF1C6C
     $PosYAddress = $BaseAddress + 0xBF1C64
     $HPAddress = $BaseAddress + 0x9BE988
@@ -77,19 +80,19 @@ If $ProcessID Then
                 Exit
         EndSelect
 
-        If _IsPressed("C0") Then
-            $HealerStatus = Not $HealerStatus
-            GUICtrlSetData($HealerLabel, "Healer: " & ($HealerStatus ? "ON" : "OFF"))
-            Sleep(300)
-        EndIf
-
         ; Update the slider percentage label dynamically
         $SliderValue = GUICtrlRead($Slider)
         GUICtrlSetData($SliderLabel, "Heal if HP below: " & $SliderValue & "%")
 
-        ; Reading memory for Type and Attack Mode
+        ; Reading memory for Type, Attack Mode, and Chat Status
         $Type = _MemoryRead($TypeAddress, $MemOpen, "dword")
         $AttackMode = _MemoryRead($AttackModeAddress, $MemOpen, "dword")
+        $ChatStatus = _MemoryRead($ChatStatusAddress, $MemOpen, "dword")
+
+        ; Debugging for Attack Mode, Type, and Chat Status
+        If $DebugMode Then
+            ConsoleWrite("Attack Mode: " & $AttackMode & " | Type: " & $Type & " | Chat Status: " & $ChatStatus & @CRLF)
+        EndIf
 
         Switch $Type
             Case 0
@@ -98,19 +101,28 @@ If $ProcessID Then
                 GUICtrlSetData($TypeLabel, "Type: Monster")
             Case 2
                 GUICtrlSetData($TypeLabel, "Type: NPC")
+            Case 65535
+                GUICtrlSetData($TypeLabel, "Type: No Target")
             Case Else
-                GUICtrlSetData($TypeLabel, "Type: No Target (" & $Type & ")") ; Display value after Type
+                GUICtrlSetData($TypeLabel, "Type: Unknown (" & $Type & ")")
         EndSwitch
 
         ; Attack Mode status update
         GUICtrlSetData($AttackModeLabel, "Attack Mode: " & ($AttackMode ? "Attack" : "Safe"))
 
-        ; If Attack Mode is "Attack" and Type is "No Target," send "tab" to switch target, but only if Project Rogue is the active window
-        If $AttackMode = 1 And $Type > 2 Then
-            If WinActive("Project Rogue Client") Then
-                ControlSend("", "", "", "{TAB}")
+        ; Tab Targeting for No Target (65535), only if chat is not open
+        If $AttackMode = 1 And $Type = 65535 And $ChatStatus = 0 Then
+            If $DebugMode Then ConsoleWrite("No target, sending TAB to acquire a target." & @CRLF)
+            If WinActive("Project Rogue") Then
+                ControlSend("Project Rogue", "", "", "{TAB}")
                 Sleep(100)
+            Else
+                If $DebugMode Then ConsoleWrite("Project Rogue is not the active window." & @CRLF)
             EndIf
+        ElseIf $ChatStatus = 1 Then
+            If $DebugMode Then ConsoleWrite("Chat is open, pausing tab targeting." & @CRLF)
+        ElseIf $AttackMode = 1 And ($Type = 0 Or $Type = 1) Then
+            If $DebugMode Then ConsoleWrite("Player or Monster is targeted, no TAB sent." & @CRLF)
         EndIf
 
         ; Read and display PosX, PosY, HP, and MaxHP
@@ -129,13 +141,15 @@ If $ProcessID Then
         $HP2 = $HP / 65536
         GUICtrlSetData($HP2Label, "HP2: " & $HP2)
 
-        ; Continue healing logic, using the slider value for the dynamic heal threshold
-        If $HealerStatus And $HP2 <= ($SliderValue / 100 * $MaxHP) Then
+        ; Continue healing logic, using the slider value for the dynamic heal threshold, and pause if chat is open
+        If $HealerStatus And $ChatStatus = 0 And $HP2 <= ($SliderValue / 100 * $MaxHP) Then
             ControlSend("", "", "", "2")
             Sleep($pottimer)
+        ElseIf $ChatStatus = 1 Then
+            If $DebugMode Then ConsoleWrite("Chat is open, pausing healing." & @CRLF)
         EndIf
 
-        Sleep(100)
+        Sleep(50) ; Short sleep to make the script responsive
     WEnd
 Else
     MsgBox(0, "Error", "Project Rogue Client.exe not found.")
@@ -153,4 +167,9 @@ Func _EnumProcessModules($hProcess)
     Else
         Return 0
     EndIf
+EndFunc
+
+Func ToggleHealer()
+    $HealerStatus = Not $HealerStatus
+    GUICtrlSetData($HealerLabel, "Healer: " & ($HealerStatus ? "ON" : "OFF"))
 EndFunc
