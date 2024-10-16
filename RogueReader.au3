@@ -5,13 +5,16 @@
 #include <Array.au3>
 
 ; ---------------------------- Global Variables ----------------------------
-Global $DebugMode = 0 ; Enable debugging output
+Global $DebugMode = 1 ; Enable debugging output (set to 1 to turn on, 0 to turn off)
 Global $configFile = @ScriptDir & "\config.ini" ; Path to the config file
 Global $HealerStatus = False
 Global $HealerHotkey = "`" ; Default hotkey for healer
 Global $RefreshRate = 50 ; Default refresh rate (50ms)
 Global $pottimer = 2000
 Global $gameWindowHandle ; To hold the window handle for "Project Rogue"
+Global $ExitButton, $KillButton, $ChangeHotkeyButton
+Global $TypeLabel, $AttackModeLabel, $PosXLabel, $PosYLabel, $HPLabel, $MaxHPLabel, $ChatStatusLabel, $SliderLabel, $Slider, $RefreshSlider, $RefreshLabel
+Global $MemOpen, $ProcessID
 
 ; ---------------------------- Memory Debugging Setup ----------------------------
 $ProcessID = ProcessExists("Project Rogue Client.exe")
@@ -37,20 +40,20 @@ If $ProcessID Then
     $MaxHPAddress = $BaseAddress + 0x9BE98C
     $ChatStatusAddress = $BaseAddress + 0x9B5998 ; Address for chat status
 
-    ; Debug output for calculated memory addresses
     If $DebugMode Then
-        ConsoleWrite("Calculated Type Address: " & Hex($TypeAddress) & @CRLF)
-        ConsoleWrite("Calculated Attack Mode Address: " & Hex($AttackModeAddress) & @CRLF)
-        ConsoleWrite("Calculated PosX Address: " & Hex($PosXAddress) & @CRLF)
-        ConsoleWrite("Calculated PosY Address: " & Hex($PosYAddress) & @CRLF)
-        ConsoleWrite("Calculated HP Address: " & Hex($HPAddress) & @CRLF)
-        ConsoleWrite("Calculated MaxHP Address: " & Hex($MaxHPAddress) & @CRLF)
-        ConsoleWrite("Calculated Chat Status Address: " & Hex($ChatStatusAddress) & @CRLF)
+        ConsoleWrite("Memory addresses calculated: " & @CRLF)
+        ConsoleWrite("Type Address: " & Hex($TypeAddress) & @CRLF)
+        ConsoleWrite("Attack Mode Address: " & Hex($AttackModeAddress) & @CRLF)
+        ConsoleWrite("Pos X Address: " & Hex($PosXAddress) & @CRLF)
+        ConsoleWrite("Pos Y Address: " & Hex($PosYAddress) & @CRLF)
+        ConsoleWrite("HP Address: " & Hex($HPAddress) & @CRLF)
+        ConsoleWrite("Max HP Address: " & Hex($MaxHPAddress) & @CRLF)
+        ConsoleWrite("Chat Status Address: " & Hex($ChatStatusAddress) & @CRLF)
     EndIf
 
     ; Get the window handle for Project Rogue
     $gameWindowHandle = WinGetHandle("Project Rogue")
-    If $gameWindowHandle = "" Then
+    If $gameWindowHandle = "" Or Not WinExists($gameWindowHandle) Then
         MsgBox(0, "Error", "Game window not found.")
         Exit
     Else
@@ -62,38 +65,88 @@ Else
     Exit
 EndIf
 
+; ---------------------------- EnumProcessModules Function ----------------------------
+Func _EnumProcessModules($hProcess)
+    Local $hMod = DllStructCreate("ptr")
+    Local $moduleSize = DllStructGetSize($hMod)
+
+    Local $aModules = DllCall("psapi.dll", "int", "EnumProcessModulesEx", "ptr", $hProcess, "ptr", DllStructGetPtr($hMod), "dword", $moduleSize, "dword*", 0, "dword", 0x03)
+
+    If IsArray($aModules) And $aModules[0] <> 0 Then
+        Return DllStructGetData($hMod, 1)
+    Else
+        Return 0
+    EndIf
+EndFunc
+
 ; ---------------------------- GUI Creation ----------------------------
 $Gui = GUICreate("RogueReader", 450, 600, 15, 15) ; Increased height for the new chat status and buttons
-Local $TypeLabel = GUICtrlCreateLabel("Type: N/A", 20, 30, 250, 20)
-Local $AttackModeLabel = GUICtrlCreateLabel("Attack Mode: N/A", 20, 60, 250, 20)
-Local $PosXLabel = GUICtrlCreateLabel("Pos X: N/A", 20, 90, 250, 20)
-Local $PosYLabel = GUICtrlCreateLabel("Pos Y: N/A", 20, 120, 250, 20)
-Local $HPLabel = GUICtrlCreateLabel("HP: N/A", 20, 150, 250, 20)
-Local $MaxHPLabel = GUICtrlCreateLabel("MaxHP: N/A", 20, 180, 250, 20)
-Local $ChatStatusLabel = GUICtrlCreateLabel("Chat: N/A", 20, 210, 250, 20) ; New chat status label
-Local $HealerLabel = GUICtrlCreateLabel("Healer: OFF", 20, 240, 250, 20)
-Local $HotkeyLabel = GUICtrlCreateLabel("Healer Hotkey: " & $HealerHotkey, 20, 270, 250, 20)
+$TypeLabel = GUICtrlCreateLabel("Type: N/A", 20, 30, 250, 20)
+$AttackModeLabel = GUICtrlCreateLabel("Attack Mode: N/A", 20, 60, 250, 20)
+$PosXLabel = GUICtrlCreateLabel("Pos X: N/A", 20, 90, 250, 20)
+$PosYLabel = GUICtrlCreateLabel("Pos Y: N/A", 20, 120, 250, 20)
+$HPLabel = GUICtrlCreateLabel("HP: N/A", 20, 150, 250, 20)
+$MaxHPLabel = GUICtrlCreateLabel("MaxHP: N/A", 20, 180, 250, 20)
+$ChatStatusLabel = GUICtrlCreateLabel("Chat: N/A", 20, 210, 250, 20) ; New chat status label
+$HealerLabel = GUICtrlCreateLabel("Healer: OFF", 20, 240, 250, 20)
+$HotkeyLabel = GUICtrlCreateLabel("Healer Hotkey: " & $HealerHotkey, 20, 270, 250, 20)
 
 ; Button to change the healer hotkey
-Local $ChangeHotkeyButton = GUICtrlCreateButton("Change Healer Hotkey", 280, 270, 150, 30)
+$ChangeHotkeyButton = GUICtrlCreateButton("Change Healer Hotkey", 280, 270, 150, 30)
 
 ; Slider for dynamic healing percentage
-Local $SliderLabel = GUICtrlCreateLabel("Heal if HP below: 95%", 20, 310, 250, 20)
-Local $Slider = GUICtrlCreateSlider(20, 340, 200, 30)
+$SliderLabel = GUICtrlCreateLabel("Heal if HP below: 95%", 20, 310, 250, 20)
+$Slider = GUICtrlCreateSlider(20, 340, 200, 30)
 GUICtrlSetLimit($Slider, 100, 50) ; Limit the slider between 50% and 100%
 GUICtrlSetData($Slider, 95)
 
 ; Slider for refresh rate (50ms to 150ms)
-Local $RefreshLabel = GUICtrlCreateLabel("Refresh Rate: 50ms", 20, 390, 250, 20)
-Local $RefreshSlider = GUICtrlCreateSlider(20, 420, 200, 30)
+$RefreshLabel = GUICtrlCreateLabel("Refresh Rate: 50ms", 20, 390, 250, 20)
+$RefreshSlider = GUICtrlCreateSlider(20, 420, 200, 30)
 GUICtrlSetLimit($RefreshSlider, 150, 50) ; 50ms to 150ms
 GUICtrlSetData($RefreshSlider, $RefreshRate)
 
 ; Buttons to close Rogue and Exit
-Local $KillButton = GUICtrlCreateButton("Kill Rogue", 20, 480, 100, 30)
-Local $ExitButton = GUICtrlCreateButton("Exit", 150, 480, 100, 30)
+$KillButton = GUICtrlCreateButton("Kill Rogue", 20, 480, 100, 30)
+$ExitButton = GUICtrlCreateButton("Exit", 150, 480, 100, 30)
 
 GUISetState(@SW_SHOW)
+
+; ---------------------------- Load Settings Function ----------------------------
+Func LoadSettings()
+    If $DebugMode Then ConsoleWrite("Loading settings from config file..." & @CRLF)
+
+    ; Load heal percentage
+    $HealPercentage = IniRead($configFile, "Settings", "HealPercentage", 95)
+    GUICtrlSetData($Slider, $HealPercentage)
+    If $DebugMode Then ConsoleWrite("Loaded Heal Percentage: " & $HealPercentage & @CRLF)
+
+    ; Load refresh rate
+    $RefreshRate = IniRead($configFile, "Settings", "RefreshRate", 50)
+    GUICtrlSetData($RefreshSlider, $RefreshRate)
+    If $DebugMode Then ConsoleWrite("Loaded Refresh Rate: " & $RefreshRate & " ms" & @CRLF)
+
+    ; Load healer hotkey
+    $HealerHotkey = IniRead($configFile, "Settings", "HealerHotkey", "`")
+    GUICtrlSetData($HotkeyLabel, "Healer Hotkey: " & $HealerHotkey)
+    HotKeySet($HealerHotkey, "ToggleHealer")
+    If $DebugMode Then ConsoleWrite("Loaded Healer Hotkey: " & $HealerHotkey & @CRLF)
+EndFunc
+
+; ---------------------------- Save Settings Function ----------------------------
+Func SaveSettings()
+    If $DebugMode Then ConsoleWrite("Saving settings to config file..." & @CRLF)
+
+    ; Save the slider values to the config file
+    IniWrite($configFile, "Settings", "HealPercentage", GUICtrlRead($Slider))
+    IniWrite($configFile, "Settings", "RefreshRate", GUICtrlRead($RefreshSlider))
+    IniWrite($configFile, "Settings", "HealerHotkey", $HealerHotkey)
+
+    If $DebugMode Then ConsoleWrite("Settings saved successfully!" & @CRLF)
+EndFunc
+
+; Load settings AFTER GUI creation
+LoadSettings()
 
 ; ---------------------------- Main Loop ----------------------------
 While 1
@@ -115,104 +168,85 @@ While 1
     EndSelect
 
     ; Read memory values with debug outputs
-    Local $Type = _MemoryRead($TypeAddress, $MemOpen, "dword")
-    Local $AttackMode = _MemoryRead($AttackModeAddress, $MemOpen, "dword")
-    Local $PosX = _MemoryRead($PosXAddress, $MemOpen, "dword")
-    Local $PosY = _MemoryRead($PosYAddress, $MemOpen, "dword")
-    Local $HP = _MemoryRead($HPAddress, $MemOpen, "dword")
-    Local $MaxHP = _MemoryRead($MaxHPAddress, $MemOpen, "dword")
-    Local $ChatStatus = _MemoryRead($ChatStatusAddress, $MemOpen, "dword") ; Reading chat status
+    Local $Type = ReadType()
+    Local $AttackMode = ReadAttackMode()
+    Local $PosX = ReadPosX()
+    Local $PosY = ReadPosY()
+    Local $HP = ReadHP()
+    Local $MaxHP = ReadMaxHP()
+    Local $ChatStatus = ReadChatStatus()
 
-    ; Debug output for memory values
-    If $DebugMode Then
-        ConsoleWrite("Type: " & $Type & @CRLF)
-        ConsoleWrite("Attack Mode: " & $AttackMode & @CRLF)
-        ConsoleWrite("PosX: " & $PosX & @CRLF)
-        ConsoleWrite("PosY: " & $PosY & @CRLF)
-        ConsoleWrite("HP: " & $HP & @CRLF)
-        ConsoleWrite("MaxHP: " & $MaxHP & @CRLF)
-        ConsoleWrite("Chat Status: " & $ChatStatus & @CRLF)
-    EndIf
+    ; ---------------- GUI Updates ----------------
+    ; Ensure GUI is updated after reading memory values
 
-    ; Update the GUI labels based on conditions for Type and Attack Mode
-    If $Type = 65536 Then
-        GUICtrlSetData($TypeLabel, "Type: None")
-    ElseIf $Type = 1 Then
-        GUICtrlSetData($TypeLabel, "Type: Monster")
-    ElseIf $Type = 2 Then
-        GUICtrlSetData($TypeLabel, "Type: Player")
-    Else
-        GUICtrlSetData($TypeLabel, "Type: N/A")
-    EndIf
+    ; Update the GUI with correct values
+    GUICtrlSetData($TypeLabel, "Type: " & $Type)
+    GUICtrlSetData($AttackModeLabel, "Attack Mode: " & $AttackMode)
+    GUICtrlSetData($PosXLabel, "Pos X: " & $PosX)
+    GUICtrlSetData($PosYLabel, "Pos Y: " & $PosY)
+    GUICtrlSetData($HPLabel, "HP: " & $HP)
+    GUICtrlSetData($MaxHPLabel, "MaxHP: " & $MaxHP)
 
-    If $AttackMode = 1 Then
-        GUICtrlSetData($AttackModeLabel, "Attack Mode: Attack")
-    ElseIf $AttackMode = 0 Then
-        GUICtrlSetData($AttackModeLabel, "Attack Mode: Safe")
-    Else
-        GUICtrlSetData($AttackModeLabel, "Attack Mode: N/A")
-    EndIf
-
-    ; Update Chat Status in GUI
+    ; Update Chat Status Label
     If $ChatStatus = 0 Then
         GUICtrlSetData($ChatStatusLabel, "Chat: Closed")
     ElseIf $ChatStatus = 1 Then
         GUICtrlSetData($ChatStatusLabel, "Chat: Open")
     EndIf
 
-    ; Update other GUI labels
-    GUICtrlSetData($PosXLabel, "Pos X: " & $PosX)
-    GUICtrlSetData($PosYLabel, "Pos Y: " & $PosY)
-    GUICtrlSetData($HPLabel, "HP: " & $HP)
-    GUICtrlSetData($MaxHPLabel, "MaxHP: " & $MaxHP)
-
-    ; Update sliders
-    Local $SliderValue = GUICtrlRead($Slider)
-    GUICtrlSetData($SliderLabel, "Heal if HP below: " & $SliderValue & "%")
-
-    $RefreshRate = GUICtrlRead($RefreshSlider)
-    GUICtrlSetData($RefreshLabel, "Refresh Rate: " & $RefreshRate & "ms")
-
-    ; Tab Targeting Debugging and Sending Tab in Background
-    If $AttackMode = 1 And $Type = 65535 And $ChatStatus = 0 Then
-        ; Use ControlSend to send the Tab key to the background window
-        If $DebugMode Then ConsoleWrite("Sending Tab to background window..." & @CRLF)
-        ControlSend($gameWindowHandle, "", "", "{TAB}")
-        Sleep(100)
+    ; Debug to ensure values are correct
+    If $DebugMode Then
+        ConsoleWrite("Type: " & $Type & @CRLF)
+        ConsoleWrite("Attack Mode: " & $AttackMode & @CRLF)
+        ConsoleWrite("HP: " & $HP & " MaxHP: " & $MaxHP & @CRLF)
+        ConsoleWrite("Pos X: " & $PosX & " Pos Y: " & $PosY & @CRLF)
+        ConsoleWrite("Chat Status: " & $ChatStatus & @CRLF)
     EndIf
 
-    ; Healing Logic with Debugging
-    Local $HP2 = Round($HP / 65536, 2)
-    If $HealerStatus And $ChatStatus = 0 And $HP2 <= ($SliderValue / 100 * $MaxHP) Then
-        If $DebugMode Then ConsoleWrite("Healing... HP is below threshold." & @CRLF)
-        ControlSend("", "", "", "2")
-        Sleep($pottimer)
+    ; ---------------- Healing Logic ----------------
+    Local $SliderValue = GUICtrlRead($Slider) ; Get the heal percentage from the slider
+
+    ; Calculate HP percentage
+    If $MaxHP > 0 Then
+        Local $HPPercentage = ($HP / $MaxHP) * 100
+
+        ; If the healer is on, chat is closed, and HP is below the threshold, heal
+        If $HealerStatus And $ChatStatus = 0 And $HPPercentage <= $SliderValue Then
+            If $DebugMode Then ConsoleWrite("Healing... HP is below threshold." & @CRLF)
+
+            ; Send the key press for healing (default: key "2")
+            ControlSend($gameWindowHandle, "", "", "2")
+
+            ; Sleep to prevent spamming the heal action too fast
+            Sleep($pottimer)
+        EndIf
+    EndIf
+
+    ; Update the GUI labels
+    GUICtrlSetData($SliderLabel, "Heal if HP below: " & $SliderValue & "%")
+
+    ; ------------------- Tab Targeting Logic -------------------
+    If ($AttackMode = 1 And ($Type = 65535 Or $Type = 0) And $ChatStatus = 0) Then
+        If $DebugMode Then ConsoleWrite("Tab Targeting: Sending Tab key to game window." & @CRLF)
+
+        ; Send Tab key to the game window to cycle targets
+        ControlSend($gameWindowHandle, "", "", "{TAB}")
+
+        ; Sleep briefly to allow for target acquisition
+        Sleep(300)
     EndIf
 
     Sleep($RefreshRate)
 WEnd
 
-; ---------------------------- Functions ----------------------------
-
-Func _EnumProcessModules($hProcess)
-    Local $hMod = DllStructCreate("ptr")
-    Local $moduleSize = DllStructGetSize($hMod)
-
-    Local $aModules = DllCall("psapi.dll", "int", "EnumProcessModulesEx", "ptr", $hProcess, "ptr", DllStructGetPtr($hMod), "dword", $moduleSize, "dword*", 0, "dword", 0x03)
-
-    If IsArray($aModules) And $aModules[0] <> 0 Then
-        Return DllStructGetData($hMod, 1)
-    Else
-        Return 0
-    EndIf
+; ---------------------------- ToggleHealer Function ----------------------------
+Func ToggleHealer()
+    $HealerStatus = Not $HealerStatus
+    GUICtrlSetData($HealerLabel, "Healer: " & ($HealerStatus ? "ON" : "OFF"))
+    If $DebugMode Then ConsoleWrite("Healer toggled: " & ($HealerStatus ? "ON" : "OFF") & @CRLF)
 EndFunc
 
-Func SaveSettings()
-    ; Save slider values to the config file
-    IniWrite($configFile, "Settings", "HealPercentage", GUICtrlRead($Slider))
-    IniWrite($configFile, "Settings", "RefreshRate", GUICtrlRead($RefreshSlider))
-EndFunc
-
+; ---------------------------- SetHealerHotkey Function ----------------------------
 Func SetHealerHotkey()
     Local $newHotkey = InputBox("Set Healer Hotkey", "Press the new key for the healer hotkey:")
 
@@ -226,9 +260,45 @@ Func SetHealerHotkey()
     EndIf
 EndFunc
 
-; Function to toggle healer on/off
-Func ToggleHealer()
-    $HealerStatus = Not $HealerStatus
-    GUICtrlSetData($HealerLabel, "Healer: " & ($HealerStatus ? "ON" : "OFF"))
-    If $DebugMode Then ConsoleWrite("Healer toggled: " & ($HealerStatus ? "ON" : "OFF") & @CRLF)
+; ---------------------------- Modularized Memory Reading Functions ----------------------------
+Func ReadType()
+    Local $Type = _MemoryRead($TypeAddress, $MemOpen, "dword")
+    If $DebugMode Then ConsoleWrite("Type Read: " & $Type & @CRLF)
+    Return $Type
+EndFunc
+
+Func ReadAttackMode()
+    Local $AttackMode = _MemoryRead($AttackModeAddress, $MemOpen, "dword")
+    If $DebugMode Then ConsoleWrite("Attack Mode Read: " & $AttackMode & @CRLF)
+    Return $AttackMode
+EndFunc
+
+Func ReadPosX()
+    Local $PosX = _MemoryRead($PosXAddress, $MemOpen, "dword")
+    If $DebugMode Then ConsoleWrite("Position X Read: " & $PosX & @CRLF)
+    Return $PosX
+EndFunc
+
+Func ReadPosY()
+    Local $PosY = _MemoryRead($PosYAddress, $MemOpen, "dword")
+    If $DebugMode Then ConsoleWrite("Position Y Read: " & $PosY & @CRLF)
+    Return $PosY
+EndFunc
+
+Func ReadHP()
+    Local $HP = _MemoryRead($HPAddress, $MemOpen, "dword")
+    If $DebugMode Then ConsoleWrite("HP Read: " & $HP & @CRLF)
+    Return $HP
+EndFunc
+
+Func ReadMaxHP()
+    Local $MaxHP = _MemoryRead($MaxHPAddress, $MemOpen, "dword")
+    If $DebugMode Then ConsoleWrite("Max HP Read: " & $MaxHP & @CRLF)
+    Return $MaxHP
+EndFunc
+
+Func ReadChatStatus()
+    Local $ChatStatus = _MemoryRead($ChatStatusAddress, $MemOpen, "dword")
+    If $DebugMode Then ConsoleWrite("Chat Status Read: " & $ChatStatus & @CRLF)
+    Return $ChatStatus
 EndFunc
