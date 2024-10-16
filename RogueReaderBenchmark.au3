@@ -3,7 +3,8 @@
 #include <Misc.au3>
 #include <File.au3>
 #include <Array.au3>
-#include "Gui.au3" ; Include the GUI file
+#include <WindowsConstants.au3> ; For window styles like $WS_VSCROLL
+#include <EditConstants.au3>    ; For $ES_READONLY constant
 
 ; ---------------------------- Global Variables ----------------------------
 Global $DebugMode = 0 ; Enable debugging output (set to 0 to turn off by default)
@@ -13,6 +14,9 @@ Global $HealerHotkey = "`" ; Default hotkey for healer
 Global $RefreshRate = 50 ; Default refresh rate (50ms)
 Global $pottimer = 2000
 Global $gameWindowHandle ; To hold the window handle for "Project Rogue"
+Global $ExitButton, $KillButton, $ChangeHotkeyButton, $DebugButton
+Global $TypeLabel, $AttackModeLabel, $PosXLabel, $PosYLabel, $HPLabel, $MaxHPLabel, $ChatStatusLabel, $AilmentLabel
+Global $SliderLabel, $Slider, $RefreshSlider, $RefreshLabel, $DebugLabel
 Global $MemOpen, $ProcessID
 
 ; ---------------------------- Memory Debugging Setup ----------------------------
@@ -80,6 +84,44 @@ Func _EnumProcessModules($hProcess)
     EndIf
 EndFunc
 
+; ---------------------------- GUI Creation ----------------------------
+$Gui = GUICreate("RogueReader", 750, 650, 15, 15)
+$TypeLabel = GUICtrlCreateLabel("Type: N/A", 20, 30, 250, 20)
+$AttackModeLabel = GUICtrlCreateLabel("Attack Mode: N/A", 20, 60, 250, 20)
+$PosXLabel = GUICtrlCreateLabel("Pos X: N/A", 20, 90, 250, 20)
+$PosYLabel = GUICtrlCreateLabel("Pos Y: N/A", 20, 120, 250, 20)
+$HPLabel = GUICtrlCreateLabel("HP: N/A", 20, 150, 250, 20)
+$MaxHPLabel = GUICtrlCreateLabel("MaxHP: N/A", 20, 180, 250, 20)
+$ChatStatusLabel = GUICtrlCreateLabel("Chat: N/A", 20, 210, 250, 20)
+$AilmentLabel = GUICtrlCreateLabel("Ailment: N/A", 20, 240, 250, 20)
+$HealerLabel = GUICtrlCreateLabel("Healer: OFF", 20, 270, 250, 20)
+$HotkeyLabel = GUICtrlCreateLabel("Healer Hotkey: " & $HealerHotkey, 20, 300, 250, 20)
+
+; Button to change the healer hotkey
+$ChangeHotkeyButton = GUICtrlCreateButton("Change Healer Hotkey", 280, 300, 150, 30)
+
+; Slider for dynamic healing percentage
+$SliderLabel = GUICtrlCreateLabel("Heal if HP below: 95%", 20, 340, 250, 20)
+$Slider = GUICtrlCreateSlider(20, 370, 200, 30)
+GUICtrlSetLimit($Slider, 100, 50) ; Limit the slider between 50% and 100%
+GUICtrlSetData($Slider, 95)
+
+; Slider for refresh rate (50ms to 150ms)
+$RefreshLabel = GUICtrlCreateLabel("Refresh Rate: 50ms", 20, 420, 250, 20)
+$RefreshSlider = GUICtrlCreateSlider(20, 450, 200, 30)
+GUICtrlSetLimit($RefreshSlider, 150, 50) ; 50ms to 150ms
+GUICtrlSetData($RefreshSlider, $RefreshRate)
+
+; Buttons to close Rogue and Exit
+$KillButton = GUICtrlCreateButton("Kill Rogue", 20, 500, 100, 30)
+$ExitButton = GUICtrlCreateButton("Exit", 150, 500, 100, 30)
+
+; Button and Label to toggle debug mode
+$DebugButton = GUICtrlCreateButton("Toggle Debug", 280, 500, 150, 30)
+$DebugLabel = GUICtrlCreateLabel("Debug: OFF", 20, 550, 250, 20)
+
+GUISetState(@SW_SHOW)
+
 ; ---------------------------- Load Settings Function ----------------------------
 Func LoadSettings()
     If $DebugMode Then ConsoleWrite("Loading settings from config file..." & @CRLF)
@@ -113,7 +155,136 @@ Func SaveSettings()
     If $DebugMode Then ConsoleWrite("Settings saved successfully!" & @CRLF)
 EndFunc
 
-; ---------------------------- Set Healer Hotkey Function ----------------------------
+; Load settings AFTER GUI creation
+LoadSettings()
+
+; ---------------------------- Main Loop ----------------------------
+While 1
+    Local $msg = GUIGetMsg()
+
+    Select
+        Case $msg = $ExitButton
+            SaveSettings()
+            _MemoryClose($MemOpen)
+            Exit
+
+        Case $msg = $KillButton
+            ProcessClose($ProcessID)
+            Exit
+
+        Case $msg = $ChangeHotkeyButton
+            SetHealerHotkey() ; Function to set healer hotkey
+
+        Case $msg = $DebugButton
+            ToggleDebug() ; Function to toggle debug messages
+
+    EndSelect
+
+    ; Read memory values with debug outputs
+    Local $Type = ReadType()
+    Local $AttackMode = ReadAttackMode()
+    Local $PosX = ReadPosX()
+    Local $PosY = ReadPosY()
+    Local $HP = Round(ReadHP() / 65535, 2) ; Divide HP by 65535
+    Local $MaxHP = ReadMaxHP()
+    Local $ChatStatus = ReadChatStatus()
+    Local $Ailment = ReadAilment()
+
+    ; ---------------- GUI Updates ----------------
+    ; Update Attack Mode based on its value
+    If $AttackMode = 0 Then
+        GUICtrlSetData($AttackModeLabel, "Attack Mode: Safe")
+    ElseIf $AttackMode = 1 Then
+        GUICtrlSetData($AttackModeLabel, "Attack Mode: Attack")
+    Else
+        GUICtrlSetData($AttackModeLabel, "Attack Mode: Unknown")
+    EndIf
+
+    ; Update Type based on its value
+    If $Type = 0 Or $Type = 65535 Then
+        GUICtrlSetData($TypeLabel, "Type: None")
+    ElseIf $Type = 1 Then
+        GUICtrlSetData($TypeLabel, "Type: Monster")
+    ElseIf $Type = 2 Then
+        GUICtrlSetData($TypeLabel, "Type: Player")
+    Else
+        GUICtrlSetData($TypeLabel, "Type: Unknown (" & $Type & ")")
+    EndIf
+
+    ; Update Ailment based on its value
+    If $Ailment = 0 Then
+        GUICtrlSetData($AilmentLabel, "Ailment: None")
+    ElseIf $Ailment = 1 Then
+        GUICtrlSetData($AilmentLabel, "Ailment: Poisoned")
+    ElseIf $Ailment = 2 Then
+        GUICtrlSetData($AilmentLabel, "Ailment: Diseased")
+    Else
+        GUICtrlSetData($AilmentLabel, "Ailment: Unknown (" & $Ailment & ")")
+    EndIf
+
+    ; Update Position, HP, MaxHP, and Chat Status
+    GUICtrlSetData($PosXLabel, "Pos X: " & $PosX)
+    GUICtrlSetData($PosYLabel, "Pos Y: " & $PosY)
+    GUICtrlSetData($HPLabel, "HP: " & $HP)
+    GUICtrlSetData($MaxHPLabel, "MaxHP: " & $MaxHP)
+
+    If $ChatStatus = 0 Then
+        GUICtrlSetData($ChatStatusLabel, "Chat: Closed")
+    Else
+        GUICtrlSetData($ChatStatusLabel, "Chat: Open")
+    EndIf
+
+    ; ---------------- Healing Logic ----------------
+    Local $SliderValue = GUICtrlRead($Slider) ; Get the heal percentage from the slider
+
+    If $MaxHP > 0 Then
+        Local $HPPercentage = ($HP / $MaxHP) * 100
+
+        ; Check if the healer is on, chat is closed, and HP is below the threshold
+        If $HealerStatus And $ChatStatus = 0 And $HPPercentage <= $SliderValue Then
+            ConsoleWrite("Healing... HP is below threshold." & @CRLF)
+
+            ; Verify game window handle before sending key
+            If $gameWindowHandle <> "" And WinExists($gameWindowHandle) Then
+                ; Send key press for healing (default: "2")
+                ConsoleWrite("Sending key '2' to the game window." & @CRLF)
+
+                ; Send the key press
+                ControlSend($gameWindowHandle, "", "", "2")
+
+                ; Sleep to prevent spamming the heal action too fast
+                Sleep($pottimer)
+            Else
+                ConsoleWrite("Error: Game window handle is invalid or not found." & @CRLF)
+            EndIf
+        EndIf
+    EndIf
+
+    ; Update the GUI labels
+    GUICtrlSetData($SliderLabel, "Heal if HP below: " & $SliderValue & "%")
+
+    ; ------------------- Tab Targeting Logic -------------------
+    If ($AttackMode = 1 And ($Type = 65535 Or $Type = 0) And $ChatStatus = 0) Then
+        ConsoleWrite("Tab Targeting: Sending Tab key to game window." & @CRLF)
+
+        ; Send Tab key to the game window to cycle targets
+        ControlSend($gameWindowHandle, "", "", "{TAB}")
+
+        ; Sleep briefly to allow for target acquisition
+        Sleep(300)
+    EndIf
+
+    Sleep($RefreshRate)
+WEnd
+
+; ---------------------------- ToggleHealer Function ----------------------------
+Func ToggleHealer()
+    $HealerStatus = Not $HealerStatus
+    GUICtrlSetData($HealerLabel, "Healer: " & ($HealerStatus ? "ON" : "OFF"))
+    ConsoleWrite("Healer toggled: " & ($HealerStatus ? "ON" : "OFF") & @CRLF)
+EndFunc
+
+; ---------------------------- SetHealerHotkey Function ----------------------------
 Func SetHealerHotkey()
     Local $newHotkey = InputBox("Set Healer Hotkey", "Press the new key for the healer hotkey:")
 
@@ -125,13 +296,6 @@ Func SetHealerHotkey()
         IniWrite($configFile, "Settings", "HealerHotkey", $HealerHotkey)
         ConsoleWrite("Healer hotkey set to: " & $HealerHotkey & @CRLF)
     EndIf
-EndFunc
-
-; ---------------------------- Toggle Healer Function ----------------------------
-Func ToggleHealer()
-    $HealerStatus = Not $HealerStatus
-    GUICtrlSetData($HealerLabel, "Healer: " & ($HealerStatus ? "ON" : "OFF"))
-    ConsoleWrite("Healer toggled: " & ($HealerStatus ? "ON" : "OFF") & @CRLF)
 EndFunc
 
 ; ---------------------------- Toggle Debug Mode Function ----------------------------
@@ -146,7 +310,7 @@ Func ToggleDebug()
     EndIf
 EndFunc
 
-; ---------------------------- Memory Reading Functions ----------------------------
+; ---------------------------- Modularized Memory Reading Functions ----------------------------
 Func ReadType()
     Local $Type = _MemoryRead($TypeAddress, $MemOpen, "dword")
     If $DebugMode Then ConsoleWrite("Type Read: " & $Type & @CRLF)
@@ -189,100 +353,9 @@ Func ReadChatStatus()
     Return $ChatStatus
 EndFunc
 
+; ---------------------------- Ailment Reading Function ----------------------------
 Func ReadAilment()
     Local $Ailment = _MemoryRead($AilmentAddress, $MemOpen, "dword")
     If $DebugMode Then ConsoleWrite("Ailment Read: " & $Ailment & @CRLF)
     Return $Ailment
 EndFunc
-
-; ---------------------------- Main Program ----------------------------
-
-; Create the GUI by calling the function from Gui.au3
-CreateGUI()
-
-; Load settings AFTER GUI creation
-LoadSettings()
-
-; Main loop
-While 1
-    Local $msg = GUIGetMsg()
-
-    Select
-        Case $msg = $ExitButton
-            SaveSettings()
-            _MemoryClose($MemOpen)
-            Exit
-
-        Case $msg = $KillButton
-            ProcessClose($ProcessID)
-            Exit
-
-        Case $msg = $ChangeHotkeyButton
-            SetHealerHotkey()
-
-        Case $msg = $DebugButton
-            ToggleDebug()
-
-    EndSelect
-
-    ; Read memory values
-    Local $Type = ReadType()
-    Local $AttackMode = ReadAttackMode()
-    Local $PosX = ReadPosX()
-    Local $PosY = ReadPosY()
-    Local $HP = Round(ReadHP() / 65535, 2) ; Divide HP by 65535
-    Local $MaxHP = ReadMaxHP()
-    Local $ChatStatus = ReadChatStatus()
-    Local $Ailment = ReadAilment()
-
-    ; Update the GUI
-    UpdateGUI($Type, $AttackMode, $PosX, $PosY, $HP, $MaxHP, $ChatStatus, $Ailment)
-
-    ; ---------------- Ailment Handling ----------------
-    ; If ailment is Poisoned (1) or Diseased (2), send "3" to cure the ailment
-    If $Ailment = 1 Or $Ailment = 2 Then
-        ConsoleWrite("Curing ailment... Ailment code: " & $Ailment & @CRLF)
-
-        If $gameWindowHandle <> "" And WinExists($gameWindowHandle) Then
-            ; Send key press for curing ailment (default: "3")
-            ControlSend($gameWindowHandle, "", "", "3")
-            ConsoleWrite("Sent key '3' to the game window to cure ailment." & @CRLF)
-
-            ; Sleep to avoid spamming the cure action too quickly
-            Sleep(1000)
-        Else
-            ConsoleWrite("Error: Game window handle is invalid or not found." & @CRLF)
-        EndIf
-
-        ; Skip healing if the player has an ailment
-        ContinueLoop
-    EndIf
-
-    ; ---------------- Healing Logic (Only if No Ailment) ----------------
-    Local $SliderValue = GUICtrlRead($Slider) ; Get the heal percentage from the slider
-
-    If $MaxHP > 0 Then
-        Local $HPPercentage = ($HP / $MaxHP) * 100
-
-        ; Check if the healer is on, chat is closed, HP is below the threshold, and no ailment
-        If $HealerStatus And $ChatStatus = 0 And $HPPercentage <= $SliderValue Then
-            ConsoleWrite("Healing... HP is below threshold." & @CRLF)
-
-            If $gameWindowHandle <> "" And WinExists($gameWindowHandle) Then
-                ; Send key press for healing (default: "2")
-                ControlSend($gameWindowHandle, "", "", "2")
-                ConsoleWrite("Sent key '2' to the game window to heal." & @CRLF)
-
-                ; Sleep to prevent spamming the heal action too fast
-                Sleep($pottimer)
-            Else
-                ConsoleWrite("Error: Game window handle is invalid or not found." & @CRLF)
-            EndIf
-        EndIf
-    EndIf
-
-    ; Update the GUI labels
-    GUICtrlSetData($SliderLabel, "Heal if HP below: " & $SliderValue & "%")
-
-    Sleep($RefreshRate)
-WEnd
