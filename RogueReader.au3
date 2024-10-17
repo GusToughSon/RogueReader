@@ -30,15 +30,15 @@ If $ProcessID Then
     EndIf
     If $DebugMode Then ConsoleWrite("Base Address: " & Hex($BaseAddress) & @CRLF)
 
-    ; Define memory addresses relative to the base address
-    $TypeAddress = $BaseAddress + 0xBEEA34
-    $AttackModeAddress = $BaseAddress + 0xAC0D60
-    $PosXAddress = $BaseAddress + 0xBF1C6C
-    $PosYAddress = $BaseAddress + 0xBF1C64
-    $HPAddress = $BaseAddress + 0x9BE988
-    $MaxHPAddress = $BaseAddress + 0x9BE98C
-    $ChatStatusAddress = $BaseAddress + 0x9B5998
-    $AilmentAddress = $BaseAddress + 0x9BEB5C ; Address for ailment status
+    ; Define memory addresses relative to the base address (Updated addresses)
+    $TypeAddress = $BaseAddress + 0xBEFA34 ; Holds the player's or character's type/class
+    $AttackModeAddress = $BaseAddress + 0xAC1D60 ; Represents player's current attack mode
+    $PosXAddress = $BaseAddress + 0xBF2C6C ; Holds the player's X-coordinate
+    $PosYAddress = $BaseAddress + 0xBF2C64 ; Holds the player's Y-coordinate
+    $HPAddress = $BaseAddress + 0x9BF988 ; Represents player's current health points
+    $MaxHPAddress = $BaseAddress + 0x9BF98C ; Represents player's maximum health points
+    $ChatStatusAddress = $BaseAddress + 0x9B6998 ; Holds the current chat status
+    $AilmentAddress = $BaseAddress + 0x9BFB5C ; Represents the player's ailment or status effects
 
     If $DebugMode Then
         ConsoleWrite("Memory addresses calculated: " & @CRLF)

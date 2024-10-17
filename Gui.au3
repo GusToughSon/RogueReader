@@ -58,7 +58,7 @@ Func UpdateGUI($Type, $AttackMode, $PosX, $PosY, $HP, $MaxHP, $ChatStatus, $Ailm
         GUICtrlSetData($TypeLabel, "Type: Monster")
     ElseIf $Type = 2 Then
         GUICtrlSetData($TypeLabel, "Type: NPC")
-	ElseIf $Type = 3 Then
+    ElseIf $Type = 3 Then
         GUICtrlSetData($TypeLabel, "Type: Player")
     Else
         GUICtrlSetData($TypeLabel, "Type: Unknown (" & $Type & ")")
