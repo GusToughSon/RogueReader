@@ -8,7 +8,7 @@ color 0A
 :: Display a Turtle Message Before Launch
 echo ####################################################################
 echo #                                                                  #
-echo #            THE MIGHTY TURTLE IS PREPARING FOR LAUNCH...           #
+echo #            THE MIGHTY TURTLE IS PREPARING FOR LAUNCH...          #
 echo #                                                                  #
 echo ####################################################################
 
@@ -94,4 +94,4 @@ if %errorlevel% neq 0 (
 
 :: Add a "press any key to continue" prompt at the end
 echo.
-pause >nul
+pause
