@@ -11,35 +11,7 @@ echo #                                                                  #
 echo #            THE MIGHTY TURTLE IS PREPARING FOR LAUNCH...          #
 echo #                                                                  #
 echo ####################################################################
-
-:: Countdown with progress bar
-set /a countdown=5
-set /a progress=0
-:countdown_loop
-if %countdown% GEQ 0 (
-    set /a progress+=20
-    set "progress_bar=[%progress%%%]"
-    echo Launching in %countdown%... %progress_bar%
-    ping -n 2 127.0.0.1 >nul 2>&1
-    set /a countdown-=1
-    goto countdown_loop
-)
-
 echo.
-
-:: Announce the launch with the Turtle's blessing
-echo THE TURTLE HAS SPOKEN! RogueReader is launching NOW!
-ping -n 2 127.0.0.1 >nul 2>&1
-
-:: Add a fake loading bar because it looks cool
-echo Loading Python...  [                    ] 0%% 
-ping -n 1 127.0.0.1 >nul
-echo Loading Python...  [=====               ] 33%%
-ping -n 1 127.0.0.1 >nul
-echo Loading Python...  [===========         ] 66%%
-ping -n 1 127.0.0.1 >nul
-echo Loading Python...  [====================] 100%% 
-ping -n 1 127.0.0.1 >nul
 
 :: Path to the Python executable
 set PYTHON_PATH=python
@@ -88,7 +60,7 @@ if %errorlevel% neq 0 (
 ) else (
     echo.
     echo ####################################################################
-    echo # SUCCESS: RogueReader has launched successfully!                  #
+    echo # SUCCESS: RogueReader has Ended successfully!                  #
     echo ####################################################################
 )
 
