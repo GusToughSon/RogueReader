@@ -239,8 +239,6 @@ def healer_sleep(ms_delay):
         else:
             return  # Sleep completed
 
-    sleep_interval(0)  # Start the interval sleep
-
 
 def control_send_to_project_rogue(key, retry_count=3):
     """Control sends the key to the Project Rogue window using AutoIt's ControlSend, with retries."""
@@ -336,7 +334,7 @@ def stop_threads_and_exit():
     global running
     running = False
     print("[EXIT DEBUG]: Stopping all threads...")
-    time.sleep(0.5)
+    time.sleep(0.3)
     for thread in threading.enumerate():
         if thread != threading.main_thread():
             thread.join(timeout=1)

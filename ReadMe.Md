@@ -1,28 +1,38 @@
-# Rogue Reader Project
+# 🛡️ Project Rogue Helper
 
-## Description
+**Project Rogue Helper** is an assistant for the game "Project Rogue." It helps you automatically heal, target enemies, and walk in the game! Plus, you can control everything with easy hotkeys!
 
-Rogue Reader is an automation tool designed for the **Project Rogue Client**. It integrates various features such as:
-- **Auto-Healing**: Automatically heals the player when health falls below a configured threshold.
-- **Auto-Targeting**: Automatically targets monsters, NPCs, or players depending on the game state.
-- **Auto-Walking**: Supports automated walking in the game.
-- **Dynamic Controls**: Allows toggling of healer, targeter, and walker features via configurable hotkeys.
+## ⚙️ Features
 
-This project is designed to interact with the game client using **AutoIt** to send controls and **Python's pymem** to read memory from the game process. 
+- **Automatic Healing**: It heals you when your health is low.
+- **Automatic Targeting**: Finds enemies for you to attack.
+- **Automatic Walking**: Moves your character through locations you set in the game!
+- **Custom Hotkeys**: Set your own hotkeys for healer, targeter, and walker.
+- **Live Game Data**: See your character’s health, position, and more!
 
-## Features
+---
 
-- **Healer**: Automatically heals the character based on health percentage and configurable delay.
-- **Targeter**: Automatically targets enemies when no valid target is selected.
-- **Walker**: Automates walking to predefined locations within the game.
-- **Dynamic Configuration**: Hotkeys, delays, and other settings are configurable and saved between sessions.
-- **Reconnection Logic**: Automatically reattaches to the game client if it is closed and reopened.
+## 🖼️ How It Works
 
-## Setup
+Here's a simple visual explanation:
 
-### Prerequisites
-Before running the project, ensure that you have the following dependencies installed:
-- Python 3.13 or higher
-- The following Python packages:
-  ```bash
-  pip install psutil pymem autoit keyboard
+1. **Healing**: Automatically presses the "heal" button (set to key `2` in the game) when your health drops below a set percentage.
+2. **Targeting**: Automatically presses the "target" button (set to `Tab`) when there’s no target.
+3. **Walking**: Automatically walks your character through locations you set and saves them to a file.
+
+```plaintext
++---------------------+
+|   Project Rogue     |
++---------------------+
+      |    ^    |
+   Healing    Targeting
+      |    ^    |
+      v    |    v
++---------------------+
+|   Rogue Helper      |
++---------------------+
+   |        |       |
+  Health   Target   Walk
+  |       |        |
+  v       v        v
+Auto Heal  Auto Target  Auto Walk (with locations)
