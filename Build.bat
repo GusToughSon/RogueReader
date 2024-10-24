@@ -11,7 +11,8 @@ if exist "C:\Users\gooro\AppData\Roaming\Python\Python313\Scripts\pyinstaller.ex
 )
 
 :: Run PyInstaller with the specified icon, in one file, without console window
-"C:\Users\gooro\AppData\Roaming\Python\Python313\Scripts\pyinstaller.exe" --onefile --icon=RogueReader.ico --noconsole RogueReader.py
+
+"C:\Users\gooro\AppData\Roaming\Python\Python313\Scripts\pyinstaller.exe" --onefile --name RogueReader --icon=RogueReader.ico --noconsole --specpath . RogueReader.py
 
 :: Notify user upon completion
 if exist "dist\RogueReader.exe" (

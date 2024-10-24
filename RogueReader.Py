@@ -8,12 +8,9 @@ import pymem
 import time
 import pickle
 import keyboard  # For hotkey detection
-# Ensure DLL loading happens before importing autoit
-current_dir = os.path.dirname(os.path.abspath(__file__))
-dll_path = os.path.join(current_dir, "AutoItX3_x64.dll")
-ctypes.windll.LoadLibrary(dll_path)  # Load the AutoItX DLL dynamically
 import autoit  # Now you can safely import autoit
 from concurrent.futures import ThreadPoolExecutor
+import sys
 
 CONFIG_FILE = "config.dat"
 PROCESS_NAME = "Project Rogue Client.exe"
@@ -33,8 +30,8 @@ default_config_data = {
     'walker_hotkey': '/',
     'walker_set_hotkey': '}',
     'walker_wipe_hotkey': '{',
-    'window_width': 4000,  # Default width
-    'window_height': 6000,  # Default height
+    'window_width': 400,  # Default width
+    'window_height': 600,  # Default height
     'window_x': 100,  # Default x position
     'window_y': 100,  # Default y position,
     'healer_status': False,  # Default OFF
@@ -49,6 +46,34 @@ executor = ThreadPoolExecutor(max_workers=5)
 
 # Global timestamp for tracking last heal time
 last_heal_time = 0
+
+# Determine if the program is frozen (i.e., running as an executable)
+
+def get_resource_path(relative_path):
+    """ Get the absolute path to the resource, works for both development and PyInstaller .exe """
+    try:
+        # PyInstaller stores temp files in _MEIPASS when frozen
+        base_path = sys._MEIPASS
+    except AttributeError:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+# Load the AutoItX3_x64.dll from the correct location
+dll_path = get_resource_path('autoit/lib/AutoItX3_x64.dll')
+try:
+    ctypes.windll.LoadLibrary(dll_path)
+    print(f"[DEBUG]: Successfully loaded {dll_path}")
+except Exception as e:
+    print(f"[ERROR]: Failed to load {dll_path} - {e}")
+# Load the AutoItX3_x64.dll from the correct location
+dll_path = get_resource_path('AutoItX3_x64.dll')
+try:
+    ctypes.windll.LoadLibrary(dll_path)
+    print(f"[DEBUG]: Successfully loaded {dll_path}")
+except Exception as e:
+    print(f"[ERROR]: Failed to load {dll_path} - {e}")
+
 
 def save_config():
     """Save the configuration to the file."""
@@ -83,6 +108,13 @@ def update_walker_status(new_status):
     """Update walker status dynamically and save to config."""
     config_data['walker_status'] = new_status
     save_config()
+
+# Function to set a hotkey and save it to the config
+def set_hotkey(hotkey_name, entry_widget):
+    new_hotkey = entry_widget.get()  # Get the hotkey value from the entry widget
+    config_data[hotkey_name] = new_hotkey  # Update the config_data with the new hotkey
+    save_config()  # Save the updated config
+    print(f"[CONFIG UPDATE]: {hotkey_name} set to {new_hotkey}")
 
 def attach_to_process():
     global process_pid, pm
@@ -411,6 +443,19 @@ mode_label = tk.Label(info_frame, text="Mode: None")
 mode_label.grid(row=3, column=0)
 type_label = tk.Label(info_frame, text="Type: None")  # Initialize as "None"
 type_label.grid(row=3, column=1)
+
+# Left side instructions
+left_frame = ttk.Frame(root, padding="5")
+left_frame.pack(side="left", padx=5, pady=5)
+
+pots_label = tk.Label(left_frame, text="Pots go in #2", font=("Arial", 8))
+pots_label.pack(side="top", pady=5)
+
+cures_label = tk.Label(left_frame, text="GREATER Cures in #3", font=("Arial", 8))
+cures_label.pack(side="top", pady=5)
+
+thanks_label = tk.Label(left_frame, text="Thanks GusToughSon", font=("Arial", 8))
+thanks_label.pack(side="top", pady=5)
 
 # Kill and Exit Buttons
 button_frame = ttk.Frame(root, padding="5")
