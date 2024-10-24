@@ -159,6 +159,13 @@ def perform_healing():
             if current_time - last_heal_time >= pot_delay:
                 real_hp = read_memory(0x9BF988)
                 max_hp = read_memory(0x9BF98C)
+                chat_open = read_memory(0x9B6998)
+
+                # Pause if chat is open
+                if chat_open == 1:
+                    print("[HEALER DEBUG]: Chat is open, pausing healing.")
+                    time.sleep(0.4)
+                    continue
 
                 if real_hp is None or max_hp is None:
                     continue
@@ -183,14 +190,18 @@ def healer_sleep(ms_delay):
 
 def control_send_to_project_rogue(key):
     """Control sends the key to the Project Rogue window using AutoIt's ControlSend."""
-    if autoit.win_exists(TARGET_WINDOW_NAME):
-        try:
-            autoit.control_send(TARGET_WINDOW_NAME, "", key)
-            print(f"[AUTOIT DEBUG]: Sent {key} to {TARGET_WINDOW_NAME}")
-        except autoit.AutoItError as e:
-            print(f"[AUTOIT ERROR]: {e}")
-    else:
-        print(f"[AUTOIT ERROR]: Window '{TARGET_WINDOW_NAME}' not found.")
+    try:
+        if autoit.win_exists(TARGET_WINDOW_NAME):
+            try:
+                autoit.control_send(TARGET_WINDOW_NAME, "", key)
+                print(f"[AUTOIT DEBUG]: Sent {key} to {TARGET_WINDOW_NAME}")
+            except autoit.AutoItError as e:
+                print(f"[AUTOIT ERROR]: {e}")
+        else:
+            print(f"[AUTOIT ERROR]: Window '{TARGET_WINDOW_NAME}' not found.")
+    except OSError as os_error:
+        print(f"[AUTOIT ERROR]: OSError encountered while checking window: {os_error}")
+        time.sleep(2)  # Delay to allow the game client to reinitialize before retrying
 
 # Hotkey listener for toggling status
 def hotkey_listener():

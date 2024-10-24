@@ -1,27 +1,28 @@
-# RogueReader - Memory Reader for Project Rogue
+# Rogue Reader Project
 
-RogueReader is a Python-based memory reader for the game **Project Rogue**. It reads specific in-game values such as position (`PosX`, `PosY`), health, sickness, mode, type, and more directly from the game's memory and displays them in a GUI in real-time. The application also allows you to adjust the update speed dynamically using a slider, with settings saved persistently between launches.
+## Description
+
+Rogue Reader is an automation tool designed for the **Project Rogue Client**. It integrates various features such as:
+- **Auto-Healing**: Automatically heals the player when health falls below a configured threshold.
+- **Auto-Targeting**: Automatically targets monsters, NPCs, or players depending on the game state.
+- **Auto-Walking**: Supports automated walking in the game.
+- **Dynamic Controls**: Allows toggling of healer, targeter, and walker features via configurable hotkeys.
+
+This project is designed to interact with the game client using **AutoIt** to send controls and **Python's pymem** to read memory from the game process. 
 
 ## Features
 
-- **Memory Reading**: Reads in-game values like position, health (Real HP), sickness, mode, and type from the **Project Rogue** process.
-- **Real-time GUI Updates**: Displays values in real-time on a GUI, with fast refreshes.
-- **Slider for Update Speed**: Adjust the update speed dynamically via a slider in the GUI, ranging from **0.05 seconds** to **1 second**.
-- **Config Persistence**: The slider value (update speed) is saved in a **binary configuration file** and loaded automatically at startup.
-- **Kill Project Rogue**: A button to kill the **Project Rogue** process directly from the GUI.
-- **Debugging Mode**: Toggle debug messages to the console to monitor memory reads and process interaction.
+- **Healer**: Automatically heals the character based on health percentage and configurable delay.
+- **Targeter**: Automatically targets enemies when no valid target is selected.
+- **Walker**: Automates walking to predefined locations within the game.
+- **Dynamic Configuration**: Hotkeys, delays, and other settings are configurable and saved between sessions.
+- **Reconnection Logic**: Automatically reattaches to the game client if it is closed and reopened.
 
-## Installation
+## Setup
 
 ### Prerequisites
-- Python 3.x
-- The following Python libraries must be installed:
-  - `pymem`
-  - `psutil`
-  - `tkinter`
-  - `pywin32`
-
-You can install the required libraries using `pip`:
-
-```bash
-pip install pymem psutil pywin32
+Before running the project, ensure that you have the following dependencies installed:
+- Python 3.13 or higher
+- The following Python packages:
+  ```bash
+  pip install psutil pymem autoit keyboard
