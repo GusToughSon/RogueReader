@@ -1,13 +1,18 @@
+import os
+import ctypes
 import tkinter as tk
 from tkinter import ttk
 import threading
 import psutil
 import pymem
 import time
-import os
 import pickle
 import keyboard  # For hotkey detection
-import autoit  # For AutoIt control sending
+# Ensure DLL loading happens before importing autoit
+current_dir = os.path.dirname(os.path.abspath(__file__))
+dll_path = os.path.join(current_dir, "AutoItX3_x64.dll")
+ctypes.windll.LoadLibrary(dll_path)  # Load the AutoItX DLL dynamically
+import autoit  # Now you can safely import autoit
 from concurrent.futures import ThreadPoolExecutor
 
 CONFIG_FILE = "config.dat"
