@@ -60,19 +60,13 @@ def get_resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 # Load the AutoItX3_x64.dll from the correct location
-dll_path = get_resource_path('autoit/lib/AutoItX3_x64.dll')
+dll_path = get_resource_path('AutoItX3_x64.dll')  # Correct path, no need for 'autoit/lib' subdirectory
 try:
     ctypes.windll.LoadLibrary(dll_path)
     print(f"[DEBUG]: Successfully loaded {dll_path}")
 except Exception as e:
     print(f"[ERROR]: Failed to load {dll_path} - {e}")
-# Load the AutoItX3_x64.dll from the correct location
-dll_path = get_resource_path('AutoItX3_x64.dll')
-try:
-    ctypes.windll.LoadLibrary(dll_path)
-    print(f"[DEBUG]: Successfully loaded {dll_path}")
-except Exception as e:
-    print(f"[ERROR]: Failed to load {dll_path} - {e}")
+
 
 
 def save_config():
@@ -157,76 +151,99 @@ def read_memory(offset):
 
 # Perform targeting in its own thread
 def perform_targeting():
-    """Separate thread for handling targeting."""
-    while running:
-        if config_data['targeter_status']:  # Check if targeting is enabled
-            if pm is None:
-                attach_to_process()  # Reconnect if the process is lost
+    """Handle targeting in an optimized, non-blocking manner."""
+    if not running:
+        return
 
-            mode = read_memory(0xAC1D60)
-            target_type = read_memory(0xBEFA34)
-            chat_open = read_memory(0x9B6998)
+    if config_data['targeter_status']:  # Only proceed if targeting is enabled
+        if pm is None:
+            attach_to_process()  # Reconnect if the process is lost
 
-            # Pause if chat is open
-            if chat_open == 1:
-                time.sleep(0.4)
-                continue
+        mode = read_memory(0xAC1D60)  # Game mode (1 means in attack mode)
+        target_type = read_memory(0xBEFA34)  # Current target type
+        chat_open = read_memory(0x9B6998)  # Is the chat window open?
 
-            # If no target or invalid target (65535), send 'Tab'
-            if mode == 1 and (target_type == 0 or target_type == 65535):
-                control_send_to_project_rogue("{TAB}")
-                time.sleep(0.4)  # Sleep for 400 ms after sending 'Tab'
-            else:
-                time.sleep(0.3)
-        else:
-            time.sleep(0.1)  # Sleep briefly when targeting is off
+        # Pause if chat is open (do nothing while chat is open)
+        if chat_open == 1:
+            root.after(500, perform_targeting)  # Retry after 500ms
+            return
+
+        # If mode is attack (1) and no target or invalid target (65535), send 'Tab' to find a target
+        if mode == 1 and (target_type == 0 or target_type == 65535):
+            control_send_to_project_rogue("{TAB}")
+        
+        # Schedule the next targeting check after 500ms
+        root.after(500, perform_targeting)
+    else:
+        # If targeting is off, check again after 500ms
+        root.after(500, perform_targeting)
+
 
 # Healing thread
 def perform_healing():
     global last_heal_time
-    while running:
-        if config_data['healer_status']:
-            if pm is None:
-                attach_to_process()  # Reconnect if the process is lost
 
-            current_time = time.time() * 1000  # Current time in milliseconds
-            pot_delay = config_data['pot_delay']
+    if not running:
+        return
 
-            # Check if the required pot delay time has passed
-            if current_time - last_heal_time >= pot_delay:
-                real_hp = read_memory(0x9BF988)
-                max_hp = read_memory(0x9BF98C)
-                chat_open = read_memory(0x9B6998)
+    if config_data['healer_status']:
+        if pm is None:
+            attach_to_process()  # Reconnect if the process is lost
 
-                # Pause if chat is open
-                if chat_open == 1:
-                    print("[HEALER DEBUG]: Chat is open, pausing healing.")
-                    time.sleep(0.4)
-                    continue
+        current_time = time.time() * 1000  # Current time in milliseconds
+        pot_delay = config_data['pot_delay']
 
-                if real_hp is None or max_hp is None:
-                    continue
+        # Check if the required pot delay time has passed
+        if current_time - last_heal_time >= pot_delay:
+            real_hp = read_memory(0x9BF988)
+            max_hp = read_memory(0x9BF98C)
+            chat_open = read_memory(0x9B6998)
 
-                real_hp_scaled = real_hp / 65535  # Real HP calculation
-                heal_percent = config_data['heal_percent'] / 100.0  # HealPercent scaled to 0-0.98
+            # Pause if chat is open
+            if chat_open == 1:
+                print("[HEALER DEBUG]: Chat is open, pausing healing.")
+                root.after(500, perform_healing)  # Reschedule after 500ms
+                return
 
-                if real_hp_scaled < (max_hp * heal_percent):
-                    control_send_to_project_rogue("2")
-                    last_heal_time = current_time
-                    healer_sleep(pot_delay)
+            # If memory read fails, skip this cycle
+            if real_hp is None or max_hp is None:
+                root.after(500, perform_healing)
+                return
 
-        time.sleep(0.1)
+            # Calculate current HP percentage
+            real_hp_scaled = real_hp / 65535
+            heal_percent = config_data['heal_percent'] / 100.0  # Convert percentage to a float
+
+            # Check if healing is required
+            if real_hp_scaled < (max_hp * heal_percent):
+                control_send_to_project_rogue("2")  # Send heal command
+                last_heal_time = current_time
+
+        # Reschedule the next healing check after 500ms
+        root.after(500, perform_healing)
+    else:
+        # If healing is off, reschedule the next check after 500ms
+        root.after(500, perform_healing)
+
 
 def healer_sleep(ms_delay):
     """Custom sleep function for the healer with interrupt on healer_status change."""
-    total_sleep_time = ms_delay / 1000.0
-    for _ in range(int(total_sleep_time * 10)):  # Small chunks of 0.1 seconds
-        if not config_data['healer_status']:
-            return
-        time.sleep(0.1)
+    total_sleep_time = ms_delay / 1000.0  # Convert to seconds
+    intervals = int(total_sleep_time * 10)  # Break into smaller 0.1-second intervals
 
-def control_send_to_project_rogue(key):
-    """Control sends the key to the Project Rogue window using AutoIt's ControlSend."""
+    def sleep_interval(count):
+        if not config_data['healer_status']:
+            return  # Interrupt sleep if healer is turned off
+        if count < intervals:
+            root.after(100, sleep_interval, count + 1)  # Schedule the next 0.1-second interval
+        else:
+            return  # Sleep completed
+
+    sleep_interval(0)  # Start the interval sleep
+
+
+def control_send_to_project_rogue(key, retry_count=3):
+    """Control sends the key to the Project Rogue window using AutoIt's ControlSend, with retries."""
     try:
         if autoit.win_exists(TARGET_WINDOW_NAME):
             try:
@@ -236,63 +253,83 @@ def control_send_to_project_rogue(key):
                 print(f"[AUTOIT ERROR]: {e}")
         else:
             print(f"[AUTOIT ERROR]: Window '{TARGET_WINDOW_NAME}' not found.")
+            # Retry if the window isn't found (up to retry_count times)
+            if retry_count > 0:
+                print(f"[AUTOIT DEBUG]: Retrying in 2 seconds... {retry_count} retries left.")
+                root.after(2000, lambda: control_send_to_project_rogue(key, retry_count - 1))
     except OSError as os_error:
         print(f"[AUTOIT ERROR]: OSError encountered while checking window: {os_error}")
-        time.sleep(2)  # Delay to allow the game client to reinitialize before retrying
+        # Retry on OSError (up to retry_count times)
+        if retry_count > 0:
+            root.after(2000, lambda: control_send_to_project_rogue(key, retry_count - 1))
+
 
 # Hotkey listener for toggling status
 def hotkey_listener():
-    while running:
-        if keyboard.is_pressed(config_data['healer_hotkey']):
-            new_status = not config_data['healer_status']
-            update_healer_status(new_status)
-            root.after(0, lambda: healer_status_label.config(bg="green" if new_status else "red"))
-            root.after(0, lambda: healer_status_label.config(text=f"Healer: {'ON' if new_status else 'OFF'}"))
-            time.sleep(0.2)
+    # Toggle healer status hotkey
+    keyboard.add_hotkey(config_data['healer_hotkey'], lambda: toggle_healer_status())
 
-        if keyboard.is_pressed(config_data['targeter_hotkey']):
-            new_status = not config_data['targeter_status']
-            update_targeter_status(new_status)
-            root.after(0, lambda: targeter_status_label.config(bg="green" if new_status else "red"))
-            root.after(0, lambda: targeter_status_label.config(text=f"Targeter: {'ON' if new_status else 'OFF'}"))
-            time.sleep(0.2)
+    # Toggle targeter status hotkey
+    keyboard.add_hotkey(config_data['targeter_hotkey'], lambda: toggle_targeter_status())
 
-        if keyboard.is_pressed(config_data['walker_hotkey']):
-            new_status = not config_data['walker_status']
-            update_walker_status(new_status)
-            root.after(0, lambda: walker_status_label.config(bg="green" if new_status else "red"))
-            root.after(0, lambda: walker_status_label.config(text=f"Walker: {'ON' if new_status else 'OFF'}"))
-            time.sleep(0.2)
+    # Toggle walker status hotkey
+    keyboard.add_hotkey(config_data['walker_hotkey'], lambda: toggle_walker_status())
+
+def toggle_healer_status():
+    new_status = not config_data['healer_status']
+    update_healer_status(new_status)
+    root.after(0, lambda: healer_status_label.config(bg="green" if new_status else "red"))
+    root.after(0, lambda: healer_status_label.config(text=f"Healer: {'ON' if new_status else 'OFF'}"))
+
+def toggle_targeter_status():
+    new_status = not config_data['targeter_status']
+    update_targeter_status(new_status)
+    root.after(0, lambda: targeter_status_label.config(bg="green" if new_status else "red"))
+    root.after(0, lambda: targeter_status_label.config(text=f"Targeter: {'ON' if new_status else 'OFF'}"))
+
+def toggle_walker_status():
+    new_status = not config_data['walker_status']
+    update_walker_status(new_status)
+    root.after(0, lambda: walker_status_label.config(bg="green" if new_status else "red"))
+    root.after(0, lambda: walker_status_label.config(text=f"Walker: {'ON' if new_status else 'OFF'}"))
+
 
 # Update memory display in the GUI
 def update_memory_display():
-    while running:
-        if pm is None:
-            attach_to_process()  # Reconnect if the process is lost
+    if not running:
+        return
 
-        real_hp = read_memory(0x9BF988)
-        max_hp = read_memory(0x9BF98C)
-        pos_x = read_memory(0xBF2C58)
-        pos_y = read_memory(0xBF2C50)
-        sickness = read_memory(0xBF0D50)
-        chat_open = read_memory(0x9B6998)
-        mode = read_memory(0xAC1D60)
-        target_type = read_memory(0xBEFA34)
+    if pm is None:
+        attach_to_process()  # Reconnect if the process is lost
 
-        real_hp_scaled = real_hp / 65535 if real_hp else 0
-        root.after(0, lambda: hp_label.config(text=f"Real HP: {real_hp_scaled:.2f} | Max HP: {max_hp}" if real_hp and max_hp else "Real HP: N/A | Max HP: N/A"))
-        root.after(0, lambda: posx_label.config(text=f"PosX: {pos_x}" if pos_x else "PosX: N/A"))
-        root.after(0, lambda: posy_label.config(text=f"PosY: {pos_y}" if pos_y else "PosY: N/A"))
-        sickness_status = 'Poison' if sickness == 1 else 'Disease' if sickness == 2 else 'None'
-        root.after(0, lambda: sickness_label.config(text=f"Sickness: {sickness_status}"))
-        chat_status = 'Yes' if chat_open == 1 else 'No'
-        root.after(0, lambda: chat_label.config(text=f"Chat Open: {chat_status}"))
-        mode_status = 'Attack' if mode == 1 else 'None'
-        root.after(0, lambda: mode_label.config(text=f"Mode: {mode_status}"))
-        target_type_str = "Monster" if target_type == 1 else "NPC" if target_type == 2 else "Player" if target_type == 3 else "None"
-        root.after(0, lambda: type_label.config(text=f"Type: {target_type_str}"))
+    real_hp = read_memory(0x9BF988)
+    max_hp = read_memory(0x9BF98C)
+    pos_x = read_memory(0xBF2C58)
+    pos_y = read_memory(0xBF2C50)
+    sickness = read_memory(0xBF0D50)
+    chat_open = read_memory(0x9B6998)
+    mode = read_memory(0xAC1D60)
+    target_type = read_memory(0xBEFA34)
 
-        time.sleep(0.5)
+    # Scale HP
+    real_hp_scaled = real_hp / 65535 if real_hp else 0
+
+    # Update the GUI elements only if the values have changed
+    root.after(0, lambda: hp_label.config(text=f"Real HP: {real_hp_scaled:.2f} | Max HP: {max_hp}" if real_hp and max_hp else "Real HP: N/A | Max HP: N/A"))
+    root.after(0, lambda: posx_label.config(text=f"PosX: {pos_x}" if pos_x else "PosX: N/A"))
+    root.after(0, lambda: posy_label.config(text=f"PosY: {pos_y}" if pos_y else "PosY: N/A"))
+    sickness_status = 'Poison' if sickness == 1 else 'Disease' if sickness == 2 else 'None'
+    root.after(0, lambda: sickness_label.config(text=f"Sickness: {sickness_status}"))
+    chat_status = 'Yes' if chat_open == 1 else 'No'
+    root.after(0, lambda: chat_label.config(text=f"Chat Open: {chat_status}"))
+    mode_status = 'Attack' if mode == 1 else 'None'
+    root.after(0, lambda: mode_label.config(text=f"Mode: {mode_status}"))
+    target_type_str = "Monster" if target_type == 1 else "NPC" if target_type == 2 else "Player" if target_type == 3 else "None"
+    root.after(0, lambda: type_label.config(text=f"Type: {target_type_str}"))
+
+    # Schedule the function to run again after 500 ms (0.5 seconds)
+    root.after(500, update_memory_display)
+
 
 # Exit the script/program and stop all threads
 def stop_threads_and_exit():

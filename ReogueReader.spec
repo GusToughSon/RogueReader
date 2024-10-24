@@ -8,7 +8,7 @@ dll_path = os.path.abspath('AutoItX3_x64.dll')  # Ensure AutoItX3_x64.dll is in 
 a = Analysis(
     ['RogueReader.py'],
     pathex=[],
-    binaries=[(dll_path, 'autoit/lib')],  # Bundle the DLL into the autoit/lib subdirectory inside the dist folder
+	binaries=[(dll_path, 'autoit/lib')],  # Bundle the DLL into the autoit/lib subdirectory inside the dist folder
     datas=[],
     hiddenimports=[],
     hookspath=[],
