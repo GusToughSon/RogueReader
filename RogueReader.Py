@@ -302,12 +302,12 @@ def update_memory_display():
 
     real_hp = read_memory(0x9BF988)
     max_hp = read_memory(0x9BF98C)
-    pos_x = read_memory(0xBF2C58)
-    pos_y = read_memory(0xBF2C50)
-    sickness = read_memory(0xBF0D50)
+    pos_x = read_memory(0xBF2C70)
+    pos_y = read_memory(0xBF2C68)
+    sickness = read_memory(0x9BFB68)
     chat_open = read_memory(0x9B6998)
-    mode = read_memory(0xAC1D60)
-    target_type = read_memory(0xBEFA34)
+    mode = read_memory(0xAC1D70)
+    target_type = read_memory(0xBEFB04)
 
     # Scale HP
     real_hp_scaled = real_hp / 65535 if real_hp else 0
