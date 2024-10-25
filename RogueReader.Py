@@ -189,7 +189,7 @@ def perform_targeting():
         root.after(500, perform_targeting)  # Schedule the next check
         return
 
-#    print("[TARGETING DEBUG]: Targeting is enabled.")
+    print("[TARGETING DEBUG]: Targeting is enabled.")
 
     if pm is None:
         print("[TARGETING DEBUG]: No process found, attempting to attach...")
@@ -206,21 +206,21 @@ def perform_targeting():
         return
 
     # Output current memory values for debugging
-#    print(f"[TARGETING DEBUG]: Mode: {mode}, Target Type: {target_type}, Chat Open: {chat_open}")
+    print(f"[TARGETING DEBUG]: Mode: {mode}, Target Type: {target_type}, Chat Open: {chat_open}")
 
     # Pause if chat is open (do nothing while chat is open)
     if chat_open == 1:
-#        print("[TARGETING DEBUG]: Chat window is open, pausing targeting.")
+        print("[TARGETING DEBUG]: Chat window is open, pausing targeting.")
         root.after(500, perform_targeting)  # Retry after 500ms
         return
 
     # If mode is attack (1) and no target or invalid target (65535), send 'Tab' to find a target
     if mode == 1 and (target_type == 0 or target_type == 65535):
-#        print("[TARGETING DEBUG]: In attack mode with no valid target, sending 'Tab'...")
+        print("[TARGETING DEBUG]: In attack mode with no valid target, sending 'Tab'...")
         control_send_to_project_rogue("{TAB}")
 
     # Schedule the next targeting check after 500ms
-#    print("[TARGETING DEBUG]: Scheduling the next targeting check in 500ms.")
+    print("[TARGETING DEBUG]: Scheduling the next targeting check in 500ms.")
     root.after(500, perform_targeting)
 
 
@@ -251,15 +251,16 @@ def perform_healing():
                 root.after(500, perform_healing)  # Reschedule after 500ms
                 return
             if sickness == 1:
-                print("[HEALER IS SICK]: Healer is Sick, pausing healing.")
+                print("[HEALER IS SICK]: Healer is Poisoned, pausing healing.")
                 root.after(500, perform_healing)  # Reschedule after 500ms
                 return
             if sickness == 2:
-                print("[HEALER IS SICK]: Healer is Sick, pausing healing.")
+                print("[HEALER IS SICK]: Healer is Dieased, pausing healing.")
                 root.after(500, perform_healing)  # Reschedule after 500ms
                 return
             # If memory read fails, skip this cycle
             if real_hp is None or max_hp is None:
+                print("[HEALER IS SICK]: Healer is Errored, pausing healing.")
                 root.after(500, perform_healing)
                 return
 
@@ -269,6 +270,7 @@ def perform_healing():
 
             # Check if healing is required
             if real_hp_scaled < (max_hp * heal_percent):
+                print("[HEALER IS Healing]: Healer is healing.")
                 control_send_to_project_rogue("2")  # Send heal command
                 last_heal_time = current_time
 
@@ -276,6 +278,7 @@ def perform_healing():
         root.after(500, perform_healing)
     else:
         # If healing is off, reschedule the next check after 500ms
+        print("[HEALER has Herpies.")
         root.after(500, perform_healing)
 
 #Hotkey Actions
@@ -304,9 +307,11 @@ def perform_cure():
     global last_heal_time
 
     if not running:
+        
         return
 
     if config_data['cure_status']:
+        
         if pm is None:
             attach_to_process()  # Reconnect if the process is lost
 
@@ -332,6 +337,7 @@ def perform_cure():
         root.after(500, perform_cure)
     else:
         # If healing is off, reschedule the next check after 500ms
+        print("[Cure IS Off]: Healer is healing.")
         root.after(500, perform_cure)
 
 def control_send_to_project_rogue(key, retry_count=3):
@@ -340,7 +346,7 @@ def control_send_to_project_rogue(key, retry_count=3):
         if autoit.win_exists(TARGET_WINDOW_NAME):
             try:
                 autoit.control_send(TARGET_WINDOW_NAME, "", key)
-#                print(f"[AUTOIT DEBUG]: Sent {key} to {TARGET_WINDOW_NAME}")
+                print(f"[AUTOIT DEBUG]: Sent {key} to {TARGET_WINDOW_NAME}")
             except autoit.AutoItError as e:
                 print(f"[AUTOIT ERROR]: {e}")
         else:
@@ -379,6 +385,7 @@ def toggle_healer_status():
 def toggle_cure_status():
     new_status = not config_data['cure_status']
     update_cure_status(new_status)
+    print ("ShitWaffle")
     root.after(0, lambda: cure_status_label.config(bg="green" if new_status else "red"))
     root.after(0, lambda: cure_status_label.config(text=f"Cure: {'ON' if new_status else 'OFF'}"))
 
