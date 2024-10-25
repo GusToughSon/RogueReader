@@ -36,13 +36,15 @@ default_config_data = {
     'window_y': 100,  # Default y position,
     'healer_status': False,  # Default OFF
     'targeter_status': True,  # Default ON
-    'walker_status': False  # Default OFF
+    'walker_status': False,  # Default OFF
+    'cure_hotkey': ',',
+    'cure_status': True,  # Default ON
 }
 
 config_data = default_config_data.copy()  # Start with defaults
 
 # ThreadPool for task execution
-executor = ThreadPoolExecutor(max_workers=5)
+executor = ThreadPoolExecutor(max_workers=6)
 
 # Global timestamp for tracking last heal time
 last_heal_time = 0
@@ -66,8 +68,6 @@ try:
     print(f"[DEBUG]: Successfully loaded {dll_path}")
 except Exception as e:
     print(f"[ERROR]: Failed to load {dll_path} - {e}")
-
-
 
 def save_config():
     """Save the configuration to the file."""
@@ -93,6 +93,11 @@ def update_healer_status(new_status):
     config_data['healer_status'] = new_status
     save_config()
 
+def update_cure_status(new_status):
+    """Update cure status dynamically and save to config."""
+    config_data['cure_status'] = new_status
+    save_config()
+
 def update_targeter_status(new_status):
     """Update targeter status dynamically and save to config."""
     config_data['targeter_status'] = new_status
@@ -104,11 +109,33 @@ def update_walker_status(new_status):
     save_config()
 
 # Function to set a hotkey and save it to the config
+# Global dictionary to store hotkey references
+hotkey_registry = {}
+
+import tkinter.messagebox as messagebox
+
 def set_hotkey(hotkey_name, entry_widget):
-    new_hotkey = entry_widget.get()  # Get the hotkey value from the entry widget
-    config_data[hotkey_name] = new_hotkey  # Update the config_data with the new hotkey
-    save_config()  # Save the updated config
-    print(f"[CONFIG UPDATE]: {hotkey_name} set to {new_hotkey}")
+    new_hotkey = entry_widget.get().strip()  # Get the hotkey value and trim any extra spaces
+    if new_hotkey:
+        try:
+            # Validate if it's a valid hotkey
+            keyboard.parse_hotkey_combinations(new_hotkey)
+        except ValueError as e:
+            messagebox.showerror("Invalid Hotkey", f"Hotkey '{new_hotkey}' is not valid. Please try again.")
+            return  # Exit the function if the hotkey is invalid
+
+        # Remove the old hotkey listener if it exists
+        old_hotkey = hotkey_registry.get(hotkey_name)
+        if old_hotkey:
+            keyboard.remove_hotkey(old_hotkey)  # Remove the old hotkey binding
+
+        # Update the config_data with the new hotkey
+        config_data[hotkey_name] = new_hotkey
+        save_config()  # Save the updated config
+        print(f"[CONFIG UPDATE]: {hotkey_name} set to {new_hotkey}")
+
+        # Add the new hotkey listener and store the handler in the registry
+        hotkey_registry[hotkey_name] = keyboard.add_hotkey(new_hotkey, lambda: hotkey_action(hotkey_name))
 
 def attach_to_process():
     global process_pid, pm
@@ -153,30 +180,48 @@ def read_memory(offset):
 def perform_targeting():
     """Handle targeting in an optimized, non-blocking manner."""
     if not running:
+        print("[TARGETING DEBUG]: Exiting perform_targeting as 'running' is set to False.")
         return
 
-    if config_data['targeter_status']:  # Only proceed if targeting is enabled
-        if pm is None:
-            attach_to_process()  # Reconnect if the process is lost
+    # Check if targeting is enabled at the start to avoid unnecessary operations
+    if not config_data['targeter_status']:
+#        print("[TARGETING DEBUG]: Targeting is disabled, checking again in 500ms.")
+        root.after(500, perform_targeting)  # Schedule the next check
+        return
 
-        mode = read_memory(0xAC1D60)  # Game mode (1 means in attack mode)
-        target_type = read_memory(0xBEFA34)  # Current target type
-        chat_open = read_memory(0x9B6998)  # Is the chat window open?
+#    print("[TARGETING DEBUG]: Targeting is enabled.")
 
-        # Pause if chat is open (do nothing while chat is open)
-        if chat_open == 1:
-            root.after(500, perform_targeting)  # Retry after 500ms
-            return
+    if pm is None:
+        print("[TARGETING DEBUG]: No process found, attempting to attach...")
+        attach_to_process()  # Reconnect if the process is lost
 
-        # If mode is attack (1) and no target or invalid target (65535), send 'Tab' to find a target
-        if mode == 1 and (target_type == 0 or target_type == 65535):
-            control_send_to_project_rogue("{TAB}")
-        
-        # Schedule the next targeting check after 500ms
-        root.after(500, perform_targeting)
-    else:
-        # If targeting is off, check again after 500ms
-        root.after(500, perform_targeting)
+    # Read memory values and handle errors gracefully
+    mode = read_memory(0xAC1D70)  # Game mode (1 means in attack mode)
+    target_type = read_memory(0xBEFB04)  # Current target type
+    chat_open = read_memory(0x9B6998)  # Is the chat window open?
+
+    if mode is None or target_type is None or chat_open is None:
+        print("[TARGETING ERROR]: Failed to read one or more memory values, retrying...")
+        root.after(500, perform_targeting)  # Retry after 500ms
+        return
+
+    # Output current memory values for debugging
+#    print(f"[TARGETING DEBUG]: Mode: {mode}, Target Type: {target_type}, Chat Open: {chat_open}")
+
+    # Pause if chat is open (do nothing while chat is open)
+    if chat_open == 1:
+#        print("[TARGETING DEBUG]: Chat window is open, pausing targeting.")
+        root.after(500, perform_targeting)  # Retry after 500ms
+        return
+
+    # If mode is attack (1) and no target or invalid target (65535), send 'Tab' to find a target
+    if mode == 1 and (target_type == 0 or target_type == 65535):
+#        print("[TARGETING DEBUG]: In attack mode with no valid target, sending 'Tab'...")
+        control_send_to_project_rogue("{TAB}")
+
+    # Schedule the next targeting check after 500ms
+#    print("[TARGETING DEBUG]: Scheduling the next targeting check in 500ms.")
+    root.after(500, perform_targeting)
 
 
 # Healing thread
@@ -198,13 +243,21 @@ def perform_healing():
             real_hp = read_memory(0x9BF988)
             max_hp = read_memory(0x9BF98C)
             chat_open = read_memory(0x9B6998)
-
+            sickness = read_memory(0x9BFB68)
+            
             # Pause if chat is open
             if chat_open == 1:
                 print("[HEALER DEBUG]: Chat is open, pausing healing.")
                 root.after(500, perform_healing)  # Reschedule after 500ms
                 return
-
+            if sickness == 1:
+                print("[HEALER IS SICK]: Healer is Sick, pausing healing.")
+                root.after(500, perform_healing)  # Reschedule after 500ms
+                return
+            if sickness == 2:
+                print("[HEALER IS SICK]: Healer is Sick, pausing healing.")
+                root.after(500, perform_healing)  # Reschedule after 500ms
+                return
             # If memory read fails, skip this cycle
             if real_hp is None or max_hp is None:
                 root.after(500, perform_healing)
@@ -225,20 +278,61 @@ def perform_healing():
         # If healing is off, reschedule the next check after 500ms
         root.after(500, perform_healing)
 
+#Hotkey Actions
+def hotkey_action(hotkey_name):
+    if hotkey_name == 'healer_hotkey':
+        toggle_healer_status()
+    elif hotkey_name == 'cure_hotkey':
+        toggle_cure_status()
+    elif hotkey_name == 'targeter_hotkey':
+        toggle_targeter_status()
+    elif hotkey_name == 'walker_hotkey':
+        toggle_walker_status()
+    elif hotkey_name == 'walker_set_hotkey':
+        print("[HOTKEY]: Walker Set triggered")
+    elif hotkey_name == 'walker_wipe_hotkey':
+        print("[HOTKEY]: Walker Wipe triggered")
 
-def healer_sleep(ms_delay):
-    """Custom sleep function for the healer with interrupt on healer_status change."""
-    total_sleep_time = ms_delay / 1000.0  # Convert to seconds
-    intervals = int(total_sleep_time * 10)  # Break into smaller 0.1-second intervals
+def refresh_hotkey_listeners():
+    # Remove and rebind all hotkey listeners after changes
+    keyboard.clear_all_hotkeys()  # Clear all existing hotkeys
+    hotkey_listener()  # Re-register hotkey listener with updated config
 
-    def sleep_interval(count):
-        if not config_data['healer_status']:
-            return  # Interrupt sleep if healer is turned off
-        if count < intervals:
-            root.after(100, sleep_interval, count + 1)  # Schedule the next 0.1-second interval
-        else:
-            return  # Sleep completed
 
+# Curing thread
+def perform_cure():
+    global last_heal_time
+
+    if not running:
+        return
+
+    if config_data['cure_status']:
+        if pm is None:
+            attach_to_process()  # Reconnect if the process is lost
+
+        current_time = time.time() * 1000  # Current time in milliseconds
+        pot_delay = config_data['pot_delay']
+
+        # Check if the required pot delay time has passed
+        if current_time - last_heal_time >= pot_delay:
+            sickness = read_memory(0x9BFB68)
+            chat_open = read_memory(0x9B6998)
+            # Pause if chat is open
+            if chat_open == 1:
+                print("[Cure DEBUG]: Chat is open, pausing Cure.")
+                root.after(500, perform_cure)  # Reschedule after 500ms
+                return
+
+            # Check if healing is required
+            if sickness >= 1:
+                control_send_to_project_rogue("3")  # Send Cure command
+                last_heal_time = current_time
+                print ("fart")
+        # Reschedule the next healing check after 500ms
+        root.after(500, perform_cure)
+    else:
+        # If healing is off, reschedule the next check after 500ms
+        root.after(500, perform_cure)
 
 def control_send_to_project_rogue(key, retry_count=3):
     """Control sends the key to the Project Rogue window using AutoIt's ControlSend, with retries."""
@@ -246,7 +340,7 @@ def control_send_to_project_rogue(key, retry_count=3):
         if autoit.win_exists(TARGET_WINDOW_NAME):
             try:
                 autoit.control_send(TARGET_WINDOW_NAME, "", key)
-                print(f"[AUTOIT DEBUG]: Sent {key} to {TARGET_WINDOW_NAME}")
+#                print(f"[AUTOIT DEBUG]: Sent {key} to {TARGET_WINDOW_NAME}")
             except autoit.AutoItError as e:
                 print(f"[AUTOIT ERROR]: {e}")
         else:
@@ -272,12 +366,21 @@ def hotkey_listener():
 
     # Toggle walker status hotkey
     keyboard.add_hotkey(config_data['walker_hotkey'], lambda: toggle_walker_status())
+    
+    # Toggle cure status hotkey
+    keyboard.add_hotkey(config_data['cure_hotkey'], lambda: toggle_cure_status())
 
 def toggle_healer_status():
     new_status = not config_data['healer_status']
     update_healer_status(new_status)
     root.after(0, lambda: healer_status_label.config(bg="green" if new_status else "red"))
     root.after(0, lambda: healer_status_label.config(text=f"Healer: {'ON' if new_status else 'OFF'}"))
+
+def toggle_cure_status():
+    new_status = not config_data['cure_status']
+    update_cure_status(new_status)
+    root.after(0, lambda: cure_status_label.config(bg="green" if new_status else "red"))
+    root.after(0, lambda: cure_status_label.config(text=f"Cure: {'ON' if new_status else 'OFF'}"))
 
 def toggle_targeter_status():
     new_status = not config_data['targeter_status']
@@ -400,45 +503,56 @@ healer_status_label.grid(row=0, column=2)
 save_healer_button = tk.Button(hotkey_frame, text="Save Healer Hotkey", command=lambda: set_hotkey('healer_hotkey', healer_hotkey_entry))
 save_healer_button.grid(row=0, column=3)
 
+# Cure Hotkey
+cure_hotkey_label = tk.Label(hotkey_frame, text="Cure Hotkey:")
+cure_hotkey_label.grid(row=1, column=0, sticky='w')
+cure_hotkey_entry = tk.Entry(hotkey_frame)
+cure_hotkey_entry.insert(0, config_data['cure_hotkey'])
+cure_hotkey_entry.grid(row=1, column=1)
+cure_status_label = tk.Label(hotkey_frame, text="Cure: OFF" if not config_data['cure_status'] else "Cure: ON", bg="red" if not config_data['cure_status'] else "green", fg="white")
+cure_status_label.grid(row=1, column=2)
+save_cure_button = tk.Button(hotkey_frame, text="Save Cure Hotkey", command=lambda: set_hotkey('cure_hotkey', cure_hotkey_entry))
+save_cure_button.grid(row=1, column=3)
+
 # Targeter Hotkey
 targeter_hotkey_label = tk.Label(hotkey_frame, text="Targeter Hotkey:")
-targeter_hotkey_label.grid(row=1, column=0, sticky='w')
+targeter_hotkey_label.grid(row=2, column=0, sticky='w')
 targeter_hotkey_entry = tk.Entry(hotkey_frame)
 targeter_hotkey_entry.insert(0, config_data['targeter_hotkey'])
-targeter_hotkey_entry.grid(row=1, column=1)
+targeter_hotkey_entry.grid(row=2, column=1)
 targeter_status_label = tk.Label(hotkey_frame, text="Targeter: OFF" if not config_data['targeter_status'] else "Targeter: ON", bg="red" if not config_data['targeter_status'] else "green", fg="white")
-targeter_status_label.grid(row=1, column=2)
+targeter_status_label.grid(row=2, column=2)
 save_targeter_button = tk.Button(hotkey_frame, text="Save Targeter Hotkey", command=lambda: set_hotkey('targeter_hotkey', targeter_hotkey_entry))
-save_targeter_button.grid(row=1, column=3)
+save_targeter_button.grid(row=2, column=3)
 
 # Walker Hotkey
 walker_hotkey_label = tk.Label(hotkey_frame, text="Walker Hotkey:")
-walker_hotkey_label.grid(row=2, column=0, sticky='w')
+walker_hotkey_label.grid(row=3, column=0, sticky='w')
 walker_hotkey_entry = tk.Entry(hotkey_frame)
 walker_hotkey_entry.insert(0, config_data['walker_hotkey'])
-walker_hotkey_entry.grid(row=2, column=1)
+walker_hotkey_entry.grid(row=3, column=1)
 walker_status_label = tk.Label(hotkey_frame, text="Walker: OFF" if not config_data['walker_status'] else "Walker: ON", bg="red" if not config_data['walker_status'] else "green", fg="white")
-walker_status_label.grid(row=2, column=2)
+walker_status_label.grid(row=3, column=2)
 save_walker_button = tk.Button(hotkey_frame, text="Save Walker Hotkey", command=lambda: set_hotkey('walker_hotkey', walker_hotkey_entry))
-save_walker_button.grid(row=2, column=3)
+save_walker_button.grid(row=3, column=3)
 
 # WalkerSet Hotkey
 walkerset_hotkey_label = tk.Label(hotkey_frame, text="WalkerSet Hotkey:")
-walkerset_hotkey_label.grid(row=3, column=0, sticky='w')
+walkerset_hotkey_label.grid(row=4, column=0, sticky='w')
 walkerset_hotkey_entry = tk.Entry(hotkey_frame)
 walkerset_hotkey_entry.insert(0, config_data['walker_set_hotkey'])
-walkerset_hotkey_entry.grid(row=3, column=1)
+walkerset_hotkey_entry.grid(row=4, column=1)
 save_walkerset_button = tk.Button(hotkey_frame, text="Save WalkerSet Hotkey", command=lambda: set_hotkey('walker_set_hotkey', walkerset_hotkey_entry))
-save_walkerset_button.grid(row=3, column=3)
+save_walkerset_button.grid(row=4, column=3)
 
 # WalkerWipe Hotkey
 walkerwipe_hotkey_label = tk.Label(hotkey_frame, text="WalkerWipe Hotkey:")
-walkerwipe_hotkey_label.grid(row=4, column=0, sticky='w')
+walkerwipe_hotkey_label.grid(row=5, column=0, sticky='w')
 walkerwipe_hotkey_entry = tk.Entry(hotkey_frame)
 walkerwipe_hotkey_entry.insert(0, config_data['walker_wipe_hotkey'])
-walkerwipe_hotkey_entry.grid(row=4, column=1)
+walkerwipe_hotkey_entry.grid(row=5, column=1)
 save_walkerwipe_button = tk.Button(hotkey_frame, text="Save WalkerWipe Hotkey", command=lambda: set_hotkey('walker_wipe_hotkey', walkerwipe_hotkey_entry))
-save_walkerwipe_button.grid(row=4, column=3)
+save_walkerwipe_button.grid(row=5, column=3)
 
 # Slider Frame
 slider_frame = ttk.LabelFrame(root, text="Settings", padding="10")
@@ -509,5 +623,6 @@ threading.Thread(target=hotkey_listener).start()
 threading.Thread(target=perform_healing).start()  # Healing thread
 threading.Thread(target=perform_targeting).start()  # Targeting thread
 threading.Thread(target=update_memory_display).start()  # Update memory values display thread
+threading.Thread(target=perform_cure).start()  # cure thread
 
 root.mainloop()
