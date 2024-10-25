@@ -24,7 +24,7 @@ running = True
 # Initialize default values
 default_config_data = {
     'pot_delay': 2000,  # Default Pot Delay in milliseconds
-    'heal_percent': 50,  # Default Heal Percent
+    'heal_percent': 97,  # Default Heal Percent
     'healer_hotkey': '`',
     'targeter_hotkey': '-',
     'walker_hotkey': '/',
@@ -394,7 +394,6 @@ def toggle_walker_status():
     root.after(0, lambda: walker_status_label.config(bg="green" if new_status else "red"))
     root.after(0, lambda: walker_status_label.config(text=f"Walker: {'ON' if new_status else 'OFF'}"))
 
-
 # Update memory display in the GUI
 def update_memory_display():
     if not running:
@@ -430,7 +429,6 @@ def update_memory_display():
 
     # Schedule the function to run again after 500 ms (0.5 seconds)
     root.after(500, update_memory_display)
-
 
 # Exit the script/program and stop all threads
 def stop_threads_and_exit():
