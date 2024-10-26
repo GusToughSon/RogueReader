@@ -219,6 +219,7 @@ def perform_targeting():
         print("[TARGETING DEBUG]: In attack mode with no valid target, sending 'Tab'...")
         control_send_to_project_rogue("{TAB}")
 
+
     # Schedule the next targeting check after 500ms
 #    print("[TARGETING DEBUG]: Scheduling the next targeting check in 500ms.")
     root.after(500, perform_targeting)
@@ -251,42 +252,7 @@ def perform_cure():
 
 
             # Check if healing is required
-            if sickness == 1 : #Poisoned
-                control_send_to_project_rogue("3")  # Send Cure command
-                last_heal_time = current_time
-#                print ("fart")
-            root.after(50, perform_cure)
-            return
-            if sickness == 2 : #Poisoned
-                control_send_to_project_rogue("3")  # Send Cure command
-                last_heal_time = current_time
-#                print ("fart")
-            root.after(50, perform_cure)
-            return
-            if sickness == 65 : #Poisoned
-                control_send_to_project_rogue("3")  # Send Cure command
-                last_heal_time = current_time
-#                print ("fart")
-            root.after(50, perform_cure)
-            return
-            if sickness == 66 : #Poisoned
-                control_send_to_project_rogue("3")  # Send Cure command
-                last_heal_time = current_time
-#                print ("fart")
-            root.after(50, perform_cure)
-            return
-            if sickness == 98 : #Poisoned
-                control_send_to_project_rogue("3")  # Send Cure command
-                last_heal_time = current_time
-#                print ("fart")
-            root.after(50, perform_cure)
-            return
-            if sickness == 8193 : #Poisoned
-                control_send_to_project_rogue("3")  # Send Cure command
-                last_heal_time = current_time
-#                print ("fart")
-            root.after(50, perform_cure)
-            if sickness == 16449: #Poisoned
+            if (sickness == 1 or sickness == 2 or sickness == 65 or sickness == 66 or sickness == 98 or sickness == 8193 or sickness == 16449): #Poisoned
                 control_send_to_project_rogue("3")  # Send Cure command
                 last_heal_time = current_time
 #                print ("fart")
@@ -326,35 +292,7 @@ def perform_healing():
 #                print("[HEALER DEBUG]: Chat is open, pausing healing.")
                 root.after(100, perform_healing)  # Reschedule after 500ms
                 return
-            if sickness == 1 :
-#                print("[HEALER IS SICK1]: Healer is Poisoned, pausing healing.")
-                root.after(50, perform_healing)  # Reschedule after 500ms
-                return
-            if sickness == 2 :
-#                print("[HEALER IS SICK1]: Healer is Poisoned, pausing healing.")
-                root.after(50, perform_healing)  # Reschedule after 500ms
-                return
-            if sickness == 65 :
-#                print("[HEALER IS SICK1]: Healer is Poisoned, pausing healing.")
-                root.after(50, perform_healing)  # Reschedule after 500ms
-                return
-            if sickness == 66 :
-#                print("[HEALER IS SICK1]: Healer is Poisoned, pausing healing.")
-                root.after(50, perform_healing)  # Reschedule after 500ms
-                return
-            if sickness == 98 :
-#                print("[HEALER IS SICK1]: Healer is Poisoned, pausing healing.")
-                root.after(50, perform_healing)  # Reschedule after 500ms
-                return
-            if sickness == 8193 :
-#                print("[HEALER IS SICK1]: Healer is Poisoned, pausing healing.")
-                root.after(50, perform_healing)  # Reschedule after 500ms
-                return
-            if sickness == 8257 :
-#                print("[HEALER IS SICK1]: Healer is Poisoned, pausing healing.")
-                root.after(50, perform_healing)  # Reschedule after 500ms
-                return
-            if sickness ==16449 :
+            if (sickness == 1 or sickness == 2 or sickness == 65 or sickness == 66 or sickness == 98 or sickness == 8193 or sickness == 8257 or sickness ==16449) :
 #                print("[HEALER IS SICK1]: Healer is Poisoned, pausing healing.")
                 root.after(50, perform_healing)  # Reschedule after 500ms
                 return
