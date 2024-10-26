@@ -264,7 +264,9 @@ def perform_cure():
             if sickness in {1, 2, 65, 66, 98, 8193, 16449}:  # Poisoned
                 control_send_to_project_rogue("3")  # Send Cure command
                 last_heal_time = current_time
-                root.after(50, perform_cure)
+                root.after(100, perform_cure)
+            elif sickness == 0 :
+                root.after(100, perform_cure)
             else:
                 # Print the sickness value and reschedule the next check
                 print(f"Sickness: {sickness}")
