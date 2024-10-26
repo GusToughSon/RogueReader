@@ -215,7 +215,7 @@ def perform_targeting():
 
     # Pause if chat is open (do nothing while chat is open)
     if chat_open == 1:
-        print("[TARGETING DEBUG]: Chat window is open, pausing targeting.")
+ #       print("[TARGETING DEBUG]: Chat window is open, pausing targeting.")
         root.after(500, perform_targeting)  # Retry after 500ms
         return
         
@@ -223,7 +223,7 @@ def perform_targeting():
 
     # If mode is attack (1) and no target or invalid target (65535), send 'Tab' to find a target
     if mode == 1 and (target_type == 0 or target_type == 65535):
-        print("[TARGETING DEBUG]: In attack mode with no valid target, sending 'Tab'...")
+ #       print("[TARGETING DEBUG]: In attack mode with no valid target, sending 'Tab'...")
         control_send_to_project_rogue("{TAB}")
 
 
