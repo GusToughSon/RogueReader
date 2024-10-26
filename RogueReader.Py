@@ -367,31 +367,34 @@ def refresh_hotkey_listeners():
     keyboard.clear_all_hotkeys()  # Clear all existing hotkeys
     hotkey_listener()  # Re-register hotkey listener with updated config
 
-def control_send_to_project_rogue(key, retry_count=0):
+def control_send_to_project_rogue(key, retry_count=0, delay=400):
     """Control sends the key to the Project Rogue window using AutoIt's ControlSend, with retries."""
     try:
         chat_open = read_memory(0x9B6998)
+        if chat_open == 1:
+            print("ControlSend DEBUG Chat open")
+            threading.Timer(delay / 400, control_send_to_project_rogue, [key, retry_count - 0, delay]).start()
+            return  # Exit if chat is open
+
         if autoit.win_exists(TARGET_WINDOW_NAME):
-            
-            if chat_open == 1:
-                print ("ControlSend DEBUG Chat open")
-            return
-           
-        try:
-            autoit.control_send(TARGET_WINDOW_NAME, "", key)
-#           print(f"[AUTOIT DEBUG]: Sent {key} to {TARGET_WINDOW_NAME}")
-        except autoit.AutoItError as e:
-            print(f"[AUTOIT ERROR]: {e}")
+            try:
+                autoit.control_send(TARGET_WINDOW_NAME, "", key)
+                print(f"[AUTOIT DEBUG]: Sent {key} to {TARGET_WINDOW_NAME}")
+            except autoit.AutoItError as e:
+                print(f"[AUTOIT ERROR]: {e}")
+                if retry_count > 0:
+                    print(f"[AUTOIT DEBUG]: Retrying in 2 seconds... {retry_count} retries left.")
+                    root.after(2000, lambda: control_send_to_project_rogue(key, retry_count - 1))
         else:
             print(f"[AUTOIT ERROR]: Window '{TARGET_WINDOW_NAME}' not found.")
-            # Retry if the window isn't found (up to retry_count times)
             if retry_count > 0:
                 print(f"[AUTOIT DEBUG]: Retrying in 2 seconds... {retry_count} retries left.")
                 root.after(2000, lambda: control_send_to_project_rogue(key, retry_count - 1))
+
     except OSError as os_error:
         print(f"[AUTOIT ERROR]: OSError encountered while checking window: {os_error}")
-        # Retry on OSError (up to retry_count times)
         if retry_count > 0:
+            print(f"[AUTOIT DEBUG]: Retrying in 2 seconds... {retry_count} retries left.")
             root.after(2000, lambda: control_send_to_project_rogue(key, retry_count - 1))
 
 
