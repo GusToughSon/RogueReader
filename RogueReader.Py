@@ -199,7 +199,12 @@ def perform_targeting():
     mode = read_memory(0xAC1D70)  # Game mode (1 means in attack mode)
     target_type = read_memory(0xBEFB04)  # Current target type
     chat_open = read_memory(0x9B6998)  # Is the chat window open?
-
+    target_type = read_memory(0xBEFB04)
+#   Monster = 1 NPC = 2 Player = 3    
+    if target_type == 3:
+        print ("[Targeting Debug] pvp says stop")
+        root.after(500, perform_targeting) #player targeted retry after 500ms
+        
     if mode is None or target_type is None or chat_open is None:
         print("[TARGETING ERROR]: Failed to read one or more memory values, retrying...")
         root.after(500, perform_targeting)  # Retry after 500ms
@@ -213,6 +218,8 @@ def perform_targeting():
         print("[TARGETING DEBUG]: Chat window is open, pausing targeting.")
         root.after(500, perform_targeting)  # Retry after 500ms
         return
+        
+
 
     # If mode is attack (1) and no target or invalid target (65535), send 'Tab' to find a target
     if mode == 1 and (target_type == 0 or target_type == 65535):
