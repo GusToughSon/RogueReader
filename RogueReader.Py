@@ -23,7 +23,7 @@ running = True
 
 # Initialize default values
 default_config_data = {
-    'pot_delay': 2000,  # Default Pot Delay in milliseconds
+    'pot_delay': 1700,  # Default Pot Delay in milliseconds
     'heal_percent': 97,  # Default Heal Percent
     'healer_hotkey': '`',
     'targeter_hotkey': '-',
@@ -149,8 +149,8 @@ def attach_to_process():
                 if base_address:
                     print(f"[PROCESS DEBUG]: Attached to process {PROCESS_NAME} with PID {process_pid}")
                     return
-            else:
-                print(f"[PROCESS DEBUG]: {PROCESS_NAME} not found. Reattempting connection...")
+#            else:
+#                print(f"[PROCESS DEBUG]: {PROCESS_NAME} not found. Reattempting connection...")
         except Exception as e:
             print(f"[ERROR]: Error attaching to process: {e}")
         time.sleep(2)  # Retry connection every 2 seconds
@@ -170,7 +170,7 @@ def read_memory(offset):
         if base_address:
             value = pm.read_int(base_address + offset)
             return value
-        print(f"[MEMORY DEBUG]: Failed to read memory at offset {hex(offset)}")
+#        print(f"[MEMORY DEBUG]: Failed to read memory at offset {hex(offset)}")
         return None
     except Exception as e:
         print(f"[ERROR]: Failed to read memory at offset {hex(offset)}: {e}")
@@ -223,85 +223,6 @@ def perform_targeting():
     print("[TARGETING DEBUG]: Scheduling the next targeting check in 500ms.")
     root.after(500, perform_targeting)
 
-
-# Healing thread
-def perform_healing():
-    global last_heal_time
-
-    if not running:
-        return
-
-    if config_data['healer_status']:
-        if pm is None:
-            attach_to_process()  # Reconnect if the process is lost
-
-        current_time = time.time() * 1000  # Current time in milliseconds
-        pot_delay = config_data['pot_delay']
-
-        # Check if the required pot delay time has passed
-        if current_time - last_heal_time >= pot_delay:
-            real_hp = read_memory(0x9BF988)
-            max_hp = read_memory(0x9BF98C)
-            chat_open = read_memory(0x9B6998)
-            sickness = read_memory(0x9BFB68)
-            
-            # Pause if chat is open
-            if chat_open == 1:
-                print("[HEALER DEBUG]: Chat is open, pausing healing.")
-                root.after(500, perform_healing)  # Reschedule after 500ms
-                return
-            if sickness == 1:
-                print("[HEALER IS SICK]: Healer is Poisoned, pausing healing.")
-                root.after(500, perform_healing)  # Reschedule after 500ms
-                return
-            if sickness == 2:
-                print("[HEALER IS SICK]: Healer is Dieased, pausing healing.")
-                root.after(500, perform_healing)  # Reschedule after 500ms
-                return
-            # If memory read fails, skip this cycle
-            if real_hp is None or max_hp is None:
-                print("[HEALER IS SICK]: Healer is Errored, pausing healing.")
-                root.after(500, perform_healing)
-                return
-
-            # Calculate current HP percentage
-            real_hp_scaled = real_hp / 65535
-            heal_percent = config_data['heal_percent'] / 100.0  # Convert percentage to a float
-
-            # Check if healing is required
-            if real_hp_scaled < (max_hp * heal_percent):
-                print("[HEALER IS Healing]: Healer is healing.")
-                control_send_to_project_rogue("2")  # Send heal command
-                last_heal_time = current_time
-
-        # Reschedule the next healing check after 500ms
-        root.after(500, perform_healing)
-    else:
-        # If healing is off, reschedule the next check after 500ms
-        print("[HEALER has Herpies.")
-        root.after(500, perform_healing)
-
-#Hotkey Actions
-def hotkey_action(hotkey_name):
-    if hotkey_name == 'healer_hotkey':
-        toggle_healer_status()
-    elif hotkey_name == 'cure_hotkey':
-        toggle_cure_status()
-    elif hotkey_name == 'targeter_hotkey':
-        toggle_targeter_status()
-    elif hotkey_name == 'walker_hotkey':
-        toggle_walker_status()
-    elif hotkey_name == 'walker_set_hotkey':
-        print("[HOTKEY]: Walker Set triggered")
-    elif hotkey_name == 'walker_wipe_hotkey':
-        print("[HOTKEY]: Walker Wipe triggered")
-
-def refresh_hotkey_listeners():
-    # Remove and rebind all hotkey listeners after changes
-    keyboard.clear_all_hotkeys()  # Clear all existing hotkeys
-    hotkey_listener()  # Re-register hotkey listener with updated config
-
-
 # Curing thread
 def perform_cure():
     global last_heal_time
@@ -328,17 +249,123 @@ def perform_cure():
                 root.after(500, perform_cure)  # Reschedule after 500ms
                 return
 
+
             # Check if healing is required
-            if sickness >= 1:
+            if sickness == 1: #Poisoned
                 control_send_to_project_rogue("3")  # Send Cure command
                 last_heal_time = current_time
-                print ("fart")
+#                print ("fart")
+            root.after(50, perform_cure)
+            return
+            if sickness == 2: #Poisoned
+                control_send_to_project_rogue("3")  # Send Cure command
+                last_heal_time = current_time
+#                print ("fart")
+            root.after(50, perform_cure)
+            return
+            if sickness ==66:
+                control_send_to_project_rogue("3")  # Send Cure command
+                last_heal_time = current_time
+#                print ("fart1")
+            root.after(50, perform_cure)
+            return
+            if sickness ==98:
+                control_send_to_project_rogue("3")  # Send Cure command
+                last_heal_time = current_time
+#                print ("fart2")
+            root.after(50, perform_cure)
+            return
         # Reschedule the next healing check after 500ms
-        root.after(500, perform_cure)
+        root.after(100, perform_cure)
     else:
         # If healing is off, reschedule the next check after 500ms
-        print("[Cure IS Off]: Healer is healing.")
+#        print("[Cure IS Off]")
         root.after(500, perform_cure)
+
+# Healing thread
+def perform_healing():
+    global last_heal_time
+
+    if not running:
+        return
+
+    if config_data['healer_status']:
+        if pm is None:
+            attach_to_process()  # Reconnect if the process is lost
+
+        current_time = time.time() * 1000  # Current time in milliseconds
+        pot_delay = config_data['pot_delay']
+
+        # Check if the required pot delay time has passed
+        if current_time - last_heal_time >= pot_delay:
+            real_hp = read_memory(0x9BF988)
+            max_hp = read_memory(0x9BF98C)
+            chat_open = read_memory(0x9B6998)
+            sickness = read_memory(0x9BFB68)
+            
+            # Pause if chat is open
+            if chat_open == 1:
+#                print("[HEALER DEBUG]: Chat is open, pausing healing.")
+                root.after(500, perform_healing)  # Reschedule after 500ms
+                return
+            if sickness == 1:
+#                print("[HEALER IS SICK1]: Healer is Poisoned, pausing healing.")
+                root.after(50, perform_healing)  # Reschedule after 500ms
+                return
+            if sickness == 2:
+#                print("[HEALER IS SICK1]: Healer is Dieased, pausing healing.")
+                root.after(50, perform_healing)  # Reschedule after 500ms
+                return
+            if sickness == 66:
+#                print("[HEALER IS SICK2]: Healer is Dieased, pausing healing.")
+                root.after(50, perform_healing)  # Reschedule after 500ms
+                return
+            if sickness == 98:
+#                print("[HEALER IS SICK2]: Healer is Poisoned, pausing healing.")
+                root.after(50, perform_healing)  # Reschedule after 500ms
+                return
+            # If memory read fails, skip this cycle
+            if real_hp is None or max_hp is None:
+#                print("[HEALER IS SICK]: Healer is Errored, pausing healing.")
+                root.after(1000, perform_healing)
+                return
+
+            # Calculate current HP percentage
+            real_hp_scaled = real_hp / 65535
+            heal_percent = config_data['heal_percent'] / 100.0  # Convert percentage to a float
+
+            # Check if healing is required
+            if real_hp_scaled < (max_hp * heal_percent):
+#                print("[HEALER IS Healing]: Healer is healing.")
+                control_send_to_project_rogue("2")  # Send heal command
+                last_heal_time = current_time
+
+        # Reschedule the next healing check after 500ms
+        root.after(500, perform_healing)
+    else:
+        # If healing is off, reschedule the next check after 500ms
+#        print("[HEALER] is off.")
+        root.after(500, perform_healing)
+
+#Hotkey Actions
+def hotkey_action(hotkey_name):
+    if hotkey_name == 'healer_hotkey':
+        toggle_healer_status()
+    elif hotkey_name == 'cure_hotkey':
+        toggle_cure_status()
+    elif hotkey_name == 'targeter_hotkey':
+        toggle_targeter_status()
+    elif hotkey_name == 'walker_hotkey':
+        toggle_walker_status()
+    elif hotkey_name == 'walker_set_hotkey':
+        print("[HOTKEY]: Walker Set triggered")
+    elif hotkey_name == 'walker_wipe_hotkey':
+        print("[HOTKEY]: Walker Wipe triggered")
+
+def refresh_hotkey_listeners():
+    # Remove and rebind all hotkey listeners after changes
+    keyboard.clear_all_hotkeys()  # Clear all existing hotkeys
+    hotkey_listener()  # Re-register hotkey listener with updated config
 
 def control_send_to_project_rogue(key, retry_count=3):
     """Control sends the key to the Project Rogue window using AutoIt's ControlSend, with retries."""
@@ -346,7 +373,7 @@ def control_send_to_project_rogue(key, retry_count=3):
         if autoit.win_exists(TARGET_WINDOW_NAME):
             try:
                 autoit.control_send(TARGET_WINDOW_NAME, "", key)
-                print(f"[AUTOIT DEBUG]: Sent {key} to {TARGET_WINDOW_NAME}")
+#                print(f"[AUTOIT DEBUG]: Sent {key} to {TARGET_WINDOW_NAME}")
             except autoit.AutoItError as e:
                 print(f"[AUTOIT ERROR]: {e}")
         else:
@@ -385,7 +412,7 @@ def toggle_healer_status():
 def toggle_cure_status():
     new_status = not config_data['cure_status']
     update_cure_status(new_status)
-    print ("ShitWaffle")
+#    print ("Cure Status Change")
     root.after(0, lambda: cure_status_label.config(bg="green" if new_status else "red"))
     root.after(0, lambda: cure_status_label.config(text=f"Cure: {'ON' if new_status else 'OFF'}"))
 
@@ -425,7 +452,7 @@ def update_memory_display():
     root.after(0, lambda: hp_label.config(text=f"Real HP: {real_hp_scaled:.2f} | Max HP: {max_hp}" if real_hp and max_hp else "Real HP: N/A | Max HP: N/A"))
     root.after(0, lambda: posx_label.config(text=f"PosX: {pos_x}" if pos_x else "PosX: N/A"))
     root.after(0, lambda: posy_label.config(text=f"PosY: {pos_y}" if pos_y else "PosY: N/A"))
-    sickness_status = 'Poison' if sickness == 1 else 'Disease' if sickness == 2 else 'None'
+    sickness_status = 'Poison' if sickness == 1 else 'Disease' if sickness == 2 else 'Vampirism' if sickness == 64 else 'Disease' if sickness == 66 else 'Poison' if sickness == 98 else {sickness}
     root.after(0, lambda: sickness_label.config(text=f"Sickness: {sickness_status}"))
     chat_status = 'Yes' if chat_open == 1 else 'No'
     root.after(0, lambda: chat_label.config(text=f"Chat Open: {chat_status}"))
@@ -493,6 +520,9 @@ y_pos = config_data.get('window_y', 100)
 root.geometry(f"{width}x{height}+{x_pos}+{y_pos}")
 root.bind("<Configure>", lambda e: save_window_size_position())
 
+def gui_start():
+    print(f"Start of GUI CODE")
+    
 # Hotkey Settings Frame
 hotkey_frame = ttk.LabelFrame(root, text="Hotkey Settings", padding="10")
 hotkey_frame.pack(fill="both", expand="yes", padx=10, pady=10)
