@@ -232,15 +232,17 @@ def perform_targeting():
     root.after(500, perform_targeting)
 
 # Curing thread
+import time
+
+last_heal_time = 0  # Initial value for global variable
+
 def perform_cure():
     global last_heal_time
 
     if not running:
-        
         return
 
     if config_data['cure_status']:
-        
         if pm is None:
             attach_to_process()  # Reconnect if the process is lost
 
@@ -251,27 +253,30 @@ def perform_cure():
         if current_time - last_heal_time >= pot_delay:
             sickness = read_memory(0x9BFB68)
             chat_open = read_memory(0x9B6998)
+
             # Pause if chat is open
             if chat_open == 1:
                 print("[Cure DEBUG]: Chat is open, pausing Cure.")
                 root.after(500, perform_cure)  # Reschedule after 500ms
                 return
 
-
             # Check if healing is required
-            if (sickness == 1 or sickness == 2 or sickness == 65 or sickness == 66 or sickness == 98 or sickness == 8193 or sickness == 16449): #Poisoned
+            if sickness in {1, 2, 65, 66, 98, 8193, 16449}:  # Poisoned
                 control_send_to_project_rogue("3")  # Send Cure command
                 last_heal_time = current_time
-#                print ("fart")
-            root.after(50, perform_cure)
+                root.after(50, perform_cure)
+            else:
+                # Print the sickness value and reschedule the next check
+                print(f"Sickness: {sickness}")
+                root.after(500, perform_cure)
             return
 
-        # Reschedule the next healing check after 500ms
+        # Reschedule the next healing check after 100ms if pot delay hasn't passed
         root.after(100, perform_cure)
     else:
         # If healing is off, reschedule the next check after 500ms
-#        print("[Cure IS Off]")
         root.after(500, perform_cure)
+
 
 # Healing thread
 def perform_healing():
@@ -299,9 +304,9 @@ def perform_healing():
 #                print("[HEALER DEBUG]: Chat is open, pausing healing.")
                 root.after(100, perform_healing)  # Reschedule after 500ms
                 return
-            if (sickness == 1 or sickness == 2 or sickness == 65 or sickness == 66 or sickness == 98 or sickness == 8193 or sickness == 8257 or sickness ==16449) :
+            if sickness in  (1, 2, 65, 66, 98, 8193, 8257,16449) :
 #                print("[HEALER IS SICK1]: Healer is Poisoned, pausing healing.")
-                root.after(50, perform_healing)  # Reschedule after 500ms
+                root.after(100, perform_healing)  # Reschedule after 500ms
                 return
 
             
@@ -323,10 +328,7 @@ def perform_healing():
 
         # Reschedule the next healing check after 500ms
         root.after(500, perform_healing)
-    else:
-        # If healing is off, reschedule the next check after 500ms
-#        print("[HEALER] is off.")
-        root.after(500, perform_healing)
+
 
 #Hotkey Actions
 def hotkey_action(hotkey_name):
