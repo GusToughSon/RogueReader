@@ -306,7 +306,7 @@ def perform_healing():
             # Pause if chat is open
             if chat_open == 1:
 #                print("[HEALER DEBUG]: Chat is open, pausing healing.")
-                root.after(500, perform_healing)  # Reschedule after 500ms
+                root.after(100, perform_healing)  # Reschedule after 500ms
                 return
             if sickness == 1:
 #                print("[HEALER IS SICK1]: Healer is Poisoned, pausing healing.")
@@ -367,15 +367,19 @@ def refresh_hotkey_listeners():
     keyboard.clear_all_hotkeys()  # Clear all existing hotkeys
     hotkey_listener()  # Re-register hotkey listener with updated config
 
-def control_send_to_project_rogue(key, retry_count=3):
+def control_send_to_project_rogue(key, retry_count=0):
     """Control sends the key to the Project Rogue window using AutoIt's ControlSend, with retries."""
     try:
+        chat_open = read_memory(0x9B6998)
         if autoit.win_exists(TARGET_WINDOW_NAME):
-            try:
-                autoit.control_send(TARGET_WINDOW_NAME, "", key)
-#                print(f"[AUTOIT DEBUG]: Sent {key} to {TARGET_WINDOW_NAME}")
-            except autoit.AutoItError as e:
-                print(f"[AUTOIT ERROR]: {e}")
+            print ("ControlSend DEBUG Chat open")
+            return
+           
+        try:
+            autoit.control_send(TARGET_WINDOW_NAME, "", key)
+#           print(f"[AUTOIT DEBUG]: Sent {key} to {TARGET_WINDOW_NAME}")
+        except autoit.AutoItError as e:
+            print(f"[AUTOIT ERROR]: {e}")
         else:
             print(f"[AUTOIT ERROR]: Window '{TARGET_WINDOW_NAME}' not found.")
             # Retry if the window isn't found (up to retry_count times)
