@@ -263,6 +263,12 @@ def perform_cure():
 #                print ("fart")
             root.after(50, perform_cure)
             return
+            if sickness ==65: #Poisoned
+                control_send_to_project_rogue("3")  # Send Cure command
+                last_heal_time = current_time
+#                print ("fart1")
+            root.after(50, perform_cure)
+            return
             if sickness ==66:
                 control_send_to_project_rogue("3")  # Send Cure command
                 last_heal_time = current_time
@@ -461,7 +467,7 @@ def update_memory_display():
     root.after(0, lambda: hp_label.config(text=f"Real HP: {real_hp_scaled:.2f} | Max HP: {max_hp}" if real_hp and max_hp else "Real HP: N/A | Max HP: N/A"))
     root.after(0, lambda: posx_label.config(text=f"PosX: {pos_x}" if pos_x else "PosX: N/A"))
     root.after(0, lambda: posy_label.config(text=f"PosY: {pos_y}" if pos_y else "PosY: N/A"))
-    sickness_status = 'Poison' if sickness == 1 else 'Disease' if sickness == 2 else 'Vampirism' if sickness == 64 else 'Disease' if sickness == 66 else 'Poison' if sickness == 98 else {sickness}
+    sickness_status = 'Poison' if sickness == 1 else 'Disease' if sickness == 2 else 'Vampirism' if sickness == 64 else 'Poison' if sickness == 65 else 'Disease' if sickness == 66 else 'Poison' if sickness == 98 else  'Vamp+Blood' if sickness == 8256 else 'Exhausted' if sickness == 16384 else 'Vamp+Exh' if sickness == 16448 else {sickness}
     root.after(0, lambda: sickness_label.config(text=f"Sickness: {sickness_status}"))
     chat_status = 'Yes' if chat_open == 1 else 'No'
     root.after(0, lambda: chat_label.config(text=f"Chat Open: {chat_status}"))
