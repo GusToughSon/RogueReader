@@ -189,7 +189,7 @@ def perform_targeting():
         root.after(500, perform_targeting)  # Schedule the next check
         return
 
-    print("[TARGETING DEBUG]: Targeting is enabled.")
+#    print("[TARGETING DEBUG]: Targeting is enabled.")
 
     if pm is None:
         print("[TARGETING DEBUG]: No process found, attempting to attach...")
@@ -206,7 +206,7 @@ def perform_targeting():
         return
 
     # Output current memory values for debugging
-    print(f"[TARGETING DEBUG]: Mode: {mode}, Target Type: {target_type}, Chat Open: {chat_open}")
+#    print(f"[TARGETING DEBUG]: Mode: {mode}, Target Type: {target_type}, Chat Open: {chat_open}")
 
     # Pause if chat is open (do nothing while chat is open)
     if chat_open == 1:
@@ -220,7 +220,7 @@ def perform_targeting():
         control_send_to_project_rogue("{TAB}")
 
     # Schedule the next targeting check after 500ms
-    print("[TARGETING DEBUG]: Scheduling the next targeting check in 500ms.")
+#    print("[TARGETING DEBUG]: Scheduling the next targeting check in 500ms.")
     root.after(500, perform_targeting)
 
 # Curing thread
@@ -251,36 +251,48 @@ def perform_cure():
 
 
             # Check if healing is required
-            if sickness == 1: #Poisoned
+            if sickness == 1 : #Poisoned
                 control_send_to_project_rogue("3")  # Send Cure command
                 last_heal_time = current_time
 #                print ("fart")
             root.after(50, perform_cure)
             return
-            if sickness == 2: #Poisoned
+            if sickness == 2 : #Poisoned
                 control_send_to_project_rogue("3")  # Send Cure command
                 last_heal_time = current_time
 #                print ("fart")
             root.after(50, perform_cure)
             return
-            if sickness ==65: #Poisoned
+            if sickness == 65 : #Poisoned
                 control_send_to_project_rogue("3")  # Send Cure command
                 last_heal_time = current_time
-#                print ("fart1")
+#                print ("fart")
             root.after(50, perform_cure)
             return
-            if sickness ==66:
+            if sickness == 66 : #Poisoned
                 control_send_to_project_rogue("3")  # Send Cure command
                 last_heal_time = current_time
-#                print ("fart1")
+#                print ("fart")
             root.after(50, perform_cure)
             return
-            if sickness ==98:
+            if sickness == 98 : #Poisoned
                 control_send_to_project_rogue("3")  # Send Cure command
                 last_heal_time = current_time
-#                print ("fart2")
+#                print ("fart")
             root.after(50, perform_cure)
             return
+            if sickness == 8193 : #Poisoned
+                control_send_to_project_rogue("3")  # Send Cure command
+                last_heal_time = current_time
+#                print ("fart")
+            root.after(50, perform_cure)
+            if sickness == 16449: #Poisoned
+                control_send_to_project_rogue("3")  # Send Cure command
+                last_heal_time = current_time
+#                print ("fart")
+            root.after(50, perform_cure)
+            return
+
         # Reschedule the next healing check after 500ms
         root.after(100, perform_cure)
     else:
@@ -314,22 +326,40 @@ def perform_healing():
 #                print("[HEALER DEBUG]: Chat is open, pausing healing.")
                 root.after(100, perform_healing)  # Reschedule after 500ms
                 return
-            if sickness == 1:
+            if sickness == 1 :
 #                print("[HEALER IS SICK1]: Healer is Poisoned, pausing healing.")
                 root.after(50, perform_healing)  # Reschedule after 500ms
                 return
-            if sickness == 2:
-#                print("[HEALER IS SICK1]: Healer is Dieased, pausing healing.")
+            if sickness == 2 :
+#                print("[HEALER IS SICK1]: Healer is Poisoned, pausing healing.")
                 root.after(50, perform_healing)  # Reschedule after 500ms
                 return
-            if sickness == 66:
-#                print("[HEALER IS SICK2]: Healer is Dieased, pausing healing.")
+            if sickness == 65 :
+#                print("[HEALER IS SICK1]: Healer is Poisoned, pausing healing.")
                 root.after(50, perform_healing)  # Reschedule after 500ms
                 return
-            if sickness == 98:
-#                print("[HEALER IS SICK2]: Healer is Poisoned, pausing healing.")
+            if sickness == 66 :
+#                print("[HEALER IS SICK1]: Healer is Poisoned, pausing healing.")
                 root.after(50, perform_healing)  # Reschedule after 500ms
                 return
+            if sickness == 98 :
+#                print("[HEALER IS SICK1]: Healer is Poisoned, pausing healing.")
+                root.after(50, perform_healing)  # Reschedule after 500ms
+                return
+            if sickness == 8193 :
+#                print("[HEALER IS SICK1]: Healer is Poisoned, pausing healing.")
+                root.after(50, perform_healing)  # Reschedule after 500ms
+                return
+            if sickness == 8257 :
+#                print("[HEALER IS SICK1]: Healer is Poisoned, pausing healing.")
+                root.after(50, perform_healing)  # Reschedule after 500ms
+                return
+            if sickness ==16449 :
+#                print("[HEALER IS SICK1]: Healer is Poisoned, pausing healing.")
+                root.after(50, perform_healing)  # Reschedule after 500ms
+                return
+
+            
             # If memory read fails, skip this cycle
             if real_hp is None or max_hp is None:
 #                print("[HEALER IS SICK]: Healer is Errored, pausing healing.")
@@ -376,13 +406,13 @@ def refresh_hotkey_listeners():
 def control_send_to_project_rogue(key, retry_count=0, delay=400):
     """Control sends the key to the Project Rogue window using AutoIt's ControlSend, with retries."""
     try:
-        chat_open = read_memory(0x9B6998)
-        if chat_open == 1:
-            print("ControlSend DEBUG Chat open")
-            threading.Timer(delay / 400, control_send_to_project_rogue, [key, retry_count - 0, delay]).start()
-            return  # Exit if chat is open
-
         if autoit.win_exists(TARGET_WINDOW_NAME):
+            chat_open = read_memory(0x9B6998)
+            if chat_open == 1:
+                print("ControlSend DEBUG Chat open")
+                threading.Timer(delay / 400, control_send_to_project_rogue, [key, retry_count - 0, delay]).start()
+                return  # Exit if chat is open
+            
             try:
                 autoit.control_send(TARGET_WINDOW_NAME, "", key)
                 print(f"[AUTOIT DEBUG]: Sent {key} to {TARGET_WINDOW_NAME}")
@@ -467,7 +497,7 @@ def update_memory_display():
     root.after(0, lambda: hp_label.config(text=f"Real HP: {real_hp_scaled:.2f} | Max HP: {max_hp}" if real_hp and max_hp else "Real HP: N/A | Max HP: N/A"))
     root.after(0, lambda: posx_label.config(text=f"PosX: {pos_x}" if pos_x else "PosX: N/A"))
     root.after(0, lambda: posy_label.config(text=f"PosY: {pos_y}" if pos_y else "PosY: N/A"))
-    sickness_status = 'Poison' if sickness == 1 else 'Disease' if sickness == 2 else 'Vampirism' if sickness == 64 else 'Poison' if sickness == 65 else 'Disease' if sickness == 66 else 'Poison' if sickness == 98 else  'Vamp+Blood' if sickness == 8256 else 'Exhausted' if sickness == 16384 else 'Vamp+Exh' if sickness == 16448 else {sickness}
+    sickness_status = 'Poison' if sickness == 1 else 'Disease' if sickness == 2 else 'Vampirism' if sickness == 64 else 'Poison' if sickness == 65 else 'Disease' if sickness == 66 else 'Poison' if sickness == 98 else 'Poison' if sickness == 8193 else 'Vamp+Blood' if sickness == 8256 else 'Exhausted' if sickness == 16384 else 'Vamp+Exh' if sickness == 16448 else {sickness}
     root.after(0, lambda: sickness_label.config(text=f"Sickness: {sickness_status}"))
     chat_status = 'Yes' if chat_open == 1 else 'No'
     root.after(0, lambda: chat_label.config(text=f"Chat Open: {chat_status}"))
