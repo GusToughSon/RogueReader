@@ -372,7 +372,9 @@ def control_send_to_project_rogue(key, retry_count=0):
     try:
         chat_open = read_memory(0x9B6998)
         if autoit.win_exists(TARGET_WINDOW_NAME):
-            print ("ControlSend DEBUG Chat open")
+            
+            if chat_open == 1:
+                print ("ControlSend DEBUG Chat open")
             return
            
         try:
