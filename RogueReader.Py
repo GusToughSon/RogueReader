@@ -2,6 +2,7 @@ import os
 import ctypes
 import tkinter as tk
 from tkinter import ttk
+import tkinter.messagebox as messagebox
 import threading
 import psutil
 import pymem
@@ -12,12 +13,19 @@ import autoit  # Now you can safely import autoit
 from concurrent.futures import ThreadPoolExecutor
 import sys
 
+
 CONFIG_FILE = "config.dat"
 PROCESS_NAME = "Project Rogue Client.exe"
 TARGET_WINDOW_NAME = "Project Rogue"
 process_pid = None
 pm = None
-
+# Walker Configuration
+MAX_LOCATIONS = 250
+DATA_FILE = 'locations.dat'
+# State variables
+locations = []
+is_walking = False
+total_locations = 0
 # Global flag to stop background threads
 running = True
 
@@ -48,8 +56,10 @@ executor = ThreadPoolExecutor(max_workers=6)
 
 # Global timestamp for tracking last heal time
 last_heal_time = 0
-
+last_target_time = 0
 # Determine if the program is frozen (i.e., running as an executable)
+
+
 
 def get_resource_path(relative_path):
     """ Get the absolute path to the resource, works for both development and PyInstaller .exe """
@@ -108,11 +118,12 @@ def update_walker_status(new_status):
     config_data['walker_status'] = new_status
     save_config()
 
+
+
 # Function to set a hotkey and save it to the config
 # Global dictionary to store hotkey references
 hotkey_registry = {}
 
-import tkinter.messagebox as messagebox
 
 def set_hotkey(hotkey_name, entry_widget):
     new_hotkey = entry_widget.get().strip()  # Get the hotkey value and trim any extra spaces
@@ -178,6 +189,9 @@ def read_memory(offset):
 
 # Perform targeting in its own thread
 def perform_targeting():
+    global last_target_time
+    target_time = 500 #sleep for 500 ms in this thread time inbetween targeting again
+    current_time = time.time() * 1000  # Current time in milliseconds
     """Handle targeting in an optimized, non-blocking manner."""
     if not running:
         print("[TARGETING DEBUG]: Exiting perform_targeting as 'running' is set to False.")
@@ -220,21 +234,22 @@ def perform_targeting():
         return
         
 
+    if current_time - last_target_time >= target_time:
+        # If mode is attack (1) and no target or invalid target (65535), send 'Tab' to find a target
+        if mode == 1 and (target_type == 0 or target_type == 65535):
+ #          print("[TARGETING DEBUG]: In attack mode with no valid target, sending 'Tab'...")
+            control_send_to_project_rogue("{TAB}")
+            root.after(500, perform_targeting)  # Retry after 500ms
+            return
 
-    # If mode is attack (1) and no target or invalid target (65535), send 'Tab' to find a target
-    if mode == 1 and (target_type == 0 or target_type == 65535):
- #       print("[TARGETING DEBUG]: In attack mode with no valid target, sending 'Tab'...")
-        control_send_to_project_rogue("{TAB}")
+        # Schedule the next targeting check after 500ms
+#       print("[TARGETING DEBUG]: Scheduling the next targeting check in 500ms.")
 
 
-    # Schedule the next targeting check after 500ms
-#    print("[TARGETING DEBUG]: Scheduling the next targeting check in 500ms.")
+
     root.after(500, perform_targeting)
 
 # Curing thread
-import time
-
-last_heal_time = 0  # Initial value for global variable
 
 def perform_cure():
     global last_heal_time
@@ -385,6 +400,8 @@ def control_send_to_project_rogue(key, retry_count=0, delay=400):
 
 # Hotkey listener for toggling status
 def hotkey_listener():
+    x = read_memory(0xBF2C70)
+    y = read_memory(0xBF2C68)
     # Toggle healer status hotkey
     keyboard.add_hotkey(config_data['healer_hotkey'], lambda: toggle_healer_status())
 
@@ -396,6 +413,13 @@ def hotkey_listener():
     
     # Toggle cure status hotkey
     keyboard.add_hotkey(config_data['cure_hotkey'], lambda: toggle_cure_status())
+
+    # Toggle Walker_set hotkey
+    keyboard.add_hotkey(config_data['walker_set_hotkey'], lambda: log_location(x,y))
+    
+    # Toggle Walker_Wipe hotkey
+    keyboard.add_hotkey(config_data['walker_wipe_hotkey'], lambda: wipe_locations())
+
 
 def toggle_healer_status():
     new_status = not config_data['healer_status']
@@ -422,6 +446,76 @@ def toggle_walker_status():
     root.after(0, lambda: walker_status_label.config(bg="green" if new_status else "red"))
     root.after(0, lambda: walker_status_label.config(text=f"Walker: {'ON' if new_status else 'OFF'}"))
 
+# Load existing locations if file exists
+# Load locations from file if it exists
+if os.path.exists(DATA_FILE):
+    with open(DATA_FILE, 'r') as f:
+        for line in f:
+            try:
+                x_str, y_str = line.strip().split(',')
+                if x_str.isdigit() and y_str.isdigit():
+                    x, y = int(x_str), int(y_str)
+                    locations.append((x, y))
+                    total_locations += 1
+            except ValueError:
+                print(f"Skipping invalid line in file: {line}")
+
+# Function to log a new location
+def log_location(x,y):
+    global total_locations
+    x = read_memory(0xBF2C70)
+    y = read_memory(0xBF2C68)
+    if total_locations < MAX_LOCATIONS:
+        locations.append((x, y))
+        with open(DATA_FILE, 'a') as f:
+            f.write(f"{x},{y}\n")
+        total_locations += 1
+        print(f"Logged location: ({x}, {y})")
+    else:
+        print("Location limit reached. Cannot log more locations.")
+
+# Function to walk through logged locations
+def walk_locations():
+    global is_walking
+    x = read_memory(0xBF2C70)
+    y = read_memory(0xBF2C68)
+    if locations:
+        is_walking = True
+        index = 0
+        forward = True  # Track direction of movement
+        while is_walking and locations:
+            x, y = locations[index]
+            print(f"Walking to: ({x}, {y})")
+            time.sleep(1)  # Adjust delay as needed
+
+            # Update index based on direction
+            if forward:
+                index += 1
+                if index >= total_locations:
+                    locations.reverse()  # Reverse the list of locations
+                    forward = False
+                    index = 1  # Start walking back from second element
+            else:
+                index -= 1
+                if index < 0:
+                    locations.reverse()  # Reverse the list again
+                    forward = True
+                    index = 1  # Start walking forward again from the start
+
+    else:
+        print("No locations to walk to.")
+
+# Function to wipe all locations
+def wipe_locations():
+    global locations, total_locations
+    locations.clear()
+    total_locations = 0
+    with open(DATA_FILE, 'w') as f:
+        f.truncate()
+    print("All locations wiped.")
+
+
+
 # Update memory display in the GUI
 def update_memory_display():
     if not running:
@@ -446,6 +540,7 @@ def update_memory_display():
     root.after(0, lambda: hp_label.config(text=f"Real HP: {real_hp_scaled:.2f} | Max HP: {max_hp}" if real_hp and max_hp else "Real HP: N/A | Max HP: N/A"))
     root.after(0, lambda: posx_label.config(text=f"PosX: {pos_x}" if pos_x else "PosX: N/A"))
     root.after(0, lambda: posy_label.config(text=f"PosY: {pos_y}" if pos_y else "PosY: N/A"))
+    root.after(0, lambda: total_locations_label.config(text=f"Set Loc's: {total_locations}"))
     sickness_status = 'Poison' if sickness == 1 else 'Disease' if sickness == 2 else 'Vampirism' if sickness == 64 else 'Poison' if sickness == 65 else 'Disease' if sickness == 66 else 'Poison' if sickness == 98 else 'Poison' if sickness == 8193 else 'Vamp+Blood' if sickness == 8256 else 'Exhausted' if sickness == 16384 else 'Vamp+Exh' if sickness == 16448 else {sickness}
     root.after(0, lambda: sickness_label.config(text=f"Sickness: {sickness_status}"))
     chat_status = 'Yes' if chat_open == 1 else 'No'
@@ -611,6 +706,12 @@ posx_label = tk.Label(info_frame, text="PosX: 0")
 posx_label.grid(row=0, column=0)
 posy_label = tk.Label(info_frame, text="PosY: 0")
 posy_label.grid(row=0, column=1)
+
+total_locations_label = tk.Label(info_frame, text="set loc: 0")
+total_locations_label.grid(row=0, column=5)
+
+
+
 hp_label = tk.Label(info_frame, text="Real HP: 0.00 | Max HP: 0.00")
 hp_label.grid(row=1, column=0, columnspan=2)
 sickness_label = tk.Label(info_frame, text="Sickness: None")
