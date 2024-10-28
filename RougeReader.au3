@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rouge
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.6
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.7
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -20,11 +20,11 @@
 Opt("MouseCoordMode", 2)
 
 Global $version = FileGetVersion(@ScriptFullPath)
-ConsoleWrite($version)
+ConsoleWrite($version & @CRLF)
 
 HotKeySet("{1}", "Hotkeyshit")
 HotKeySet("{/}", "KilledWithFire")
-
+HotKeySet("{4}", "TrashHeap")
 $Debug = False
 ; Define the game process and memory offsets
 $ProcessName = "Project Rogue Client.exe"
@@ -37,12 +37,13 @@ $HPOffset = 0x9BF988 ; Memory offset for HP
 $MaxHPOffset = 0x9BF98C ; Memory offset for MaxHP
 $ChattOpenOffset = 0x9B6998 ; memory of chat
 $SicknessOffset = 0x9BFB68 ;memory of sickness
+Global $Running = True
 Global $AttackModeAddress, $TypeAddress, $PosXAddress, $PosYAddress, $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress, $MemOpen
 Global $BaseAddress, $MemOpen, $Type, $Chat
 ;---Target config shit--
 Global $currentTime = TimerInit(), $TargetDelay = 400, $HealDelay = 1700
 Global $aMousePos = MouseGetPos()
-Global $startX = $aMousePos[0], $startY = $aMousePos[1], $endX = 675, $endY = 415
+Global $startX = $aMousePos[0], $startY = $aMousePos[1], $endX = 350, $endY = 350
 
 ; Create the GUI with the title "RougeReader" and position it at X=15, Y=15
 $Gui = GUICreate("RougeReader " & "Version - " & $version, 400, 400, 15, 15) ; Width = 400, Height = 400, X = 15, Y = 15
@@ -62,7 +63,7 @@ $ExitButton = GUICtrlCreateButton("Exit", 150, 300, 100, 30)
 GUISetState(@SW_SHOW)
 
 ; Healer toggle variable
-Global $HealerStatus = False
+Global $HealerStatus = 0
 
 
 ; Get the process ID
@@ -75,7 +76,7 @@ If $ProcessID Then
 	EndIf
 	ChangeAddressToBase()
 	;---------Main loop for the GUI and Ability to Exit the GUI---------------------
-	While 1
+	While $Running
 		Local $elapsedTime = TimerDiff($currentTime) ; Calculate time elapsed
 		$msg = GUIGetMsg()
 		; Exit the script if the Exit button is clicked
@@ -99,7 +100,10 @@ If $ProcessID Then
 		;-------------------------------------------------------------------------------
 
 		AttackModeReader()
-		TimeToHeal()
+		If $HealerStatus = 1 Then
+			TimeToHeal()
+		EndIf
+
 		GUIReadMemory()
 
 		; Refresh every 100 ms
@@ -216,20 +220,11 @@ Func GUIReadMemory()
 EndFunc   ;==>GUIReadMemory
 
 Func Hotkeyshit()
-	If $Debug = True Then
-		ConsoleWrite("" & @CRLF)
-	EndIf
-	$HealerStatus = Not $HealerStatus
-	If $HealerStatus Then
-		GUICtrlSetData($HealerLabel, "Healer: ON")
-		If $Debug = True Then
-			ConsoleWrite("Turned Healer on." & @CRLF)
-		EndIf
+
+	If $HealerStatus = 1 Then
+		$HealerStatus = 0
 	Else
-		GUICtrlSetData($HealerLabel, "Healer: OFF")
-		If $Debug = True Then
-			ConsoleWrite("Turned Healer off." & @CRLF)
-		EndIf
+		$HealerStatus = 1
 	EndIf
 	Sleep(300)     ; Prevent rapid toggling
 EndFunc   ;==>Hotkeyshit
@@ -276,5 +271,22 @@ Func KilledWithFire()
 EndFunc   ;==>KilledWithFire
 
 Func TrashHeap()
+	ConsoleWrite("CHUCKLEFUCKER" & @CRLF)
+	ControlClick($WindowName, "", "", "left", 2, $startX, $startY)
+	Sleep(100) ; Small delay for the click event
 
+	; Optionally, use a loop to send small incremental drags to simulate movement
+	For $i = 1 To 10
+		; Calculate intermediate coordinates for smooth movement
+		Local $intermediateX = $startX + ($endX - $startX) * ($i / 10)
+		Local $intermediateY = $startY + ($endY - $startY) * ($i / 10)
+
+		; Send click at each intermediate point
+		ControlClick($WindowName, "", "", "left", 1, $intermediateX, $intermediateY)
+		Sleep(50) ; Adjust delay for smoother or faster drag
+	Next
+
+	; Release the click at the end point
+	ControlClick($WindowName, "", "", "left", 1, $endX, $endY)
+	Sleep(100)
 EndFunc   ;==>TrashHeap
