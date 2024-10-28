@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rouge
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.2
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.3
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -85,7 +85,7 @@ If $ProcessID Then
 		; Kill the Rogue process if the Kill button is clicked
 		If $msg = $KillButton Then
 			ProcessClose($ProcessID)
-			Exit
+
 		EndIf
 		;-------------------------------------------------------------------------------
 
