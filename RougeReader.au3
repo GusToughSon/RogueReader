@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rouge
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.7
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.8
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -223,8 +223,10 @@ Func Hotkeyshit()
 
 	If $HealerStatus = 1 Then
 		$HealerStatus = 0
+		GUICtrlSetData($HealerLabel, "Healer: Off")
 	Else
 		$HealerStatus = 1
+		GUICtrlSetData($HealerLabel, "Healer: On")
 	EndIf
 	Sleep(300)     ; Prevent rapid toggling
 EndFunc   ;==>Hotkeyshit
