@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rouge
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.8
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.10
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -57,7 +57,7 @@ $HP2Label = GUICtrlCreateLabel("RealHp: N/A", 20, 180, 250, 20)
 $SicknessLabel = GUICtrlCreateLabel("Sickness: N/A", 120, 180, 250, 20)
 $MaxHPLabel = GUICtrlCreateLabel("MaxHP: N/A", 20, 210, 250, 20)
 $HealerLabel = GUICtrlCreateLabel("Healer: OFF", 20, 240, 250, 20)
-$HotkeyLabel = GUICtrlCreateLabel("Hotkey: `", 20, 270, 250, 20)
+$HotkeyLabel = GUICtrlCreateLabel("Heal Hotkey: 1         ExitProgramHotkey: /", 20, 270, 250, 20)
 $KillButton = GUICtrlCreateButton("Kill Rogue", 20, 300, 100, 30)
 $ExitButton = GUICtrlCreateButton("Exit", 150, 300, 100, 30)
 GUISetState(@SW_SHOW)
