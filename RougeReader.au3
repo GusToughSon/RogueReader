@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rouge
-#AutoIt3Wrapper_Res_Fileversion=0.1.0.3
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.2
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -15,6 +15,8 @@
 #include <File.au3>
 #include <JSON.au3>
 #include <Misc.au3>
+Global $version = FileGetVersion(@ScriptFullPath)
+ConsoleWrite($version)
 
 HotKeySet("{`}", "Hotkeyshit")
 HotKeySet("{/}", "KilledWithFire")
@@ -32,17 +34,13 @@ $MaxHPOffset = 0x9BF98C ; Memory offset for MaxHP
 $ChattOpenOffset = 0x9B6998 ; memory of chat
 $SicknessOffset = 0x9BFB68 ;memory of sickness
 Global $AttackModeAddress, $TypeAddress, $PosXAddress, $PosYAddress, $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress, $MemOpen
+Global $BaseAddress, $MemOpen, $Type, $Chat
 ;---Target config shit--
-Global $currentTime = TimerInit()
-Global $TargetDelay = 400
-
-
-
-
+Global $currentTime = TimerInit(), $TargetDelay = 400
 
 
 ; Create the GUI with the title "RougeReader" and position it at X=15, Y=15
-$Gui = GUICreate("RougeReader", 400, 400, 15, 15) ; Width = 400, Height = 400, X = 15, Y = 15
+$Gui = GUICreate("RougeReader " & "Version - " & $version, 400, 400, 15, 15) ; Width = 400, Height = 400, X = 15, Y = 15
 $TypeLabel = GUICtrlCreateLabel("Type: N/A", 20, 30, 250, 20)
 $AttackModeLabel = GUICtrlCreateLabel("Attack Mode: N/A", 20, 60, 250, 20)
 $PosXLabel = GUICtrlCreateLabel("Pos X: N/A", 20, 90, 250, 20)
@@ -61,10 +59,7 @@ GUISetState(@SW_SHOW)
 ; Healer toggle variable
 Global $HealerStatus = False
 
-;Memory stores:
-Global $BaseAddress, $MemOpen
-Global $Type = _MemoryRead($TypeAddress, $MemOpen, "dword")
-Global $Chat = _MemoryRead($ChattOpenAddress, $MemOpen, "dword")
+
 ; Get the process ID
 $ProcessID = ProcessExists($ProcessName)
 If $ProcessID Then
@@ -83,18 +78,21 @@ If $ProcessID Then
 			_MemoryClose($MemOpen) ; Close memory handle
 			Exit
 		EndIf
+		If $msg = $GUI_EVENT_CLOSE Or $msg = $ExitButton Then
+			_MemoryClose($MemOpen) ; Close memory handle if needed
+			Exit
+		EndIf
 		; Kill the Rogue process if the Kill button is clicked
 		If $msg = $KillButton Then
 			ProcessClose($ProcessID)
 			Exit
 		EndIf
-
 		;-------------------------------------------------------------------------------
-
 
 		AttackModeReader()
 
 		GUIReadMemory()
+
 		; Refresh every 100 ms
 		Sleep(100)
 	WEnd
@@ -108,7 +106,7 @@ GUIDelete($Gui)
 Func AttackModeReader()
 	; Read the Attack Mode value
 	$AttackMode = _MemoryRead($AttackModeAddress, $MemOpen, "dword")
-	$Type = _MemoryRead($TypeAddress, $MemOpen, "dword")
+
 	;	ConsoleWrite ($Type & @CRLF)
 
 	If $AttackMode = 0 Then
@@ -150,13 +148,14 @@ Func AttackModeReader()
 EndFunc   ;==>AttackModeReader
 
 Func GUIReadMemory()
+	$Type = _MemoryRead($TypeAddress, $MemOpen, "dword")
 	; Read the Type value
 	If $Type = 0 Then
-		GUICtrlSetData($TypeLabel, "Type: Player (" & $Type & ")")
+		GUICtrlSetData($TypeLabel, "Type: Player")
 	ElseIf $Type = 1 Then
-		GUICtrlSetData($TypeLabel, "Type: Monster (" & $Type & ")")
+		GUICtrlSetData($TypeLabel, "Type: Monster")
 	ElseIf $Type = 2 Then
-		GUICtrlSetData($TypeLabel, "Type: NPC (" & $Type & ")")
+		GUICtrlSetData($TypeLabel, "Type: NPC")
 	Else
 		GUICtrlSetData($TypeLabel, "Type: No Target ") ;65535
 	EndIf
@@ -179,6 +178,7 @@ Func GUIReadMemory()
 	GUICtrlSetData($ChatLabel, "Chat: " & $Chat)
 	$Sickness = _MemoryRead($SicknessAddress, $MemOpen, "dword")
 	GUICtrlSetData($SicknessLabel, "Sickness: " & $Sickness)
+
 EndFunc   ;==>GUIReadMemory
 
 Func Hotkeyshit()
