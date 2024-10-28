@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rouge
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.4
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.3
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -36,7 +36,7 @@ $SicknessOffset = 0x9BFB68 ;memory of sickness
 Global $AttackModeAddress, $TypeAddress, $PosXAddress, $PosYAddress, $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress, $MemOpen
 Global $BaseAddress, $MemOpen, $Type, $Chat
 ;---Target config shit--
-Global $currentTime = TimerInit(), $TargetDelay = 400, $HealDelay = 1700
+Global $currentTime = TimerInit(), $TargetDelay = 400
 
 
 ; Create the GUI with the title "RougeReader" and position it at X=15, Y=15
@@ -55,7 +55,7 @@ $HotkeyLabel = GUICtrlCreateLabel("Hotkey: `", 20, 270, 250, 20)
 $KillButton = GUICtrlCreateButton("Kill Rogue", 20, 300, 100, 30)
 $ExitButton = GUICtrlCreateButton("Exit", 150, 300, 100, 30)
 GUISetState(@SW_SHOW)
-
+;$RealHP < ($MaxHP * 0.95); the code if under 95%
 ; Healer toggle variable
 Global $HealerStatus = False
 
@@ -82,8 +82,8 @@ If $ProcessID Then
 			_MemoryClose($MemOpen) ; Close memory handle if needed
 			Exit
 		EndIf
-		If $msg = $GUI_EVENT_Minimize Then
-			Exit
+		If $msg = ($GUI_EVENT_Minimize Or $GUI_EVENT_Maximize) Then
+			Settings()
 		EndIf
 
 		; Kill the Rogue process if the Kill button is clicked
@@ -94,7 +94,7 @@ If $ProcessID Then
 		;-------------------------------------------------------------------------------
 
 		AttackModeReader()
-		TimeToHeal()
+
 		GUIReadMemory()
 
 		; Refresh every 100 ms
@@ -106,25 +106,6 @@ EndIf
 
 ; Clean up GUI on exit
 GUIDelete($Gui)
-Func TimeToHeal()
-	$HP = _MemoryRead($HPAddress, $MemOpen, "dword")
-	$RealHP = $HP / 65536
-	$MaxHP = _MemoryRead($MaxHPAddress, $MemOpen, "dword")
-	$Chat = _MemoryRead($ChattOpenAddress, $MemOpen, "dword")
-	$Sickness = _MemoryRead($SicknessAddress, $MemOpen, "dword")
-
-	If $RealHP < ($MaxHP * 0.95) Then
-
-
-
-
-
-
-		ControlSend("Project Rogue", "", "", "{2}")
-
-
-	EndIf    ; the code if under 95%
-EndFunc   ;==>TimeToHeal
 
 Func AttackModeReader()
 	; Read the Attack Mode value

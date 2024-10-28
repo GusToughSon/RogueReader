@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rouge
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.4
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.3
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -107,11 +107,6 @@ EndIf
 ; Clean up GUI on exit
 GUIDelete($Gui)
 Func TimeToHeal()
-	$HP = _MemoryRead($HPAddress, $MemOpen, "dword")
-	$RealHP = $HP / 65536
-	$MaxHP = _MemoryRead($MaxHPAddress, $MemOpen, "dword")
-	$Chat = _MemoryRead($ChattOpenAddress, $MemOpen, "dword")
-	$Sickness = _MemoryRead($SicknessAddress, $MemOpen, "dword")
 
 	If $RealHP < ($MaxHP * 0.95) Then
 
@@ -119,12 +114,11 @@ Func TimeToHeal()
 
 
 
+		ControlSend ("Project Rogue", "", "", "{2}")
 
-		ControlSend("Project Rogue", "", "", "{2}")
 
-
-	EndIf    ; the code if under 95%
-EndFunc   ;==>TimeToHeal
+	EndIf	; the code if under 95%
+EndFunc
 
 Func AttackModeReader()
 	; Read the Attack Mode value

@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rouge
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.4
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.3
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -36,7 +36,7 @@ $SicknessOffset = 0x9BFB68 ;memory of sickness
 Global $AttackModeAddress, $TypeAddress, $PosXAddress, $PosYAddress, $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress, $MemOpen
 Global $BaseAddress, $MemOpen, $Type, $Chat
 ;---Target config shit--
-Global $currentTime = TimerInit(), $TargetDelay = 400, $HealDelay = 1700
+Global $currentTime = TimerInit(), $TargetDelay = 400
 
 
 ; Create the GUI with the title "RougeReader" and position it at X=15, Y=15
@@ -55,7 +55,7 @@ $HotkeyLabel = GUICtrlCreateLabel("Hotkey: `", 20, 270, 250, 20)
 $KillButton = GUICtrlCreateButton("Kill Rogue", 20, 300, 100, 30)
 $ExitButton = GUICtrlCreateButton("Exit", 150, 300, 100, 30)
 GUISetState(@SW_SHOW)
-
+;$RealHP < ($MaxHP * 0.95); the code if under 95%
 ; Healer toggle variable
 Global $HealerStatus = False
 
@@ -83,7 +83,7 @@ If $ProcessID Then
 			Exit
 		EndIf
 		If $msg = $GUI_EVENT_Minimize Then
-			Exit
+			Settings()
 		EndIf
 
 		; Kill the Rogue process if the Kill button is clicked
@@ -94,7 +94,7 @@ If $ProcessID Then
 		;-------------------------------------------------------------------------------
 
 		AttackModeReader()
-		TimeToHeal()
+
 		GUIReadMemory()
 
 		; Refresh every 100 ms
@@ -106,25 +106,6 @@ EndIf
 
 ; Clean up GUI on exit
 GUIDelete($Gui)
-Func TimeToHeal()
-	$HP = _MemoryRead($HPAddress, $MemOpen, "dword")
-	$RealHP = $HP / 65536
-	$MaxHP = _MemoryRead($MaxHPAddress, $MemOpen, "dword")
-	$Chat = _MemoryRead($ChattOpenAddress, $MemOpen, "dword")
-	$Sickness = _MemoryRead($SicknessAddress, $MemOpen, "dword")
-
-	If $RealHP < ($MaxHP * 0.95) Then
-
-
-
-
-
-
-		ControlSend("Project Rogue", "", "", "{2}")
-
-
-	EndIf    ; the code if under 95%
-EndFunc   ;==>TimeToHeal
 
 Func AttackModeReader()
 	; Read the Attack Mode value
@@ -263,3 +244,53 @@ Func KilledWithFire()
 	EndIf
 	Exit
 EndFunc   ;==>KilledWithFire
+
+Func Settings()
+	Global $hotkey1 = "^1" ; Default: Ctrl + 1
+Global $hotkey2 = "^2" ; Default: Ctrl + 2
+Global $selectedVar = "1"
+
+; Function to create the GUI
+
+    Local $hGUI = GUICreate("Hotkey Configurator", 400, 200)
+
+    ; Hotkey 1 Input
+    GUICtrlCreateLabel("Hotkey 1:", 10, 20, 100, 20)
+    Local $inputHotkey1 = GUICtrlCreateInput($hotkey1, 110, 20, 200, 20)
+
+    ; Hotkey 2 Input
+    GUICtrlCreateLabel("Hotkey 2:", 10, 60, 100, 20)
+    Local $inputHotkey2 = GUICtrlCreateInput($hotkey2, 110, 60, 200, 20)
+
+    ; Dropdown for variable selection
+    GUICtrlCreateLabel("Select Variable:", 10, 100, 100, 20)
+    Local $comboVar = GUICtrlCreateCombo("1", 110, 100, 200, 20)
+    GUICtrlSetData($comboVar, "2|34|5543|555543") ; Add options to dropdown
+
+    ; Save Button
+    Local $btnSave = GUICtrlCreateButton("Save Config", 150, 150, 100, 30)
+
+    GUISetState(@SW_SHOW, $hGUI)
+	; Main loop
+	While True
+		Local $msg = GUIGetMsg()
+		If $msg = $GUI_EVENT_CLOSE Then
+			MsgBox(0, "Saving...", "Settings Saved")
+
+
+
+			ExitLoop
+		EndIf
+		If $msg = $GUI_EVENT_Minimize Then
+			MsgBox(0, "Saving...", "Settings Saved")
+
+
+
+			ExitLoop
+		EndIf
+
+	WEnd
+
+	GUIDelete($hGUI)
+	WinSetState($Gui, "", @SW_RESTORE)
+EndFunc   ;==>Settings
