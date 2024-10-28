@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rouge
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.5
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.6
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -10,15 +10,19 @@
 #AutoIt3Wrapper_Res_Language=1033
 #AutoIt3Wrapper_Run_Tidy=y
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
+
 #include "NomadMemory.au3"
 #include <GUIConstantsEx.au3>
 #include <File.au3>
 #include <JSON.au3>
 #include <Misc.au3>
+
+Opt("MouseCoordMode", 2)
+
 Global $version = FileGetVersion(@ScriptFullPath)
 ConsoleWrite($version)
 
-HotKeySet("{`}", "Hotkeyshit")
+HotKeySet("{1}", "Hotkeyshit")
 HotKeySet("{/}", "KilledWithFire")
 
 $Debug = False
@@ -37,7 +41,8 @@ Global $AttackModeAddress, $TypeAddress, $PosXAddress, $PosYAddress, $HPAddress,
 Global $BaseAddress, $MemOpen, $Type, $Chat
 ;---Target config shit--
 Global $currentTime = TimerInit(), $TargetDelay = 400, $HealDelay = 1700
-
+Global $aMousePos = MouseGetPos()
+Global $startX = $aMousePos[0], $startY = $aMousePos[1], $endX = 675, $endY = 415
 
 ; Create the GUI with the title "RougeReader" and position it at X=15, Y=15
 $Gui = GUICreate("RougeReader " & "Version - " & $version, 400, 400, 15, 15) ; Width = 400, Height = 400, X = 15, Y = 15
@@ -115,9 +120,10 @@ Func TimeToHeal()
 ;~ 	ConsoleWrite($Sickness & @CRLF)
 	If $Sickness = (1 Or 2 Or 65 Or 66 Or 98 Or 8193 Or 8257 Or 16449) Then
 		If $elapsedTime >= $HealDelay Then
-			ControlSend("Project Rogue", "", "", "{3}")
+			If $Chat = 0 Then
+				ControlSend("Project Rogue", "", "", "{3}")
 
-
+			EndIf
 		EndIf
 		ConsoleWrite("zzzzzzzz")
 	ElseIf $RealHP < ($MaxHP * 0.95) Then
@@ -151,7 +157,7 @@ Func AttackModeReader()
 
 					ControlSend("Project Rogue", "", "", "{TAB}")
 
-					ConsoleWrite("Target used at " & @HOUR & ":" & @MIN & ":" & @SEC & @CRLF)
+;~ 					ConsoleWrite("Target used at " & @HOUR & ":" & @MIN & ":" & @SEC & @CRLF)
 					$currentTime = TimerInit() ;timer
 				EndIf
 			Else
@@ -268,3 +274,7 @@ Func KilledWithFire()
 	EndIf
 	Exit
 EndFunc   ;==>KilledWithFire
+
+Func TrashHeap()
+
+EndFunc   ;==>TrashHeap
