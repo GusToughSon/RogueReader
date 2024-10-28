@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rouge
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.10
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.11
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -43,7 +43,6 @@ Global $BaseAddress, $MemOpen, $Type, $Chat
 ;---Target config shit--
 Global $currentTime = TimerInit(), $TargetDelay = 400, $HealDelay = 1700
 Global $aMousePos = MouseGetPos()
-Global $startX = $aMousePos[0], $startY = $aMousePos[1], $endX = 350, $endY = 350
 
 ; Create the GUI with the title "RougeReader" and position it at X=15, Y=15
 $Gui = GUICreate("RougeReader " & "Version - " & $version, 400, 400, 15, 15) ; Width = 400, Height = 400, X = 15, Y = 15
@@ -67,51 +66,65 @@ Global $HealerStatus = 0
 
 
 ; Get the process ID
-$ProcessID = ProcessExists($ProcessName)
-If $ProcessID Then
-	ConnectToBaseAddress()
-	If $BaseAddress = 0 Then
-		MsgBox(0, "Error", "Failed to get base address")
-		Exit
+
+While 1
+	; Check if the process exists
+	$ProcessID = ProcessExists($ProcessName)
+	If $ProcessID Then
+		ConnectToBaseAddress()
+		If $BaseAddress = 0 Then
+			MsgBox(0, "Error", "Failed to get base address")
+			Exit
+		EndIf
+		ChangeAddressToBase()
+
+		;---------Main loop for the GUI and Ability to Exit the GUI---------------------
+		While $Running
+			Local $elapsedTime = TimerDiff($currentTime) ; Calculate time elapsed
+			$msg = GUIGetMsg()
+
+			; Exit the script if the Exit button is clicked
+			If $msg = $ExitButton Then
+				_MemoryClose($MemOpen) ; Close memory handle
+				Exit
+			EndIf
+			If $msg = $GUI_EVENT_CLOSE Or $msg = $ExitButton Then
+				_MemoryClose($MemOpen) ; Close memory handle if needed
+				Exit
+			EndIf
+			If $msg = $GUI_EVENT_Minimize Then
+				Exit
+			EndIf
+
+			; Kill the Rogue process if the Kill button is clicked
+			If $msg = $KillButton Then
+				ProcessClose($ProcessID)
+			EndIf
+			;-------------------------------------------------------------------------------
+
+			AttackModeReader()
+			If $HealerStatus = 1 Then
+				TimeToHeal()
+			EndIf
+
+			GUIReadMemory()
+
+			; Refresh every 100 ms
+			Sleep(100)
+		WEnd
+	Else
+		; If process not found, display message with retry/cancel option
+		$retry = MsgBox(1, "Error", "Project Rogue Client.exe not found. Retrying in 1 second...", 2)
+
+		; Check if Cancel (2) is pressed
+		If $retry = 2 Then
+			Exit ; Exit the script if Cancel is clicked
+		EndIf
+
+		Sleep(1000) ; Wait 1 second before retrying
 	EndIf
-	ChangeAddressToBase()
-	;---------Main loop for the GUI and Ability to Exit the GUI---------------------
-	While $Running
-		Local $elapsedTime = TimerDiff($currentTime) ; Calculate time elapsed
-		$msg = GUIGetMsg()
-		; Exit the script if the Exit button is clicked
-		If $msg = $ExitButton Then
-			_MemoryClose($MemOpen) ; Close memory handle
-			Exit
-		EndIf
-		If $msg = $GUI_EVENT_CLOSE Or $msg = $ExitButton Then
-			_MemoryClose($MemOpen) ; Close memory handle if needed
-			Exit
-		EndIf
-		If $msg = $GUI_EVENT_Minimize Then
-			Exit
-		EndIf
+WEnd
 
-		; Kill the Rogue process if the Kill button is clicked
-		If $msg = $KillButton Then
-			ProcessClose($ProcessID)
-
-		EndIf
-		;-------------------------------------------------------------------------------
-
-		AttackModeReader()
-		If $HealerStatus = 1 Then
-			TimeToHeal()
-		EndIf
-
-		GUIReadMemory()
-
-		; Refresh every 100 ms
-		Sleep(100)
-	WEnd
-Else
-	MsgBox(0, "Error", "Project Rogue Client.exe not found.")
-EndIf
 
 ; Clean up GUI on exit
 GUIDelete($Gui)
@@ -273,22 +286,11 @@ Func KilledWithFire()
 EndFunc   ;==>KilledWithFire
 
 Func TrashHeap()
-	ConsoleWrite("CHUCKLEFUCKER" & @CRLF)
-	ControlClick($WindowName, "", "", "left", 2, $startX, $startY)
-	Sleep(100) ; Small delay for the click event
+	Local $endX = 350, $endY = 350
 
-	; Optionally, use a loop to send small incremental drags to simulate movement
-	For $i = 1 To 10
-		; Calculate intermediate coordinates for smooth movement
-		Local $intermediateX = $startX + ($endX - $startX) * ($i / 10)
-		Local $intermediateY = $startY + ($endY - $startY) * ($i / 10)
+	ConsoleWrite("CHUCKLEFUCKER" & @CRLF) ; Debug message
 
-		; Send click at each intermediate point
-		ControlClick($WindowName, "", "", "left", 1, $intermediateX, $intermediateY)
-		Sleep(50) ; Adjust delay for smoother or faster drag
-	Next
+	; Perform a drag from start to end position
+	MouseClickDrag("left", $aMousePos[0], $aMousePos[1], $endX, $endY, 2) ; Adjust the speed if needed
 
-	; Release the click at the end point
-	ControlClick($WindowName, "", "", "left", 1, $endX, $endY)
-	Sleep(100)
 EndFunc   ;==>TrashHeap
