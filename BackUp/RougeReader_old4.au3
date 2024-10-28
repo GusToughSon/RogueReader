@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rouge
-#AutoIt3Wrapper_Res_Fileversion=0.1.0.3
+#AutoIt3Wrapper_Res_Fileversion=0.1.0.2
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -116,7 +116,7 @@ Func AttackModeReader()
 	ElseIf $AttackMode = 1 Then
 		GUICtrlSetData($AttackModeLabel, "Attack Mode: Attack")
 		If $Type = 0 Then
-			ConsoleWrite("Type: Player" & @CRLF)
+ 			ConsoleWrite ("Type: Player" & @CRLF)
 
 		ElseIf $Type = 65535 Then
 ;~ 			ConsoleWrite("Type: " & $Type & @CRLF)
