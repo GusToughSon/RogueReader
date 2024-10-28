@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rouge
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.4
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.5
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -112,16 +112,21 @@ Func TimeToHeal()
 	$MaxHP = _MemoryRead($MaxHPAddress, $MemOpen, "dword")
 	$Chat = _MemoryRead($ChattOpenAddress, $MemOpen, "dword")
 	$Sickness = _MemoryRead($SicknessAddress, $MemOpen, "dword")
-
-	If $RealHP < ($MaxHP * 0.95) Then
-
-
-
-
+;~ 	ConsoleWrite($Sickness & @CRLF)
+	If $Sickness = (1 Or 2 Or 65 Or 66 Or 98 Or 8193 Or 8257 Or 16449) Then
+		If $elapsedTime >= $HealDelay Then
+			ControlSend("Project Rogue", "", "", "{3}")
 
 
-		ControlSend("Project Rogue", "", "", "{2}")
+		EndIf
+		ConsoleWrite("zzzzzzzz")
+	ElseIf $RealHP < ($MaxHP * 0.95) Then
+		If $elapsedTime >= $HealDelay Then
+			ControlSend("Project Rogue", "", "", "{2}")
 
+			$currentTime = TimerInit()
+			ConsoleWrite("yyyyyyyyyyy")
+		EndIf
 
 	EndIf    ; the code if under 95%
 EndFunc   ;==>TimeToHeal
