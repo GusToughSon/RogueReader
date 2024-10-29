@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.19
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.20
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -170,9 +170,9 @@ EndFunc   ;==>LoadConfig
 
 Func GUIReadMemory()
 	If Not IsPtr($MemOpen) Then Return
+
+	; Read Type and update in GUI
 	$Type = _MemoryRead($TypeAddress, $MemOpen, "dword")
-;~ 	ConsoleWrite("[Debug] Type Memory Read: " & $Type & @CRLF) ; Debug line
-	; Update the Type value in GUIReadMemory()
 	If $Type = 0 Then
 		GUICtrlSetData($TypeLabel, "Type: Player")
 	ElseIf $Type = 1 Then
@@ -185,12 +185,14 @@ Func GUIReadMemory()
 		GUICtrlSetData($TypeLabel, "Type: Unknown (" & $Type & ")") ; Handles unexpected values
 	EndIf
 
+	; Read Position
 	$PosX = _MemoryRead($PosXAddress, $MemOpen, "dword")
 	GUICtrlSetData($PosXLabel, "Pos X: " & $PosX)
 
 	$PosY = _MemoryRead($PosYAddress, $MemOpen, "dword")
 	GUICtrlSetData($PosYLabel, "Pos Y: " & $PosY)
 
+	; Read HP and MaxHP
 	$HP = _MemoryRead($HPAddress, $MemOpen, "dword")
 	GUICtrlSetData($HPLabel, "HP: " & $HP)
 	GUICtrlSetData($HP2Label, "RealHp: " & $HP / 65536)
@@ -198,13 +200,15 @@ Func GUIReadMemory()
 	$MaxHP = _MemoryRead($MaxHPAddress, $MemOpen, "dword")
 	GUICtrlSetData($MaxHPLabel, "MaxHP: " & $MaxHP)
 
+	; Read Chat status
 	$Chat = _MemoryRead($ChattOpenAddress, $MemOpen, "dword")
 	GUICtrlSetData($ChatLabel, "Chat: " & $Chat)
 
+	; Read Sickness and update SicknessDescription in GUI
 	$Sickness = _MemoryRead($SicknessAddress, $MemOpen, "dword")
-
-
+	$SicknessDescription = GetSicknessDescription($Sickness) ; Fetch description based on code
 	GUICtrlSetData($SicknessLabel, "Sickness: " & $SicknessDescription)
+
 	Sleep(50)
 EndFunc   ;==>GUIReadMemory
 
