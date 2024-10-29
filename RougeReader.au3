@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.25
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.26
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -106,9 +106,18 @@ While 1
 					ProcessClose($ProcessID)
 					ExitLoop
 				EndIf
-				If $CureStatus = 1 Then CureMe()
-				If $TargetStatus = 1 Then AttackModeReader()
-				If $HealerStatus = 1 Then TimeToHeal()
+				If $CureStatus = 1 Then
+					CureMe()
+				EndIf
+
+				If $TargetStatus = 1 Then
+					AttackModeReader()
+				EndIf
+
+				If $HealerStatus = 1 Then
+					TimeToHeal()
+				EndIf
+
 				GUIReadMemory()
 
 				Sleep(100)
@@ -411,7 +420,7 @@ EndFunc   ;==>CureKeyShit
 
 Func TargetKeyShit()
 	$TargetStatus = Not $TargetStatus
-	GUICtrlSetData($CureLabel, "Target: " & ($TargetStatus ? "On" : "Off"))
+	GUICtrlSetData($TargetLabel, "Target: " & ($TargetStatus ? "On" : "Off"))
 	Sleep(300)
 EndFunc   ;==>TargetKeyShit
 
