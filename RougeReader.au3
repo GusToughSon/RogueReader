@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.14
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.15
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -202,8 +202,7 @@ Func GUIReadMemory()
 
 	$Sickness = _MemoryRead($SicknessAddress, $MemOpen, "dword")
 	GUICtrlSetData($SicknessLabel, "Sickness: " & $Sickness)
-
-	$HotkeyLabel = GUICtrlCreateLabel("Heal Hotkey: " & $HealHotkey & "   ExitProgramHotkey: " & $ExitHotkey, 20, 270, 350, 20)
+	Sleep(50)
 EndFunc   ;==>GUIReadMemory
 
 Func TimeToHeal()
