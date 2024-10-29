@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.20
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.21
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -24,14 +24,17 @@ ConsoleWrite("Script Version: " & $version & @CRLF)
 
 ; --- Load Config Settings ---
 Global $HealHotkey = "{`}" ; Default Heal Hotkey
+Global $CureHotkey = "{-}" ; Default Cure Hotkey
 Global $ExitHotkey = "{/}" ; Default Exit Hotkey
 LoadConfig()
 
 ; --- Set Hotkeys from Config ---
 HotKeySet($HealHotkey, "Hotkeyshit")
+HotKeySet($CureHotkey, "CureKeyShit")
 HotKeySet($ExitHotkey, "KilledWithFire")
 ;~ HotKeySet("{4}", "TrashHeap")
 ConsoleWrite("Heal: " & $HealHotkey)
+ConsoleWrite("Cure: " & $CureHotkey)
 ConsoleWrite("Exit: " & $ExitHotkey)
 $Debug = False
 
@@ -66,6 +69,7 @@ $HP2Label = GUICtrlCreateLabel("RealHp: N/A", 20, 180, 250, 20)
 $SicknessLabel = GUICtrlCreateLabel("Sickness: N/A", 120, 180, 250, 20)
 $MaxHPLabel = GUICtrlCreateLabel("MaxHP: N/A", 20, 210, 250, 20)
 $HealerLabel = GUICtrlCreateLabel("Healer: OFF", 20, 240, 250, 20)
+$CureLabel = GUICtrlCreateLabel("Cure: OFF", 120, 240, 250, 20)
 $HotkeyLabel = GUICtrlCreateLabel("Heal Hotkey: " & $HealHotkey & "   ExitProgramHotkey: " & $ExitHotkey, 20, 270, 350, 20)
 $KillButton = GUICtrlCreateButton("Kill Rogue", 20, 300, 100, 30)
 $ExitButton = GUICtrlCreateButton("Exit", 150, 300, 100, 30)
@@ -73,7 +77,7 @@ Global $SicknessDescription = GetSicknessDescription($Sickness)
 GUISetState(@SW_SHOW)
 
 Global $HealerStatus = 0
-
+Global $CureStatus = 0
 ; Main loop
 While 1
 	Global $ProcessID = ProcessExists($ProcessName)
@@ -106,8 +110,25 @@ While 1
 			WEnd
 		EndIf
 	Else
-		Sleep(1000)
+		Local $msg = GUIGetMsg()
+
+		If $msg = $ExitButton Or $msg = $GUI_EVENT_CLOSE Then
+			_MemoryClose($MemOpen)
+			GUIDelete($Gui)
+			Exit
+		EndIf
+		If $msg = $KillButton Then
+			ProcessClose($ProcessID)
+			ExitLoop
+		EndIf
+		Sleep(150)
 	EndIf
+
+
+
+
+
+
 WEnd
 
 ; Cleanup
@@ -214,25 +235,44 @@ EndFunc   ;==>GUIReadMemory
 
 
 Func CureMe()
+	If $CureStatus = 1 Then
+		If $Sickness = (1 Or 2 Or 65 Or 66 Or 98 Or 8193 Or 8257 Or 16449) Then
+			If $elapsedTime >= $HealDelay And $Chat = 0 Then
+				ControlSend("Project Rogue", "", "", "{3}")
+				ConsoleWrite("[Heal] Healing triggered for sickness condition." & @CRLF)
+;~ 			$currentTime = TimerInit() ; Reset timer after healing
+				Return "Healing triggered due to sickness condition"
+			EndIf
+		EndIf
+	EndIf
+
 EndFunc   ;==>CureMe
 
 Func TimeToHeal()
+	; Initialize variables for health and sickness checks
 	$HP = _MemoryRead($HPAddress, $MemOpen, "dword")
 	$RealHP = $HP / 65536
 	$MaxHP = _MemoryRead($MaxHPAddress, $MemOpen, "dword")
 	$Chat = _MemoryRead($ChattOpenAddress, $MemOpen, "dword")
 	$Sickness = _MemoryRead($SicknessAddress, $MemOpen, "dword")
 
+	; Define elapsed time for cooldown check
+	Local $elapsedTime = TimerDiff($currentTime)
+
+	; Check for sickness and initiate healing if needed
 	If $Sickness = (1 Or 2 Or 65 Or 66 Or 98 Or 8193 Or 8257 Or 16449) Then
-		If $elapsedTime >= $HealDelay And $Chat = 0 Then ControlSend("Project Rogue", "", "", "{3}")
-		ConsoleWrite("Healing Triggered" & @CRLF)
+		; Check if RealHP is below 95% of MaxHP for standard healing
 	ElseIf $RealHP < ($MaxHP * 0.95) Then
 		If $elapsedTime >= $HealDelay Then
 			ControlSend("Project Rogue", "", "", "{2}")
-			$currentTime = TimerInit()
-			ConsoleWrite("Healing with Key 2" & @CRLF)
+			ConsoleWrite("[Heal] Healing triggered due to low HP." & @CRLF)
+			$currentTime = TimerInit() ; Reset timer after healing
+			Return "Healing triggered due to low HP"
 		EndIf
 	EndIf
+
+	; Return status if no healing was needed
+	Return "No healing required at this time"
 EndFunc   ;==>TimeToHeal
 
 Func AttackModeReader()
@@ -310,6 +350,12 @@ Func Hotkeyshit()
 	Sleep(300)
 EndFunc   ;==>Hotkeyshit
 
+Func CureKeyShit()
+	$CureStatus = Not $CureStatus
+	GUICtrlSetData($CureLabel, "Cure: " & ($CureStatus ? "On" : "Off"))
+	Sleep(300)
+EndFunc   ;==>CureKeyShit
+
 Func KilledWithFire()
 	If $Debug Then ConsoleWrite("Killed with fire" & @CRLF)
 	Exit
@@ -319,6 +365,8 @@ Func GetSicknessDescription($code)
 	Global $SicknessDescription = "Unknown"
 	Switch $code
 		Case 1
+
+
 			$SicknessDescription = "Poison1"
 		Case 2
 			$SicknessDescription = "Disease1"
