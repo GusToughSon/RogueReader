@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.16
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.17
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -30,7 +30,7 @@ LoadConfig()
 ; --- Set Hotkeys from Config ---
 HotKeySet($HealHotkey, "Hotkeyshit")
 HotKeySet($ExitHotkey, "KilledWithFire")
-HotKeySet("{4}", "TrashHeap")
+;~ HotKeySet("{4}", "TrashHeap")
 ConsoleWrite("Heal: " & $HealHotkey)
 ConsoleWrite("Exit: " & $ExitHotkey)
 $Debug = False
@@ -311,19 +311,19 @@ Func GetSicknessDescription($code)
 	Local $SicknessDescription = "Unknown"
 	Switch $code
 		Case 1
-			$SicknessDescription = "Poison"
+			$SicknessDescription = "Poison1"
 		Case 2
-			$SicknessDescription = "Disease"
+			$SicknessDescription = "Disease1"
 		Case 64
 			$SicknessDescription = 'Vampirism'
 		Case 65
-			$SicknessDescription = "Poison"
+			$SicknessDescription = "Poison2"
 		Case 66
-			$SicknessDescription = "Disease"
+			$SicknessDescription = "Disease2"
 		Case 98
-			$SicknessDescription = "Poison"
+			$SicknessDescription = "Poison3"
 		Case 8193
-			$SicknessDescription = 'Poison'
+			$SicknessDescription = 'Poison4'
 		Case 8256
 			$SicknessDescription = "Vamp + Blood"
 		Case 16384
