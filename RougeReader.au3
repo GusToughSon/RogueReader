@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.15
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.16
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -49,7 +49,7 @@ $SicknessOffset = 0x9BFB68
 
 Global $Running = True
 Global $AttackModeAddress, $TypeAddress, $PosXAddress, $PosYAddress, $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress, $MemOpen
-Global $BaseAddress, $Type, $Chat
+Global $BaseAddress, $Type, $Chat, $Sickness
 
 Global $currentTime = TimerInit(), $TargetDelay = 400, $HealDelay = 1700
 Global $aMousePos = MouseGetPos()
@@ -69,6 +69,7 @@ $HealerLabel = GUICtrlCreateLabel("Healer: OFF", 20, 240, 250, 20)
 $HotkeyLabel = GUICtrlCreateLabel("Heal Hotkey: " & $HealHotkey & "   ExitProgramHotkey: " & $ExitHotkey, 20, 270, 350, 20)
 $KillButton = GUICtrlCreateButton("Kill Rogue", 20, 300, 100, 30)
 $ExitButton = GUICtrlCreateButton("Exit", 150, 300, 100, 30)
+Global $SicknessDescription = GetSicknessDescription($Sickness)
 GUISetState(@SW_SHOW)
 
 Global $HealerStatus = 0
@@ -201,7 +202,9 @@ Func GUIReadMemory()
 	GUICtrlSetData($ChatLabel, "Chat: " & $Chat)
 
 	$Sickness = _MemoryRead($SicknessAddress, $MemOpen, "dword")
-	GUICtrlSetData($SicknessLabel, "Sickness: " & $Sickness)
+
+
+	GUICtrlSetData($SicknessLabel, "Sickness: " & $SicknessDescription)
 	Sleep(50)
 EndFunc   ;==>GUIReadMemory
 
@@ -303,6 +306,37 @@ Func KilledWithFire()
 	If $Debug Then ConsoleWrite("Killed with fire" & @CRLF)
 	Exit
 EndFunc   ;==>KilledWithFire
+
+Func GetSicknessDescription($code)
+	Local $SicknessDescription = "Unknown"
+	Switch $code
+		Case 1
+			$SicknessDescription = "Poison"
+		Case 2
+			$SicknessDescription = "Disease"
+		Case 64
+			$SicknessDescription = 'Vampirism'
+		Case 65
+			$SicknessDescription = "Poison"
+		Case 66
+			$SicknessDescription = "Disease"
+		Case 98
+			$SicknessDescription = "Poison"
+		Case 8193
+			$SicknessDescription = 'Poison'
+		Case 8256
+			$SicknessDescription = "Vamp + Blood"
+		Case 16384
+			$SicknessDescription = 'Exhausted'
+		Case 16448
+			$SicknessDescription = 'Vamp + Exha'
+		Case 16896
+			$SicknessDescription = "Swif + Exha"
+		Case Else
+			$SicknessDescription = $Sickness
+	EndSwitch
+	Return $SicknessDescription
+EndFunc   ;==>GetSicknessDescription
 
 Func TrashHeap()
 	Local $endX = 350, $endY = 350
