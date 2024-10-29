@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.22
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.23
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -25,16 +25,19 @@ ConsoleWrite("Script Version: " & $version & @CRLF)
 ; --- Load Config Settings ---
 Global $HealHotkey = "{`}" ; Default Heal Hotkey
 Global $CureHotkey = "{-}" ; Default Cure Hotkey
+Global $TargetHotkey = "{]}" ; Default Target Hotkey
 Global $ExitHotkey = "{/}" ; Default Exit Hotkey
 LoadConfig()
 
 ; --- Set Hotkeys from Config ---
 HotKeySet($HealHotkey, "Hotkeyshit")
 HotKeySet($CureHotkey, "CureKeyShit")
+HotKeySet($TargetHotkey, "TargetKeyShit")
 HotKeySet($ExitHotkey, "KilledWithFire")
 ;~ HotKeySet("{4}", "TrashHeap")
 ConsoleWrite("Heal: " & $HealHotkey)
 ConsoleWrite("Cure: " & $CureHotkey)
+ConsoleWrite("Target: " & $TargetHotkey)
 ConsoleWrite("Exit: " & $ExitHotkey)
 $Debug = False
 
@@ -68,9 +71,10 @@ $ChatLabel = GUICtrlCreateLabel("Chat: N/A", 120, 150, 250, 20)
 $HP2Label = GUICtrlCreateLabel("RealHp: N/A", 20, 180, 250, 20)
 $SicknessLabel = GUICtrlCreateLabel("Sickness: N/A", 120, 180, 250, 20)
 $MaxHPLabel = GUICtrlCreateLabel("MaxHP: N/A", 20, 210, 250, 20)
-$HealerLabel = GUICtrlCreateLabel("Healer: OFF", 20, 240, 250, 20)
-$CureLabel = GUICtrlCreateLabel("Cure: OFF", 120, 240, 250, 20)
-$HotkeyLabel = GUICtrlCreateLabel("Heal Hotkey: " & $HealHotkey & "   ExitProgramHotkey: " & $ExitHotkey, 20, 270, 350, 20)
+$TargetLabel = GUICtrlCreateLabel("Target: Off", 120, 210, 250, 20)
+$HealerLabel = GUICtrlCreateLabel("Healer: Off", 20, 240, 250, 20)
+$CureLabel = GUICtrlCreateLabel("Cure: Off", 120, 240, 250, 20)
+$HotkeyLabel = GUICtrlCreateLabel("Set hotkeys in the config file", 20, 270, 350, 20)
 $KillButton = GUICtrlCreateButton("Kill Rogue", 20, 300, 100, 30)
 $ExitButton = GUICtrlCreateButton("Exit", 150, 300, 100, 30)
 Global $SicknessDescription = GetSicknessDescription($Sickness)
@@ -78,6 +82,7 @@ GUISetState(@SW_SHOW)
 
 Global $HealerStatus = 0
 Global $CureStatus = 0
+Global $TargetStatus = 0
 ; Main loop
 While 1
 	Global $ProcessID = ProcessExists($ProcessName)
@@ -134,64 +139,107 @@ WEnd
 ; Cleanup
 GUIDelete($Gui)
 
-Func LoadConfig()
-	Local $configPath = @ScriptDir & "\Config.json"
-	Local $defaultHealHotkey = "{1}"
-	Local $defaultCureHotkey = "{1}"
-	Local $defaultExitHotkey = "{1}"
-	; Construct the default JSON configuration string in vertical format
-	Local $defaultConfig = StringFormat('{\r\n    "HealHotkey": "{%s}",\r\n    "CureHotkey": "{%s}"\r\n    "ExitHotkey": "{%s}"\r\n}', "1", "/")
 
-	; Check if Config.json exists, if not, create it with default values
+Func LoadConfig()
+	; Define the path for the configuration file
+	Local $configPath = @ScriptDir & "\Config.json"
+
+	; Default hotkey settings
+	Local $defaultHealHotkey = "{1}"
+	Local $defaultCureHotkey = "{2}"
+	Local $defaultTargetHotkey = "{3}"
+	Local $defaultExitHotkey = "{4}"
+
+	; Construct default JSON configuration string
+	Local $defaultConfig = StringFormat('{\r\n    "HealHotkey": "%s",\r\n    "CureHotkey": "%s",\r\n    "TargetHotkey": "%s",\r\n    "ExitHotkey": "%s"\r\n}', _
+			$defaultHealHotkey, $defaultCureHotkey, $defaultTargetHotkey, $defaultExitHotkey)
+
+	; Check if Config.json exists, create it with defaults if not
 	If Not FileExists($configPath) Then
 		FileWrite($configPath, $defaultConfig)
-		ConsoleWrite("[Info] Config.json created with default hotkeys in correct format." & @CRLF)
+		ConsoleWrite("[Info] Config.json created with default hotkeys." & @CRLF)
 	Else
 		ConsoleWrite("[Info] Config.json found." & @CRLF)
 	EndIf
 
-	; Read the file and initialize variables
+	; Read and validate JSON content
 	Local $json = FileRead($configPath)
-	If @error Then
-		ConsoleWrite("[Error] Failed to read Config.json." & @CRLF)
-		Return ; Exit function to avoid further errors
+	If @error Or $json = "" Then
+		ConsoleWrite("[Error] Failed to read Config.json or file is empty. Writing default config." & @CRLF)
+		FileWrite($configPath, $defaultConfig)
+		$json = $defaultConfig ; Load defaults into the script
 	EndIf
 
-	ConsoleWrite("[Debug] Config.json content:\n" & $json & @CRLF)
+	; Remove any unwanted characters from the JSON string
+	$json = StringReplace($json, "`r", "")
+	$json = StringReplace($json, "`n", "")
 
-	; Initialize variables with default values in case keys are missing
-	$HealHotkey = $defaultHealHotkey
-	$HealHotkey = $defaultCureHotkey
-	$ExitHotkey = $defaultExitHotkey
+	; Re-validate JSON structure
+	If Not StringRegExp($json, '^\s*\{\s*("([^"]+)"\s*:\s*"[^"]*",?\s*)+\}\s*$', 0) Then
+		ConsoleWrite("[Error] Config.json structure invalid. Resetting to defaults." & @CRLF)
+		FileWrite($configPath, $defaultConfig)
+		$json = $defaultConfig
+	EndIf
 
-	; Use regular expressions to extract hotkey values from JSON content
+	; Debug output if needed
+
+
+	; Initialize settings with default values
+	Local $HealHotkey = $defaultHealHotkey
+	Local $CureHotkey = $defaultCureHotkey
+	Local $TargetHotkey = $defaultTargetHotkey
+	Local $ExitHotkey = $defaultExitHotkey
+
+	; Extract and assign each hotkey from JSON
 	Local $matchHeal = StringRegExp($json, '"HealHotkey"\s*:\s*"\{([^}]*)\}"', 1)
 	Local $matchCure = StringRegExp($json, '"CureHotkey"\s*:\s*"\{([^}]*)\}"', 1)
+	Local $matchTarget = StringRegExp($json, '"TargetHotkey"\s*:\s*"\{([^}]*)\}"', 1)
 	Local $matchExit = StringRegExp($json, '"ExitHotkey"\s*:\s*"\{([^}]*)\}"', 1)
 
-	; Set hotkeys from matched results, or keep defaults if not found
+	; Apply extracted hotkey values or retain defaults if missing
 	If IsArray($matchHeal) Then $HealHotkey = "{" & $matchHeal[0] & "}"
 	If IsArray($matchCure) Then $CureHotkey = "{" & $matchCure[0] & "}"
+	If IsArray($matchTarget) Then $TargetHotkey = "{" & $matchTarget[0] & "}"
 	If IsArray($matchExit) Then $ExitHotkey = "{" & $matchExit[0] & "}"
 
-	; Check if any hotkeys were missing and update the JSON file if necessary
-	If Not IsArray($matchHeal) Or Not IsArray($matchExit) Then
-		; Rebuild JSON with any missing values added
-		$json = StringFormat('{\r\n    "HealHotkey": "%s",\r\n    "CureHotkey": "%s",\r\n    "ExitHotkey": "%s"\r\n}', $HealHotkey, $ExitHotkey)
+	; Check and update JSON file if any hotkeys are missing
+	Local $missingConfig = False
+	If Not IsArray($matchHeal) Then
+		$json = StringRegExpReplace($json, '}', ',\r\n    "HealHotkey": "' & $HealHotkey & '"\r\n}')
+		$missingConfig = True
+	EndIf
+	If Not IsArray($matchCure) Then
+		$json = StringRegExpReplace($json, '}', ',\r\n    "CureHotkey": "' & $CureHotkey & '"\r\n}')
+		$missingConfig = True
+	EndIf
+	If Not IsArray($matchTarget) Then
+		$json = StringRegExpReplace($json, '}', ',\r\n    "TargetHotkey": "' & $TargetHotkey & '"\r\n}')
+		$missingConfig = True
+	EndIf
+	If Not IsArray($matchExit) Then
+		$json = StringRegExpReplace($json, '}', ',\r\n    "ExitHotkey": "' & $ExitHotkey & '"\r\n}')
+		$missingConfig = True
+	EndIf
+
+	; Write any changes to the configuration file
+	If $missingConfig Then
 		FileWrite($configPath, $json)
 		ConsoleWrite("[Info] Config.json updated with missing hotkeys." & @CRLF)
 	EndIf
 
-	; Set hotkeys in the script
+	; Assign hotkeys to actions
 	HotKeySet($HealHotkey, "Hotkeyshit")
 	HotKeySet($CureHotkey, "Curekeyshit")
+	HotKeySet($TargetHotkey, "Targetkeyshit")
 	HotKeySet($ExitHotkey, "KilledWithFire")
 
-	; Display loaded config settings for confirmation
+	; Display the final configuration for confirmation
 	ConsoleWrite("[Config] HealHotkey set to: " & $HealHotkey & @CRLF)
 	ConsoleWrite("[Config] CureHotkey set to: " & $CureHotkey & @CRLF)
+	ConsoleWrite("[Config] TargetHotkey set to: " & $TargetHotkey & @CRLF)
 	ConsoleWrite("[Config] ExitHotkey set to: " & $ExitHotkey & @CRLF)
 EndFunc   ;==>LoadConfig
+
 
 
 Func GUIReadMemory()
@@ -360,6 +408,12 @@ Func CureKeyShit()
 	GUICtrlSetData($CureLabel, "Cure: " & ($CureStatus ? "On" : "Off"))
 	Sleep(300)
 EndFunc   ;==>CureKeyShit
+
+Func TargetKeyShit()
+	$TargetStatus = Not $TargetStatus
+	GUICtrlSetData($CureLabel, "Target: " & ($TargetStatus ? "On" : "Off"))
+	Sleep(300)
+EndFunc   ;==>TargetKeyShit
 
 Func KilledWithFire()
 	If $Debug Then ConsoleWrite("Killed with fire" & @CRLF)

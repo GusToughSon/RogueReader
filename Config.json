@@ -1,4 +1,6 @@
 {
     "HealHotkey": "{`}",
+    "CureHotkey": "{-}",
+    "TargetHotkey": "{=}",
     "ExitHotkey": "{/}"
 }
