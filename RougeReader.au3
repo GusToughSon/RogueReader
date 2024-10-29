@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.17
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.19
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -208,6 +208,10 @@ Func GUIReadMemory()
 	Sleep(50)
 EndFunc   ;==>GUIReadMemory
 
+
+Func CureMe()
+EndFunc   ;==>CureMe
+
 Func TimeToHeal()
 	$HP = _MemoryRead($HPAddress, $MemOpen, "dword")
 	$RealHP = $HP / 65536
@@ -308,7 +312,7 @@ Func KilledWithFire()
 EndFunc   ;==>KilledWithFire
 
 Func GetSicknessDescription($code)
-	Local $SicknessDescription = "Unknown"
+	Global $SicknessDescription = "Unknown"
 	Switch $code
 		Case 1
 			$SicknessDescription = "Poison1"
@@ -322,6 +326,8 @@ Func GetSicknessDescription($code)
 			$SicknessDescription = "Disease2"
 		Case 98
 			$SicknessDescription = "Poison3"
+		Case 512
+			$SicknessDescription = "Swiftness"
 		Case 8193
 			$SicknessDescription = 'Poison4'
 		Case 8256
