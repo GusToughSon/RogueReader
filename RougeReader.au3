@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rouge
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.11
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.12
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -68,13 +68,14 @@ Global $HealerStatus = 0
 ; Get the process ID
 
 While 1
+
 	; Check if the process exists
-	$ProcessID = ProcessExists($ProcessName)
+	Global $ProcessID = ProcessExists($ProcessName)
 	If $ProcessID Then
 		ConnectToBaseAddress()
 		If $BaseAddress = 0 Then
-			MsgBox(0, "Error", "Failed to get base address")
-			Exit
+;~ 			MsgBox(0, "Error", "Failed to get base address")
+			Sleep(1000)
 		EndIf
 		ChangeAddressToBase()
 
@@ -93,12 +94,15 @@ While 1
 				Exit
 			EndIf
 			If $msg = $GUI_EVENT_Minimize Then
+				_MemoryClose($MemOpen)
 				Exit
 			EndIf
 
 			; Kill the Rogue process if the Kill button is clicked
 			If $msg = $KillButton Then
 				ProcessClose($ProcessID)
+				ExitLoop
+
 			EndIf
 			;-------------------------------------------------------------------------------
 
@@ -108,18 +112,22 @@ While 1
 			EndIf
 
 			GUIReadMemory()
+			ConsoleWrite($version & @CRLF)
+			$Check = WinExists("Project Rogue")
+			If $Check = False Then
+				ExitLoop
+			EndIf
 
-			; Refresh every 100 ms
 			Sleep(100)
 		WEnd
 	Else
-		; If process not found, display message with retry/cancel option
-		$retry = MsgBox(1, "Error", "Project Rogue Client.exe not found. Retrying in 1 second...", 2)
+;~ 		; If process not found, display message with retry/cancel option
+;~ 		$retry = MsgBox(1, "Error", "Project Rogue Client.exe not found. Retrying in 1 second...", 2)
 
 		; Check if Cancel (2) is pressed
-		If $retry = 2 Then
-			Exit ; Exit the script if Cancel is clicked
-		EndIf
+;~ 		If $retry = 2 Then
+;~ 			Exit  ; Exit the script if Cancel is clicked
+;~ 		EndIf
 
 		Sleep(1000) ; Wait 1 second before retrying
 	EndIf
