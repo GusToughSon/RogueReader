@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.24
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.25
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -107,7 +107,7 @@ While 1
 					ExitLoop
 				EndIf
 				If $CureStatus = 1 Then CureMe()
-				AttackModeReader()
+				If $TargetStatus = 1 Then AttackModeReader()
 				If $HealerStatus = 1 Then TimeToHeal()
 				GUIReadMemory()
 
