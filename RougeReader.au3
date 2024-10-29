@@ -226,11 +226,44 @@ Func TimeToHeal()
 EndFunc   ;==>TimeToHeal
 
 Func AttackModeReader()
+	; Read the Attack Mode value
 	$AttackMode = _MemoryRead($AttackModeAddress, $MemOpen, "dword")
+
+	;	ConsoleWrite ($Type & @CRLF)
+
 	If $AttackMode = 0 Then
 		GUICtrlSetData($AttackModeLabel, "Attack Mode: Safe")
 	ElseIf $AttackMode = 1 Then
 		GUICtrlSetData($AttackModeLabel, "Attack Mode: Attack")
+		If $Type = 0 Then
+			ConsoleWrite("Type: Player" & @CRLF)
+
+		ElseIf $Type = 65535 Then
+;~ 			ConsoleWrite("Type: " & $Type & @CRLF)
+			If $Chat = 0 Then
+				If $elapsedTime >= $TargetDelay Then
+
+					ControlSend("Project Rogue", "", "", "{TAB}")
+
+;~ 					ConsoleWrite("Target used at " & @HOUR & ":" & @MIN & ":" & @SEC & @CRLF)
+					$currentTime = TimerInit() ;timer
+				EndIf
+			Else
+				If $elapsedTime >= $TargetDelay Then
+					ConsoleWrite("[Debug] chat open" & @CRLF)
+
+					$currentTime = TimerInit() ;timer
+				EndIf
+			EndIf
+		ElseIf $Type = 1 Then
+;~ 			ConsoleWrite ("Monster targeted" & @CRLF)
+		ElseIf $Type = 2 Then
+;~ 			ConsoleWrite ("Type: " & $Type  & @CRLF)
+		ElseIf $Type = 65535 Then
+;~ 			ConsoleWrite ("Type: " & $Type  & @CRLF)
+		Else
+			ConsoleWrite("Type: " & $Type & @CRLF)
+		EndIf
 	Else
 		GUICtrlSetData($AttackModeLabel, "Attack Mode: No Target")
 	EndIf
