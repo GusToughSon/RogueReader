@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.21
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.22
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -137,10 +137,10 @@ GUIDelete($Gui)
 Func LoadConfig()
 	Local $configPath = @ScriptDir & "\Config.json"
 	Local $defaultHealHotkey = "{1}"
-	Local $defaultExitHotkey = "{/}"
-
+	Local $defaultCureHotkey = "{1}"
+	Local $defaultExitHotkey = "{1}"
 	; Construct the default JSON configuration string in vertical format
-	Local $defaultConfig = StringFormat('{\r\n    "HealHotkey": "{%s}",\r\n    "ExitHotkey": "{%s}"\r\n}', "1", "/")
+	Local $defaultConfig = StringFormat('{\r\n    "HealHotkey": "{%s}",\r\n    "CureHotkey": "{%s}"\r\n    "ExitHotkey": "{%s}"\r\n}', "1", "/")
 
 	; Check if Config.json exists, if not, create it with default values
 	If Not FileExists($configPath) Then
@@ -161,30 +161,35 @@ Func LoadConfig()
 
 	; Initialize variables with default values in case keys are missing
 	$HealHotkey = $defaultHealHotkey
+	$HealHotkey = $defaultCureHotkey
 	$ExitHotkey = $defaultExitHotkey
 
 	; Use regular expressions to extract hotkey values from JSON content
 	Local $matchHeal = StringRegExp($json, '"HealHotkey"\s*:\s*"\{([^}]*)\}"', 1)
+	Local $matchCure = StringRegExp($json, '"CureHotkey"\s*:\s*"\{([^}]*)\}"', 1)
 	Local $matchExit = StringRegExp($json, '"ExitHotkey"\s*:\s*"\{([^}]*)\}"', 1)
 
 	; Set hotkeys from matched results, or keep defaults if not found
 	If IsArray($matchHeal) Then $HealHotkey = "{" & $matchHeal[0] & "}"
+	If IsArray($matchCure) Then $CureHotkey = "{" & $matchCure[0] & "}"
 	If IsArray($matchExit) Then $ExitHotkey = "{" & $matchExit[0] & "}"
 
 	; Check if any hotkeys were missing and update the JSON file if necessary
 	If Not IsArray($matchHeal) Or Not IsArray($matchExit) Then
 		; Rebuild JSON with any missing values added
-		$json = StringFormat('{\r\n    "HealHotkey": "%s",\r\n    "ExitHotkey": "%s"\r\n}', $HealHotkey, $ExitHotkey)
+		$json = StringFormat('{\r\n    "HealHotkey": "%s",\r\n    "CureHotkey": "%s",\r\n    "ExitHotkey": "%s"\r\n}', $HealHotkey, $ExitHotkey)
 		FileWrite($configPath, $json)
 		ConsoleWrite("[Info] Config.json updated with missing hotkeys." & @CRLF)
 	EndIf
 
 	; Set hotkeys in the script
 	HotKeySet($HealHotkey, "Hotkeyshit")
+	HotKeySet($CureHotkey, "Curekeyshit")
 	HotKeySet($ExitHotkey, "KilledWithFire")
 
 	; Display loaded config settings for confirmation
 	ConsoleWrite("[Config] HealHotkey set to: " & $HealHotkey & @CRLF)
+	ConsoleWrite("[Config] CureHotkey set to: " & $CureHotkey & @CRLF)
 	ConsoleWrite("[Config] ExitHotkey set to: " & $ExitHotkey & @CRLF)
 EndFunc   ;==>LoadConfig
 
