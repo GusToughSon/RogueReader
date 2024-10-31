@@ -2,10 +2,11 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.26
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.27
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
+#AutoIt3Wrapper_Res_LegalCopyright=Use only for authorized security testing. Unauthorized use is illegal. No liability for misuse. © MacroIsFun.LLc 2024
 #AutoIt3Wrapper_Res_LegalTradeMarks=Macro Is Fun .LLC
 #AutoIt3Wrapper_Res_Language=1033
 #AutoIt3Wrapper_Run_Tidy=y
@@ -47,7 +48,7 @@ $WindowName = "Project Rogue"
 $TypeOffset = 0xBEFB04
 $AttackModeOffset = 0xAC1D70
 $PosXOffset = 0xBF2C70
-$PosYOffset = 0xBF2C68
+$PosYOffset = 0xBF2C8C
 $HPOffset = 0x9BF988
 $MaxHPOffset = 0x9BF98C
 $ChattOpenOffset = 0x9B6998
@@ -267,7 +268,14 @@ Func GUIReadMemory()
 	Else
 		GUICtrlSetData($TypeLabel, "Type: Unknown (" & $Type & ")") ; Handles unexpected values
 	EndIf
-
+	$AttackMode = _MemoryRead($AttackModeAddress, $MemOpen, "dword")
+	If $AttackMode = 0 Then
+		GUICtrlSetData($AttackModeLabel, "Attack Mode: Safe")
+	ElseIf $AttackMode = 1 Then
+		GUICtrlSetData($AttackModeLabel, "Attack Mode: Attack")
+	Else
+		GUICtrlSetData($AttackModeLabel, "Attack Mode: No Target")
+	EndIf
 	; Read Position
 	$PosX = _MemoryRead($PosXAddress, $MemOpen, "dword")
 	GUICtrlSetData($PosXLabel, "Pos X: " & $PosX)
@@ -421,6 +429,9 @@ EndFunc   ;==>CureKeyShit
 Func TargetKeyShit()
 	$TargetStatus = Not $TargetStatus
 	GUICtrlSetData($TargetLabel, "Target: " & ($TargetStatus ? "On" : "Off"))
+
+
+
 	Sleep(300)
 EndFunc   ;==>TargetKeyShit
 
