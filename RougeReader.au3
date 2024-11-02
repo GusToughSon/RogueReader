@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.28
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.29
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -57,6 +57,8 @@ $SicknessOffset = 0x9BFB68
 Global $Running = True
 Global $AttackModeAddress, $TypeAddress, $PosXAddress, $PosYAddress, $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress, $MemOpen
 Global $BaseAddress, $Type, $Chat, $Sickness
+
+Global $sicknessArray = [1, 2, 65, 66, 98, 8193, 8257, 16449] ;This is the Cure Codes;
 
 Global $currentTime = TimerInit(), $TargetDelay = 400, $HealDelay = 1700
 Global $aMousePos = MouseGetPos()
@@ -306,8 +308,6 @@ EndFunc   ;==>GUIReadMemory
 
 Func CureMe()
 	If $CureStatus = 1 Then
-
-		Local $sicknessArray = [1, 2, 65, 66, 98, 8193, 8257, 16449]
 		If _ArraySearch($sicknessArray, $Sickness) <> -1 Then
 
 
@@ -334,8 +334,6 @@ Func TimeToHeal()
 	Local $elapsedTime = TimerDiff($currentTime)
 
 	; Check for sickness and initiate healing if needed
-
-	Local $sicknessArray = [1, 2, 65, 66, 98, 8193, 8257, 16449]
 	If _ArraySearch($sicknessArray, $Sickness) <> -1 Then
 		; Check if RealHP is below 95% of MaxHP for standard healing
 	ElseIf $RealHP < ($MaxHP * 0.95) Then
