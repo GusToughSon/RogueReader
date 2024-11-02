@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.29
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.30
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -21,6 +21,8 @@
 Opt("MouseCoordMode", 2)
 
 Global $version = FileGetVersion(@ScriptFullPath)
+Global Const $LOCATION_FILE = @ScriptDir & "\LocationLog.cfg"
+Global Const $configPath = @ScriptDir & "\Config.json"
 ConsoleWrite("Script Version: " & $version & @CRLF)
 
 ; --- Load Config Settings ---
@@ -95,11 +97,9 @@ While 1
 			Sleep(1000)
 		Else
 			ChangeAddressToBase()
-
 			While $Running
 				Local $elapsedTime = TimerDiff($currentTime)
 				Local $msg = GUIGetMsg()
-
 				If $msg = $ExitButton Or $msg = $GUI_EVENT_CLOSE Then
 					_MemoryClose($MemOpen)
 					GUIDelete($Gui)
@@ -112,23 +112,18 @@ While 1
 				If $CureStatus = 1 Then
 					CureMe()
 				EndIf
-
 				If $TargetStatus = 1 Then
 					AttackModeReader()
 				EndIf
-
 				If $HealerStatus = 1 Then
 					TimeToHeal()
 				EndIf
-
 				GUIReadMemory()
-
 				Sleep(100)
 			WEnd
 		EndIf
 	Else
 		Local $msg = GUIGetMsg()
-
 		If $msg = $ExitButton Or $msg = $GUI_EVENT_CLOSE Then
 			_MemoryClose($MemOpen)
 			GUIDelete($Gui)
@@ -140,32 +135,19 @@ While 1
 		EndIf
 		Sleep(150)
 	EndIf
-
-
-
-
-
-
 WEnd
-
 ; Cleanup
 GUIDelete($Gui)
 
-
-Func LoadConfig()
-	; Define the path for the configuration file
-	Local $configPath = @ScriptDir & "\Config.json"
-
+Func LoadConfig() ;hotkey config load;
 	; Default hotkey settings
 	Local $defaultHealHotkey = "{1}"
 	Local $defaultCureHotkey = "{2}"
 	Local $defaultTargetHotkey = "{3}"
 	Local $defaultExitHotkey = "{4}"
-
 	; Construct default JSON configuration string
 	Local $defaultConfig = StringFormat('{\r\n    "HealHotkey": "%s",\r\n    "CureHotkey": "%s",\r\n    "TargetHotkey": "%s",\r\n    "ExitHotkey": "%s"\r\n}', _
 			$defaultHealHotkey, $defaultCureHotkey, $defaultTargetHotkey, $defaultExitHotkey)
-
 	; Check if Config.json exists, create it with defaults if not
 	If Not FileExists($configPath) Then
 		FileWrite($configPath, $defaultConfig)
@@ -173,7 +155,6 @@ Func LoadConfig()
 	Else
 		ConsoleWrite("[Info] Config.json found." & @CRLF)
 	EndIf
-
 	; Read and validate JSON content
 	Local $json = FileRead($configPath)
 	If @error Or $json = "" Then
@@ -181,39 +162,31 @@ Func LoadConfig()
 		FileWrite($configPath, $defaultConfig)
 		$json = $defaultConfig ; Load defaults into the script
 	EndIf
-
 	; Remove any unwanted characters from the JSON string
 	$json = StringReplace($json, "`r", "")
 	$json = StringReplace($json, "`n", "")
-
 	; Re-validate JSON structure
 	If Not StringRegExp($json, '^\s*\{\s*("([^"]+)"\s*:\s*"[^"]*",?\s*)+\}\s*$', 0) Then
 		ConsoleWrite("[Error] Config.json structure invalid. Resetting to defaults." & @CRLF)
 		FileWrite($configPath, $defaultConfig)
 		$json = $defaultConfig
 	EndIf
-
 	; Debug output if needed
-
-
 	; Initialize settings with default values
 	Local $HealHotkey = $defaultHealHotkey
 	Local $CureHotkey = $defaultCureHotkey
 	Local $TargetHotkey = $defaultTargetHotkey
 	Local $ExitHotkey = $defaultExitHotkey
-
 	; Extract and assign each hotkey from JSON
 	Local $matchHeal = StringRegExp($json, '"HealHotkey"\s*:\s*"\{([^}]*)\}"', 1)
 	Local $matchCure = StringRegExp($json, '"CureHotkey"\s*:\s*"\{([^}]*)\}"', 1)
 	Local $matchTarget = StringRegExp($json, '"TargetHotkey"\s*:\s*"\{([^}]*)\}"', 1)
 	Local $matchExit = StringRegExp($json, '"ExitHotkey"\s*:\s*"\{([^}]*)\}"', 1)
-
 	; Apply extracted hotkey values or retain defaults if missing
 	If IsArray($matchHeal) Then $HealHotkey = "{" & $matchHeal[0] & "}"
 	If IsArray($matchCure) Then $CureHotkey = "{" & $matchCure[0] & "}"
 	If IsArray($matchTarget) Then $TargetHotkey = "{" & $matchTarget[0] & "}"
 	If IsArray($matchExit) Then $ExitHotkey = "{" & $matchExit[0] & "}"
-
 	; Check and update JSON file if any hotkeys are missing
 	Local $missingConfig = False
 	If Not IsArray($matchHeal) Then
@@ -232,19 +205,16 @@ Func LoadConfig()
 		$json = StringRegExpReplace($json, '}', ',\r\n    "ExitHotkey": "' & $ExitHotkey & '"\r\n}')
 		$missingConfig = True
 	EndIf
-
 	; Write any changes to the configuration file
 	If $missingConfig Then
 		FileWrite($configPath, $json)
 		ConsoleWrite("[Info] Config.json updated with missing hotkeys." & @CRLF)
 	EndIf
-
 	; Assign hotkeys to actions
 	HotKeySet($HealHotkey, "Hotkeyshit")
 	HotKeySet($CureHotkey, "Curekeyshit")
 	HotKeySet($TargetHotkey, "Targetkeyshit")
 	HotKeySet($ExitHotkey, "KilledWithFire")
-
 	; Display the final configuration for confirmation
 	ConsoleWrite("[Config] HealHotkey set to: " & $HealHotkey & @CRLF)
 	ConsoleWrite("[Config] CureHotkey set to: " & $CureHotkey & @CRLF)
@@ -252,11 +222,10 @@ Func LoadConfig()
 	ConsoleWrite("[Config] ExitHotkey set to: " & $ExitHotkey & @CRLF)
 EndFunc   ;==>LoadConfig
 
-
-
 Func GUIReadMemory()
-	If Not IsPtr($MemOpen) Then Return
-
+	If Not IsPtr($MemOpen) Then
+		Return
+	EndIf
 	; Read Type and update in GUI
 	$Type = _MemoryRead($TypeAddress, $MemOpen, "dword")
 	If $Type = 0 Then
@@ -284,33 +253,25 @@ Func GUIReadMemory()
 
 	$PosY = _MemoryRead($PosYAddress, $MemOpen, "dword")
 	GUICtrlSetData($PosYLabel, "Pos Y: " & $PosY)
-
 	; Read HP and MaxHP
 	$HP = _MemoryRead($HPAddress, $MemOpen, "dword")
 	GUICtrlSetData($HPLabel, "HP: " & $HP)
 	GUICtrlSetData($HP2Label, "RealHp: " & $HP / 65536)
-
 	$MaxHP = _MemoryRead($MaxHPAddress, $MemOpen, "dword")
 	GUICtrlSetData($MaxHPLabel, "MaxHP: " & $MaxHP)
-
 	; Read Chat status
 	$Chat = _MemoryRead($ChattOpenAddress, $MemOpen, "dword")
 	GUICtrlSetData($ChatLabel, "Chat: " & $Chat)
-
 	; Read Sickness and update SicknessDescription in GUI
 	$Sickness = _MemoryRead($SicknessAddress, $MemOpen, "dword")
 	$SicknessDescription = GetSicknessDescription($Sickness) ; Fetch description based on code
 	GUICtrlSetData($SicknessLabel, "Sickness: " & $SicknessDescription)
-
 	Sleep(50)
 EndFunc   ;==>GUIReadMemory
-
 
 Func CureMe()
 	If $CureStatus = 1 Then
 		If _ArraySearch($sicknessArray, $Sickness) <> -1 Then
-
-
 			If $elapsedTime >= $HealDelay And $Chat = 0 Then
 				ControlSend("Project Rogue", "", "", "{3}")
 				ConsoleWrite("[Heal] Healing triggered for sickness condition." & @CRLF)
@@ -319,7 +280,6 @@ Func CureMe()
 			EndIf
 		EndIf
 	EndIf
-
 EndFunc   ;==>CureMe
 
 Func TimeToHeal()
@@ -329,10 +289,8 @@ Func TimeToHeal()
 	$MaxHP = _MemoryRead($MaxHPAddress, $MemOpen, "dword")
 	$Chat = _MemoryRead($ChattOpenAddress, $MemOpen, "dword")
 	$Sickness = _MemoryRead($SicknessAddress, $MemOpen, "dword")
-
 	; Define elapsed time for cooldown check
 	Local $elapsedTime = TimerDiff($currentTime)
-
 	; Check for sickness and initiate healing if needed
 	If _ArraySearch($sicknessArray, $Sickness) <> -1 Then
 		; Check if RealHP is below 95% of MaxHP for standard healing
@@ -344,7 +302,6 @@ Func TimeToHeal()
 			Return "Healing triggered due to low HP"
 		EndIf
 	EndIf
-
 	; Return status if no healing was needed
 	Return "No healing required at this time"
 EndFunc   ;==>TimeToHeal
@@ -352,9 +309,7 @@ EndFunc   ;==>TimeToHeal
 Func AttackModeReader()
 	; Read the Attack Mode value
 	$AttackMode = _MemoryRead($AttackModeAddress, $MemOpen, "dword")
-
 	;	ConsoleWrite ($Type & @CRLF)
-
 	If $AttackMode = 0 Then
 		GUICtrlSetData($AttackModeLabel, "Attack Mode: Safe")
 	ElseIf $AttackMode = 1 Then
@@ -366,16 +321,13 @@ Func AttackModeReader()
 ;~ 			ConsoleWrite("Type: " & $Type & @CRLF)
 			If $Chat = 0 Then
 				If $elapsedTime >= $TargetDelay Then
-
 					ControlSend("Project Rogue", "", "", "{TAB}")
-
 ;~ 					ConsoleWrite("Target used at " & @HOUR & ":" & @MIN & ":" & @SEC & @CRLF)
 					$currentTime = TimerInit() ;timer
 				EndIf
 			Else
 				If $elapsedTime >= $TargetDelay Then
 					ConsoleWrite("[Debug] chat open" & @CRLF)
-
 					$currentTime = TimerInit() ;timer
 				EndIf
 			EndIf
@@ -413,7 +365,6 @@ Func _EnumProcessModules($hProcess)
 	Local $hMod = DllStructCreate("ptr")
 	Local $moduleSize = DllStructGetSize($hMod)
 	Local $aModules = DllCall("psapi.dll", "int", "EnumProcessModulesEx", "ptr", $hProcess, "ptr", DllStructGetPtr($hMod), "dword", $moduleSize, "dword*", 0, "dword", 0x03)
-
 	If IsArray($aModules) And $aModules[0] <> 0 Then Return DllStructGetData($hMod, 1)
 	Return 0
 EndFunc   ;==>_EnumProcessModules
@@ -433,9 +384,6 @@ EndFunc   ;==>CureKeyShit
 Func TargetKeyShit()
 	$TargetStatus = Not $TargetStatus
 	GUICtrlSetData($TargetLabel, "Target: " & ($TargetStatus ? "On" : "Off"))
-
-
-
 	Sleep(300)
 EndFunc   ;==>TargetKeyShit
 
@@ -448,8 +396,6 @@ Func GetSicknessDescription($code)
 	Global $SicknessDescription = "Unknown"
 	Switch $code
 		Case 1
-
-
 			$SicknessDescription = "Poison1"
 		Case 2
 			$SicknessDescription = "Disease1"
@@ -480,7 +426,5 @@ Func GetSicknessDescription($code)
 EndFunc   ;==>GetSicknessDescription
 
 Func TrashHeap()
-	Local $endX = 350, $endY = 350
-	ConsoleWrite("CHUCKLEFUCKER" & @CRLF)
-	MouseClickDrag("left", $aMousePos[0], $aMousePos[1], $endX, $endY, 2)
+	;Remove Function;
 EndFunc   ;==>TrashHeap
