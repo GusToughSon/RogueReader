@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.27
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.28
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -306,7 +306,11 @@ EndFunc   ;==>GUIReadMemory
 
 Func CureMe()
 	If $CureStatus = 1 Then
-		If $Sickness = (1 Or 2 Or 65 Or 66 Or 98 Or 8193 Or 8257 Or 16449) Then
+
+		Local $sicknessArray = [1, 2, 65, 66, 98, 8193, 8257, 16449]
+		If _ArraySearch($sicknessArray, $Sickness) <> -1 Then
+
+
 			If $elapsedTime >= $HealDelay And $Chat = 0 Then
 				ControlSend("Project Rogue", "", "", "{3}")
 				ConsoleWrite("[Heal] Healing triggered for sickness condition." & @CRLF)
@@ -330,7 +334,9 @@ Func TimeToHeal()
 	Local $elapsedTime = TimerDiff($currentTime)
 
 	; Check for sickness and initiate healing if needed
-	If $Sickness = (1 Or 2 Or 65 Or 66 Or 98 Or 8193 Or 8257 Or 16449) Then
+
+	Local $sicknessArray = [1, 2, 65, 66, 98, 8193, 8257, 16449]
+	If _ArraySearch($sicknessArray, $Sickness) <> -1 Then
 		; Check if RealHP is below 95% of MaxHP for standard healing
 	ElseIf $RealHP < ($MaxHP * 0.95) Then
 		If $elapsedTime >= $HealDelay Then
