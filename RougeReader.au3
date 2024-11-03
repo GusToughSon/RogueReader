@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.31
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.32
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -60,7 +60,7 @@ Global $Running = True
 Global $AttackModeAddress, $TypeAddress, $PosXAddress, $PosYAddress, $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress, $MemOpen
 Global $BaseAddress, $Type, $Chat, $Sickness
 
-Global $sicknessArray = [1, 2, 65, 66, 67, 68, 69, 72, 73, 81, 97, 98, 99, 577, 8193, 8194, 8195, 8257, 8258, 16385, 16386, 16449, 16450, 16451, 16452, 16897, 16898, 33281, 33282, 33283, 33284, 33285, 33286, 33287, 33288, 33289, 33294, 33295, 41985, 41986, 41987, 41988, 41989, 41990, 41991, 41993, 41995] ;This is the Cure Codes;
+Global $sicknessArray = [1, 2, 65, 66, 67, 68, 69, 72, 73, 81, 97, 98, 99, 577, 8193, 8194, 8195, 8257, 8258, 8705, 8706, 8707, 8708, 8709, 8712, 8713, 8721, 8737, 8769, 8770, 16385, 16386, 16449, 16450, 16451, 16452, 16897, 16898, 24577, 24578, 24579, 24581, 24582, 24583, 24585, 24609, 24641, 24642, 24643, 24645, 24646, 24647, 24649, 25089, 25090, 25091, 25093, 25094, 25095, 25097, 25121, 33283, 33284, 33285, 33286, 33287, 33288, 33289, 33291, 33293, 33294, 33295, 33793, 41985, 41986, 41987, 41988, 41989, 41990, 41991, 41993, 41995]                                                                                  ;This is the Cure Codes;
 
 Global $currentTime = TimerInit(), $TargetDelay = 400, $HealDelay = 1700
 Global $aMousePos = MouseGetPos()
@@ -395,7 +395,6 @@ EndFunc   ;==>KilledWithFire
 Func GetSicknessDescription($Sick)
 	Global $SicknessDescription = "Unknown"
 	Switch $Sick
-
 		Case 1
 			$SicknessDescription = "Poison1"
 		Case 2
@@ -443,19 +442,49 @@ Func GetSicknessDescription($Sick)
 		Case 577
 			$SicknessDescription = "Swiftness + Vampirism + Poison1"
 		Case 8192
-			$SicknessDescription = "Desperation"
+			$SicknessDescription = "BloodLust"
 		Case 8193
-			$SicknessDescription = "Desperation + Poison1"
+			$SicknessDescription = "BloodLust + Poison1"
 		Case 8194
-			$SicknessDescription = "Desperation + Disease1"
+			$SicknessDescription = "BloodLust + Disease1"
 		Case 8195
-			$SicknessDescription = "Desperation + Poison1 + Disease1"
+			$SicknessDescription = "BloodLust + Poison1 + Disease1"
 		Case 8256
-			$SicknessDescription = "Desperation + Vampirism"
+			$SicknessDescription = "BloodLust + Vampirism"
 		Case 8257
-			$SicknessDescription = "Desperation + Vampirism + Poison1"
+			$SicknessDescription = "BloodLust + Vampirism + Poison1"
 		Case 8258
-			$SicknessDescription = "Desperation + Vampirism + Poison1 + Disease1"
+			$SicknessDescription = "BloodLust + Vampirism + Poison1 + Disease1"
+		Case 8704
+			$SicknessDescription = "BloodLust + Swiftness"
+		Case 8705
+			$SicknessDescription = "BloodLust + Swiftness + Poison1"
+		Case 8706
+			$SicknessDescription = "BloodLust + Swiftness + Disease1"
+		Case 8707
+			$SicknessDescription = "BloodLust + Swiftness + Poison1 + Disease1"
+		Case 8708
+			$SicknessDescription = "BloodLust + Swiftness + Poison4"
+		Case 8709
+			$SicknessDescription = "BloodLust + Swiftness + Poison1 + Poison4"
+		Case 8712
+			$SicknessDescription = "BloodLust + Swiftness + Disease5"
+		Case 8713
+			$SicknessDescription = "BloodLust + Swiftness + Poison1 + Disease5"
+		Case 8720
+			$SicknessDescription = "BloodLust + Swiftness + New Affliction 16"
+		Case 8721
+			$SicknessDescription = "BloodLust + Swiftness + Poison1 + New Affliction 16"
+		Case 8736
+			$SicknessDescription = "BloodLust + Swiftness + New Affliction 32"
+		Case 8737
+			$SicknessDescription = "BloodLust + Swiftness + Poison1 + New Affliction 32"
+		Case 8768
+			$SicknessDescription = "BloodLust + Swiftness + Vampirism"
+		Case 8769
+			$SicknessDescription = "BloodLust + Swiftness + Vampirism + Poison1"
+		Case 8770
+			$SicknessDescription = "BloodLust + Swiftness + Vampirism + Disease1"
 		Case 16384
 			$SicknessDescription = "Exhausted"
 		Case 16385
@@ -480,11 +509,80 @@ Func GetSicknessDescription($Sick)
 			$SicknessDescription = "Swiftness + Exhausted + Disease1"
 		Case 16929
 			$SicknessDescription = "Swiftness + Exhausted + Vampirism + Poison1"
+		Case 24576
+			$SicknessDescription = "BloodLust + Exhausted"
+		Case 24577
+			$SicknessDescription = "BloodLust + Exhausted + Poison1"
+		Case 24578
+			$SicknessDescription = "BloodLust + Exhausted + Disease1"
+		Case 24579
+			$SicknessDescription = "BloodLust + Exhausted + Poison1 + Disease1"
+		Case 24580
+			$SicknessDescription = "BloodLust + Exhausted + Poison4"
+		Case 24581
+			$SicknessDescription = "BloodLust + Exhausted + Poison1 + Poison4"
+		Case 24582
+			$SicknessDescription = "BloodLust + Exhausted + Disease5"
+		Case 24583
+			$SicknessDescription = "BloodLust + Exhausted + Poison1 + Disease5"
+		Case 24584
+			$SicknessDescription = "BloodLust + Exhausted + New Affliction 16"
+		Case 24585
+			$SicknessDescription = "BloodLust + Exhausted + Poison1 + New Affliction 16"
+		Case 24608
+			$SicknessDescription = "BloodLust + Exhausted + New Affliction 32"
+		Case 24609
+			$SicknessDescription = "BloodLust + Exhausted + Poison1 + New Affliction 32"
+		Case 24640
+			$SicknessDescription = "BloodLust + Exhausted + Vampirism"
+		Case 24641
+			$SicknessDescription = "BloodLust + Exhausted + Vampirism + Poison1"
+		Case 24642
+			$SicknessDescription = "BloodLust + Exhausted + Vampirism + Disease1"
+		Case 24643
+			$SicknessDescription = "BloodLust + Exhausted + Vampirism + Poison1 + Disease1"
+		Case 24644
+			$SicknessDescription = "BloodLust + Exhausted + Vampirism + Poison4"
+		Case 24645
+			$SicknessDescription = "BloodLust + Exhausted + Vampirism + Poison1 + Poison4"
+		Case 24646
+			$SicknessDescription = "BloodLust + Exhausted + Vampirism + Disease5"
+		Case 24647
+			$SicknessDescription = "BloodLust + Exhausted + Vampirism + Poison1 + Disease5"
+		Case 24648
+			$SicknessDescription = "BloodLust + Exhausted + Vampirism + New Affliction 16"
+		Case 24649
+			$SicknessDescription = "BloodLust + Exhausted + Vampirism + Poison1 + New Affliction 16"
+		Case 24672
+			$SicknessDescription = "BloodLust + Exhausted + Vampirism + New Affliction 32"
+		Case 24673
+			$SicknessDescription = "BloodLust + Exhausted + Vampirism + Poison1 + New Affliction 32"
 		Case 25088
-			$SicknessDescription = "Desperation + Exhausted + Swiftness"
+			$SicknessDescription = "BloodLust + Exhausted + Swiftness"
+		Case 25089
+			$SicknessDescription = "BloodLust + Exhausted + Swiftness + Poison1"
+		Case 25090
+			$SicknessDescription = "BloodLust + Exhausted + Swiftness + Disease1"
+		Case 25091
+			$SicknessDescription = "BloodLust + Exhausted + Swiftness + Poison1 + Disease1"
+		Case 25092
+			$SicknessDescription = "BloodLust + Exhausted + Swiftness + Poison4"
+		Case 25093
+			$SicknessDescription = "BloodLust + Exhausted + Swiftness + Poison1 + Poison4"
+		Case 25094
+			$SicknessDescription = "BloodLust + Exhausted + Swiftness + Disease5"
+		Case 25095
+			$SicknessDescription = "BloodLust + Exhausted + Swiftness + Poison1 + Disease5"
+		Case 25096
+			$SicknessDescription = "BloodLust + Exhausted + Swiftness + New Affliction 16"
+		Case 25097
+			$SicknessDescription = "BloodLust + Exhausted + Swiftness + Poison1 + New Affliction 16"
+		Case 25120
+			$SicknessDescription = "BloodLust + Exhausted + Swiftness + New Affliction 32"
+		Case 25121
+			$SicknessDescription = "BloodLust + Exhausted + Swiftness + Poison1 + New Affliction 32"
 		Case 33280
 			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism"
-
 		Case 33283
 			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Poison1"
 		Case 33284
