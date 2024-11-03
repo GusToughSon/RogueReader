@@ -39,7 +39,8 @@ HotKeySet($HealHotkey, "Hotkeyshit")
 HotKeySet($CureHotkey, "CureKeyShit")
 HotKeySet($TargetHotkey, "TargetKeyShit")
 HotKeySet($ExitHotkey, "KilledWithFire")
-$Debug = False
+HotKeySet("{.}", "ToggleOverlay") ; Set F10 as the overlay activation hotkey
+$Debug = True ; Set to True to enable debug output
 
 ; Define the game process and memory offsets
 $ProcessName = "Project Rogue Client.exe"
@@ -88,14 +89,50 @@ Global $TargetStatus = 0
 
 ; In-Game Overlay GUI
 Global $OverlayWidth = 50, $OverlayHeight = 150
-Global $hOverlay = GUICreate("Overlay", $OverlayWidth, $OverlayHeight, @DesktopWidth - $OverlayWidth - 20, @DesktopHeight - $OverlayHeight - 20, $WS_POPUP, $WS_EX_TOPMOST)
+Global $hOverlay = GUICreate("Overlay", $OverlayWidth, $OverlayHeight, -1, -1, $WS_POPUP, $WS_EX_TOPMOST)
 Global $HealerIndicator = GUICtrlCreateLabel("", 0, 0, $OverlayWidth, 50)
 Global $CureIndicator = GUICtrlCreateLabel("", 0, 50, $OverlayWidth, 50)
 Global $TargetIndicator = GUICtrlCreateLabel("", 0, 100, $OverlayWidth, 50)
 UpdateOverlay() ; Initialize overlay with colors
-GUISetState(@SW_SHOW, $hOverlay)
+GUISetState(@SW_HIDE, $hOverlay) ; Start with overlay hidden
 
-; Main loop
+; Variables to track overlay position and cooldown
+Global $lastWinPos = Null
+Global $cooldownTimer = TimerInit() ; 5-second cooldown after toggle
+
+; Function to toggle overlay on F10 press
+Func ToggleOverlay()
+	; Check if the cooldown period has passed
+	If TimerDiff($cooldownTimer) < 5000 Then
+		DebugPrint("Cooldown active - overlay toggle ignored")
+		Return
+	EndIf
+
+	DebugPrint("F10 pressed - Activating overlay with delay")
+
+	; Delay 5 seconds before positioning the overlay
+
+	; Get the game window's position and size
+	Local $winPos = WinGetPos($WindowName)
+	If IsArray($winPos) Then
+		; Position overlay at the bottom right of the game window
+		Local $overlayX = $winPos[0] + $winPos[2] - $OverlayWidth - 10 ; 10px padding from right
+		Local $overlayY = $winPos[1] + $winPos[3] - $OverlayHeight - 10 ; 10px padding from bottom
+		WinMove($hOverlay, "", $overlayX, $overlayY) ; Move overlay to bottom right of game window
+
+		DebugPrint("Overlay moved to new position: X=" & $overlayX & ", Y=" & $overlayY)
+	Else
+		DebugPrint("Game window not found - unable to position overlay")
+		Return
+	EndIf
+
+	; Show overlay
+	GUISetState(@SW_SHOW, $hOverlay)
+
+	$cooldownTimer = TimerInit()
+EndFunc   ;==>ToggleOverlay
+
+; Main loop to keep the script running
 While 1
 	Global $ProcessID = ProcessExists($ProcessName)
 	If $ProcessID Then
@@ -128,6 +165,7 @@ While 1
 				EndIf
 				GUIReadMemory()
 				UpdateOverlay()
+
 				Sleep(100)
 			WEnd
 		EndIf
