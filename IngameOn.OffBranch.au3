@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.30
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.31
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -17,6 +17,8 @@
 #include <File.au3>
 #include <JSON.au3>
 #include <Misc.au3>
+#include <WindowsConstants.au3>
+#include <WinAPI.au3>
 
 Opt("MouseCoordMode", 2)
 
@@ -37,11 +39,6 @@ HotKeySet($HealHotkey, "Hotkeyshit")
 HotKeySet($CureHotkey, "CureKeyShit")
 HotKeySet($TargetHotkey, "TargetKeyShit")
 HotKeySet($ExitHotkey, "KilledWithFire")
-;~ HotKeySet("{4}", "TrashHeap")
-ConsoleWrite("Heal: " & $HealHotkey)
-ConsoleWrite("Cure: " & $CureHotkey)
-ConsoleWrite("Target: " & $TargetHotkey)
-ConsoleWrite("Exit: " & $ExitHotkey)
 $Debug = False
 
 ; Define the game process and memory offsets
@@ -65,7 +62,7 @@ Global $sicknessArray = [1, 2, 65, 66, 98, 8193, 8257, 16449] ;This is the Cure 
 Global $currentTime = TimerInit(), $TargetDelay = 400, $HealDelay = 1700
 Global $aMousePos = MouseGetPos()
 
-; Create the GUI
+; Main GUI for information display
 $Gui = GUICreate("RougeReader " & "Version - " & $version, 400, 400, 15, 15)
 $TypeLabel = GUICtrlCreateLabel("Type: N/A", 20, 30, 250, 20)
 $AttackModeLabel = GUICtrlCreateLabel("Attack Mode: N/A", 20, 60, 250, 20)
@@ -88,6 +85,16 @@ GUISetState(@SW_SHOW)
 Global $HealerStatus = 0
 Global $CureStatus = 0
 Global $TargetStatus = 0
+
+; In-Game Overlay GUI
+Global $OverlayWidth = 50, $OverlayHeight = 150
+Global $hOverlay = GUICreate("Overlay", $OverlayWidth, $OverlayHeight, @DesktopWidth - $OverlayWidth - 20, @DesktopHeight - $OverlayHeight - 20, $WS_POPUP, $WS_EX_TOPMOST)
+Global $HealerIndicator = GUICtrlCreateLabel("", 0, 0, $OverlayWidth, 50)
+Global $CureIndicator = GUICtrlCreateLabel("", 0, 50, $OverlayWidth, 50)
+Global $TargetIndicator = GUICtrlCreateLabel("", 0, 100, $OverlayWidth, 50)
+UpdateOverlay() ; Initialize overlay with colors
+GUISetState(@SW_SHOW, $hOverlay)
+
 ; Main loop
 While 1
 	Global $ProcessID = ProcessExists($ProcessName)
@@ -103,6 +110,7 @@ While 1
 				If $msg = $ExitButton Or $msg = $GUI_EVENT_CLOSE Then
 					_MemoryClose($MemOpen)
 					GUIDelete($Gui)
+					GUIDelete($hOverlay)
 					Exit
 				EndIf
 				If $msg = $KillButton Then
@@ -119,6 +127,7 @@ While 1
 					TimeToHeal()
 				EndIf
 				GUIReadMemory()
+				UpdateOverlay()
 				Sleep(100)
 			WEnd
 		EndIf
@@ -127,6 +136,7 @@ While 1
 		If $msg = $ExitButton Or $msg = $GUI_EVENT_CLOSE Then
 			_MemoryClose($MemOpen)
 			GUIDelete($Gui)
+			GUIDelete($hOverlay)
 			Exit
 		EndIf
 		If $msg = $KillButton Then
@@ -138,6 +148,24 @@ While 1
 WEnd
 ; Cleanup
 GUIDelete($Gui)
+
+; Function to update overlay indicators
+Func UpdateOverlay()
+	Local $healerColor = $HealerStatus ? 0x00FF00 : 0xFF0000 ; Green if active, red if inactive
+	Local $cureColor = $CureStatus ? 0x00FF00 : 0xFF0000
+	Local $targetColor = $TargetStatus ? 0x00FF00 : 0xFF0000
+	GUICtrlSetBkColor($HealerIndicator, $healerColor)
+	GUICtrlSetBkColor($CureIndicator, $cureColor)
+	GUICtrlSetBkColor($TargetIndicator, $targetColor)
+	DebugPrint("Overlay updated - Healer: " & ($HealerStatus ? "Green" : "Red") & ", Cure: " & ($CureStatus ? "Green" : "Red") & ", Target: " & ($TargetStatus ? "Green" : "Red"))
+EndFunc   ;==>UpdateOverlay
+
+; Debug Print function
+Func DebugPrint($message)
+	If $Debug Then ConsoleWrite("[DEBUG] " & $message & @CRLF)
+EndFunc   ;==>DebugPrint
+
+; Rest of the original functions (e.g., LoadConfig, GUIReadMemory, CureMe, TimeToHeal, etc.) go here without modification
 
 Func LoadConfig() ;hotkey config load;
 	; Default hotkey settings
