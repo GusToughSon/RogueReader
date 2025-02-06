@@ -33,6 +33,7 @@ Global $ExitHotkey = "{/}" ; Default Exit Hotkey
 LoadConfig()
 
 ; --- Set Hotkeys from Config ---
+
 HotKeySet($HealHotkey, "Hotkeyshit")
 HotKeySet($CureHotkey, "CureKeyShit")
 HotKeySet($TargetHotkey, "TargetKeyShit")
@@ -53,7 +54,7 @@ $PosXOffset = 0xBF2C70
 $PosYOffset = 0xBF2C8C
 $HPOffset = 0x9BF988
 $MaxHPOffset = 0x9BF98C
-$ChattOpenOffset = 0x9B6998
+$ChattOpenOffset = 0x97A18
 $SicknessOffset = 0x9BFB68
 
 Global $Running = True
@@ -223,51 +224,75 @@ Func LoadConfig() ;hotkey config load;
 EndFunc   ;==>LoadConfig
 
 Func GUIReadMemory()
-	If Not IsPtr($MemOpen) Then
-		Return
-	EndIf
-	; Read Type and update in GUI
-	$Type = _MemoryRead($TypeAddress, $MemOpen, "dword")
-	If $Type = 0 Then
-		GUICtrlSetData($TypeLabel, "Type: Player")
-	ElseIf $Type = 1 Then
-		GUICtrlSetData($TypeLabel, "Type: Monster")
-	ElseIf $Type = 2 Then
-		GUICtrlSetData($TypeLabel, "Type: NPC")
-	ElseIf $Type = 65535 Then
-		GUICtrlSetData($TypeLabel, "Type: No Target")
-	Else
-		GUICtrlSetData($TypeLabel, "Type: Unknown (" & $Type & ")") ; Handles unexpected values
-	EndIf
-	$AttackMode = _MemoryRead($AttackModeAddress, $MemOpen, "dword")
-	If $AttackMode = 0 Then
-		GUICtrlSetData($AttackModeLabel, "Attack Mode: Safe")
-	ElseIf $AttackMode = 1 Then
-		GUICtrlSetData($AttackModeLabel, "Attack Mode: Attack")
-	Else
-		GUICtrlSetData($AttackModeLabel, "Attack Mode: No Target")
-	EndIf
-	; Read Position
-	$PosX = _MemoryRead($PosXAddress, $MemOpen, "dword")
-	GUICtrlSetData($PosXLabel, "Pos X: " & $PosX)
+    If Not IsPtr($MemOpen) Then
+        Return
+    EndIf
 
-	$PosY = _MemoryRead($PosYAddress, $MemOpen, "dword")
-	GUICtrlSetData($PosYLabel, "Pos Y: " & $PosY)
-	; Read HP and MaxHP
-	$HP = _MemoryRead($HPAddress, $MemOpen, "dword")
-	GUICtrlSetData($HPLabel, "HP: " & $HP)
-	GUICtrlSetData($HP2Label, "RealHp: " & $HP / 65536)
-	$MaxHP = _MemoryRead($MaxHPAddress, $MemOpen, "dword")
-	GUICtrlSetData($MaxHPLabel, "MaxHP: " & $MaxHP)
-	; Read Chat status
-	$Chat = _MemoryRead($ChattOpenAddress, $MemOpen, "dword")
-	GUICtrlSetData($ChatLabel, "Chat: " & $Chat)
-	; Read Sickness and update SicknessDescription in GUI
-	$Sickness = _MemoryRead($SicknessAddress, $MemOpen, "dword")
-	$SicknessDescription = GetSicknessDescription($Sickness) ; Fetch description based on code
-	GUICtrlSetData($SicknessLabel, "Sickness: " & $SicknessDescription)
-	Sleep(50)
-EndFunc   ;==>GUIReadMemory
+    ; Read Type and update in GUI
+    $Type = _MemoryRead($TypeAddress, $MemOpen, "dword")
+    ConsoleWrite("Type: " & $Type & @CRLF)
+    If $Type = 0 Then
+        GUICtrlSetData($TypeLabel, "Type: Player")
+    ElseIf $Type = 1 Then
+        GUICtrlSetData($TypeLabel, "Type: Monster")
+    ElseIf $Type = 2 Then
+        GUICtrlSetData($TypeLabel, "Type: NPC")
+    ElseIf $Type = 65535 Then
+        GUICtrlSetData($TypeLabel, "Type: No Target")
+    Else
+        GUICtrlSetData($TypeLabel, "Type: Unknown (" & $Type & ")") ; Handles unexpected values
+    EndIf
+
+    $AttackMode = _MemoryRead($AttackModeAddress, $MemOpen, "dword")
+    ConsoleWrite("Attack Mode: " & $AttackMode & @CRLF)
+    If $AttackMode = 0 Then
+        GUICtrlSetData($AttackModeLabel, "Attack Mode: Safe")
+    ElseIf $AttackMode = 1 Then
+        GUICtrlSetData($AttackModeLabel, "Attack Mode: Attack")
+    Else
+        GUICtrlSetData($AttackModeLabel, "Attack Mode: No Target")
+    EndIf
+
+    ; Read Position
+    $PosX = _MemoryRead($PosXAddress, $MemOpen, "dword")
+    ConsoleWrite("Pos X: " & $PosX & @CRLF)
+    GUICtrlSetData($PosXLabel, "Pos X: " & $PosX)
+
+    $PosY = _MemoryRead($PosYAddress, $MemOpen, "dword")
+    ConsoleWrite("Pos Y: " & $PosY & @CRLF)
+    GUICtrlSetData($PosYLabel, "Pos Y: " & $PosY)
+
+    ; Read HP and MaxHP
+    $HP = _MemoryRead($HPAddress, $MemOpen, "dword")
+    ConsoleWrite("HP: " & $HP & @CRLF)
+    GUICtrlSetData($HPLabel, "HP: " & $HP)
+    GUICtrlSetData($HP2Label, "RealHp: " & $HP / 65536)
+    $MaxHP = _MemoryRead($MaxHPAddress, $MemOpen, "dword")
+    ConsoleWrite("MaxHP: " & $MaxHP & @CRLF)
+    GUICtrlSetData($MaxHPLabel, "MaxHP: " & $MaxHP)
+
+    ; Read Chat status and update in GUI
+    $Chat = _MemoryRead($ChattOpenAddress, $MemOpen, "dword")
+    ConsoleWrite("Chat status: " & $Chat & @CRLF)
+    If $Chat = 0 Then
+        GUICtrlSetData($ChatLabel, "Chat: Closed")
+    ElseIf $Chat = 1 Then
+        GUICtrlSetData($ChatLabel, "Chat: Open")
+    Else
+        GUICtrlSetData($ChatLabel, "Chat: Unknown (" & $Chat & ")")
+    EndIf
+
+    ; Read Sickness and update SicknessDescription in GUI
+    $Sickness = _MemoryRead($SicknessAddress, $MemOpen, "dword")
+    ConsoleWrite("Sickness: " & $Sickness & @CRLF)
+    $SicknessDescription = GetSicknessDescription($Sickness) ; Fetch description based on code
+    GUICtrlSetData($SicknessLabel, "Sickness: " & $SicknessDescription)
+
+    Sleep(50)
+EndFunc
+
+
+
 
 Func CureMe()
 	If $CureStatus = 1 Then
