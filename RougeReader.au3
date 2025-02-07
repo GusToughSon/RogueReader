@@ -2,14 +2,11 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.32
-#AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
 #AutoIt3Wrapper_Res_LegalCopyright=Use only for authorized security testing. Unauthorized use is illegal. No liability for misuse. © MacroIsFun.LLc 2024
 #AutoIt3Wrapper_Res_LegalTradeMarks=Macro Is Fun .LLC
 #AutoIt3Wrapper_Res_Language=1033
-#AutoIt3Wrapper_Run_Tidy=y
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 ; --- Removed: #include "NomadMemory.au3"
@@ -34,7 +31,7 @@ Global $HealHotkey = "{`}" ; Default Heal Hotkey
 Global $CureHotkey = "{-}" ; Default Cure Hotkey
 Global $TargetHotkey = "{]}" ; Default Target Hotkey
 Global $ExitHotkey = "{/}"  ; Default Exit Hotkey
-
+LoadConfig()
 
 ; --- Set Hotkeys from Config ---
 HotKeySet($HealHotkey, "Hotkeyshit")
@@ -51,11 +48,11 @@ Global $Debug = False
 ; Define the game process and memory offsets
 Global $ProcessName = "Project Rogue Client.exe"
 Global $WindowName = "Project Rogue"
-Global $TypeOffset = 0xBEFB04
+Global $TypeOffset = 0xBF0B98 ;x
 Global $AttackModeOffset = 0xAACCC0 ;x
 Global $PosXOffset = 0xBF3D28 ;Project Rogue Client.exe+BF3D28 #2 Project Rogue Client.exe+BF3D3C
 Global $PosYOffset = 0xBF3D20 ;Project Rogue Client.exe+BF3D20 #2 Project Rogue Client.exe+BF3D34
-Global $HPOffset = 0x9BF988
+Global $HPOffset = 0xAB5C30 ;x
 Global $MaxHPOffset = 0xAB5C34 ;Project Rogue Client.exe+AB5C34
 Global $ChattOpenOffset = 0x9B7A18 ;x
 Global $SicknessOffset = 0x9BFB68
@@ -69,15 +66,7 @@ Global $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress
 Global $Type, $Chat, $Sickness
 
 ; This array is used in CureMe and TimeToHeal checks
-Global $sicknessArray = [ _
-		1, 2, 65, 66, 67, 68, 69, 72, 73, 81, 97, 98, 99, 513, 514, 515, 577, _
-		8193, 8194, 8195, 8257, 8258, 8705, 8706, 8707, 8708, 8709, 8712, 8713, _
-		8721, 8737, 8769, 8770, 16385, 16386, 16449, 16450, 16451, 16452, 16897, _
-		16898, 24577, 24578, 24579, 24581, 24582, 24583, 24585, 24609, 24641, _
-		24642, 24643, 24645, 24646, 24647, 24649, 25089, 25090, 25091, 25093, _
-		25094, 25095, 25097, 25121, 33283, 33284, 33285, 33286, 33287, 33288, _
-		33289, 33291, 33293, 33294, 33295, 33793, 41985, 41986, 41987, 41988, _
-		41989, 41990, 41991, 41993, 41995]
+Global $sicknessArray = [1, 2, 65, 66, 67, 68, 69, 72, 73, 81, 97, 98, 99, 513, 514, 515, 577, 8193, 8194, 8195, 8257, 8258, 8705, 8706, 8707, 8708, 8709, 8712, 8713, 8721, 8737, 8769, 8770, 16385, 16386, 16449, 16450, 16451, 16452, 16897, 16898, 24577, 24578, 24579, 24581, 24582, 24583, 24585, 24609, 24641, 24642, 24643, 24645, 24646, 24647, 24649, 25089, 25090, 25091, 25093, 25094, 25095, 25097, 25121, 33283, 33284, 33285, 33286, 33287, 33288, 33289, 33291, 33293, 33294, 33295, 33793, 41985, 41986, 41987, 41988, 41989, 41990, 41991, 41993, 41995]
 
 Global $currentTime = TimerInit(), $TargetDelay = 400, $HealDelay = 1700
 Global $aMousePos = MouseGetPos()
@@ -170,7 +159,88 @@ Exit
 ; ------------------------------------------------------------------------------
 ;                                LOAD CONFIG
 ; ------------------------------------------------------------------------------
-
+Func LoadConfig() ;hotkey config load;
+	; Default hotkey settings
+	Local $defaultHealHotkey = "{1}"
+	Local $defaultCureHotkey = "{2}"
+	Local $defaultTargetHotkey = "{3}"
+	Local $defaultExitHotkey = "{4}"
+	; Construct default JSON configuration string
+	Local $defaultConfig = StringFormat('{\r\n    "HealHotkey": "%s",\r\n    "CureHotkey": "%s",\r\n    "TargetHotkey": "%s",\r\n    "ExitHotkey": "%s"\r\n}', _
+			$defaultHealHotkey, $defaultCureHotkey, $defaultTargetHotkey, $defaultExitHotkey)
+	; Check if Config.json exists, create it with defaults if not
+	If Not FileExists($configPath) Then
+		FileWrite($configPath, $defaultConfig)
+		ConsoleWrite("[Info] Config.json created with default hotkeys." & @CRLF)
+	Else
+		ConsoleWrite("[Info] Config.json found." & @CRLF)
+	EndIf
+	; Read and validate JSON content
+	Local $json = FileRead($configPath)
+	If @error Or $json = "" Then
+		ConsoleWrite("[Error] Failed to read Config.json or file is empty. Writing default config." & @CRLF)
+		FileWrite($configPath, $defaultConfig)
+		$json = $defaultConfig ; Load defaults into the script
+	EndIf
+	; Remove any unwanted characters from the JSON string
+	$json = StringReplace($json, "`r", "")
+	$json = StringReplace($json, "`n", "")
+	; Re-validate JSON structure
+	If Not StringRegExp($json, '^\s*\{\s*("([^"]+)"\s*:\s*"[^"]*",?\s*)+\}\s*$', 0) Then
+		ConsoleWrite("[Error] Config.json structure invalid. Resetting to defaults." & @CRLF)
+		FileWrite($configPath, $defaultConfig)
+		$json = $defaultConfig
+	EndIf
+	; Debug output if needed
+	; Initialize settings with default values
+	Local $HealHotkey = $defaultHealHotkey
+	Local $CureHotkey = $defaultCureHotkey
+	Local $TargetHotkey = $defaultTargetHotkey
+	Local $ExitHotkey = $defaultExitHotkey
+	; Extract and assign each hotkey from JSON
+	Local $matchHeal = StringRegExp($json, '"HealHotkey"\s*:\s*"\{([^}]*)\}"', 1)
+	Local $matchCure = StringRegExp($json, '"CureHotkey"\s*:\s*"\{([^}]*)\}"', 1)
+	Local $matchTarget = StringRegExp($json, '"TargetHotkey"\s*:\s*"\{([^}]*)\}"', 1)
+	Local $matchExit = StringRegExp($json, '"ExitHotkey"\s*:\s*"\{([^}]*)\}"', 1)
+	; Apply extracted hotkey values or retain defaults if missing
+	If IsArray($matchHeal) Then $HealHotkey = "{" & $matchHeal[0] & "}"
+	If IsArray($matchCure) Then $CureHotkey = "{" & $matchCure[0] & "}"
+	If IsArray($matchTarget) Then $TargetHotkey = "{" & $matchTarget[0] & "}"
+	If IsArray($matchExit) Then $ExitHotkey = "{" & $matchExit[0] & "}"
+	; Check and update JSON file if any hotkeys are missing
+	Local $missingConfig = False
+	If Not IsArray($matchHeal) Then
+		$json = StringRegExpReplace($json, '}', ',\r\n    "HealHotkey": "' & $HealHotkey & '"\r\n}')
+		$missingConfig = True
+	EndIf
+	If Not IsArray($matchCure) Then
+		$json = StringRegExpReplace($json, '}', ',\r\n    "CureHotkey": "' & $CureHotkey & '"\r\n}')
+		$missingConfig = True
+	EndIf
+	If Not IsArray($matchTarget) Then
+		$json = StringRegExpReplace($json, '}', ',\r\n    "TargetHotkey": "' & $TargetHotkey & '"\r\n}')
+		$missingConfig = True
+	EndIf
+	If Not IsArray($matchExit) Then
+		$json = StringRegExpReplace($json, '}', ',\r\n    "ExitHotkey": "' & $ExitHotkey & '"\r\n}')
+		$missingConfig = True
+	EndIf
+	; Write any changes to the configuration file
+	If $missingConfig Then
+		FileWrite($configPath, $json)
+		ConsoleWrite("[Info] Config.json updated with missing hotkeys." & @CRLF)
+	EndIf
+	; Assign hotkeys to actions
+	HotKeySet($HealHotkey, "Hotkeyshit")
+	HotKeySet($CureHotkey, "Curekeyshit")
+	HotKeySet($TargetHotkey, "Targetkeyshit")
+	HotKeySet($ExitHotkey, "KilledWithFire")
+	; Display the final configuration for confirmation
+	ConsoleWrite("[Config] HealHotkey set to: " & $HealHotkey & @CRLF)
+	ConsoleWrite("[Config] CureHotkey set to: " & $CureHotkey & @CRLF)
+	ConsoleWrite("[Config] TargetHotkey set to: " & $TargetHotkey & @CRLF)
+	ConsoleWrite("[Config] ExitHotkey set to: " & $ExitHotkey & @CRLF)
+EndFunc   ;==>LoadConfig
 ; ------------------------------------------------------------------------------
 ;                       READ AND UPDATE GUI FROM MEMORY
 ; ------------------------------------------------------------------------------
