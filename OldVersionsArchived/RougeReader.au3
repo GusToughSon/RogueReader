@@ -12,15 +12,11 @@
 #AutoIt3Wrapper_Run_Tidy=y
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
-; --- Removed: #include "NomadMemory.au3"
+#include "NomadMemory.au3"
 #include <GUIConstantsEx.au3>
 #include <File.au3>
 #include <JSON.au3>
 #include <Misc.au3>
-
-; --- ADDED for WinAPI-based memory approach:
-#include <WinAPI.au3>
-#include <Process.au3>
 
 Opt("MouseCoordMode", 2)
 
@@ -33,8 +29,8 @@ ConsoleWrite("Script Version: " & $version & @CRLF)
 Global $HealHotkey = "{`}" ; Default Heal Hotkey
 Global $CureHotkey = "{-}" ; Default Cure Hotkey
 Global $TargetHotkey = "{]}" ; Default Target Hotkey
-Global $ExitHotkey = "{/}"  ; Default Exit Hotkey
-
+Global $ExitHotkey = "{/}" ; Default Exit Hotkey
+LoadConfig()
 
 ; --- Set Hotkeys from Config ---
 HotKeySet($HealHotkey, "Hotkeyshit")
@@ -51,33 +47,21 @@ Global $Debug = False
 ; Define the game process and memory offsets
 Global $ProcessName = "Project Rogue Client.exe"
 Global $WindowName = "Project Rogue"
+
 Global $TypeOffset = 0xBEFB04
-Global $AttackModeOffset = 0xAACCC0 ;x
-Global $PosXOffset = 0xBF3D28 ;Project Rogue Client.exe+BF3D28 #2 Project Rogue Client.exe+BF3D3C
-Global $PosYOffset = 0xBF3D20 ;Project Rogue Client.exe+BF3D20 #2 Project Rogue Client.exe+BF3D34
+Global $AttackModeOffset = 0xAC1D70
+Global $PosXOffset = 0xBF2C70
+Global $PosYOffset = 0xBF2C8C
 Global $HPOffset = 0x9BF988
-Global $MaxHPOffset = 0xAB5C34 ;Project Rogue Client.exe+AB5C34
-Global $ChattOpenOffset = 0x9B7A18 ;x
+Global $MaxHPOffset = 0x9BF98C
+Global $ChattOpenOffset = 0x9B7A18
 Global $SicknessOffset = 0x9BFB68
 
 Global $Running = True
-Global $hProcess = 0   ; Our WinAPI handle to the process
-Global $BaseAddress = 0 ; Base address of the module
+Global $AttackModeAddress, $TypeAddress, $PosXAddress, $PosYAddress, $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress, $MemOpen
+Global $BaseAddress, $Type, $Chat, $Sickness
 
-Global $TypeAddress, $AttackModeAddress, $PosXAddress, $PosYAddress
-Global $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress
-Global $Type, $Chat, $Sickness
-
-; This array is used in CureMe and TimeToHeal checks
-Global $sicknessArray = [ _
-		1, 2, 65, 66, 67, 68, 69, 72, 73, 81, 97, 98, 99, 513, 514, 515, 577, _
-		8193, 8194, 8195, 8257, 8258, 8705, 8706, 8707, 8708, 8709, 8712, 8713, _
-		8721, 8737, 8769, 8770, 16385, 16386, 16449, 16450, 16451, 16452, 16897, _
-		16898, 24577, 24578, 24579, 24581, 24582, 24583, 24585, 24609, 24641, _
-		24642, 24643, 24645, 24646, 24647, 24649, 25089, 25090, 25091, 25093, _
-		25094, 25095, 25097, 25121, 33283, 33284, 33285, 33286, 33287, 33288, _
-		33289, 33291, 33293, 33294, 33295, 33793, 41985, 41986, 41987, 41988, _
-		41989, 41990, 41991, 41993, 41995]
+Global $sicknessArray = [1, 2, 65, 66, 67, 68, 69, 72, 73, 81, 97, 98, 99, 513, 514, 515, 577, 8193, 8194, 8195, 8257, 8258, 8705, 8706, 8707, 8708, 8709, 8712, 8713, 8721, 8737, 8769, 8770, 16385, 16386, 16449, 16450, 16451, 16452, 16897, 16898, 24577, 24578, 24579, 24581, 24582, 24583, 24585, 24609, 24641, 24642, 24643, 24645, 24646, 24647, 24649, 25089, 25090, 25091, 25093, 25094, 25095, 25097, 25121, 33283, 33284, 33285, 33286, 33287, 33288, 33289, 33291, 33293, 33294, 33295, 33793, 41985, 41986, 41987, 41988, 41989, 41990, 41991, 41993, 41995]
 
 Global $currentTime = TimerInit(), $TargetDelay = 400, $HealDelay = 1700
 Global $aMousePos = MouseGetPos()
@@ -99,9 +83,7 @@ Global $CureLabel = GUICtrlCreateLabel("Cure: Off", 120, 240, 250, 20)
 Global $HotkeyLabel = GUICtrlCreateLabel("Set hotkeys in the config file", 20, 270, 350, 20)
 Global $KillButton = GUICtrlCreateButton("Kill Rogue", 20, 300, 100, 30)
 Global $ExitButton = GUICtrlCreateButton("Exit", 150, 300, 100, 30)
-
-; Just to initialize with something
-Global $SicknessDescription = GetSicknessDescription(0)
+Global $SicknessDescription = GetSicknessDescription($Sickness)
 
 GUISetState(@SW_SHOW)
 
@@ -109,26 +91,36 @@ Global $HealerStatus = 0
 Global $CureStatus = 0
 Global $TargetStatus = 0
 
-; ------------------------------------------------------------------------------
-;                                   MAIN LOOP
-; ------------------------------------------------------------------------------
+; Main loop
 While 1
 	Global $ProcessID = ProcessExists($ProcessName)
 	If $ProcessID Then
+		; Debug
+		ConsoleWrite("[Debug] Process '" & $ProcessName & "' found with PID: " & $ProcessID & @CRLF)
+
 		ConnectToBaseAddress()
-		If $BaseAddress = 0 Or $hProcess = 0 Then
+
+		; Debug
+		ConsoleWrite("[Debug] After ConnectToBaseAddress() - $BaseAddress = 0x" & Hex($BaseAddress) & @CRLF)
+
+		If $BaseAddress = 0 Then
+			ConsoleWrite("[Warning] BaseAddress is 0. Retrying in 1s..." & @CRLF)
 			Sleep(1000)
 		Else
 			ChangeAddressToBase()
+
 			While $Running
 				Local $elapsedTime = TimerDiff($currentTime)
 				Local $msg = GUIGetMsg()
+
 				If $msg = $ExitButton Or $msg = $GUI_EVENT_CLOSE Then
-					_WinAPI_CloseHandle($hProcess)
+					_MemoryClose($MemOpen)
 					GUIDelete($Gui)
 					Exit
 				EndIf
+
 				If $msg = $KillButton Then
+					ConsoleWrite("[Info] Kill button pressed. Closing process..." & @CRLF)
 					ProcessClose($ProcessID)
 					ExitLoop
 				EndIf
@@ -136,9 +128,11 @@ While 1
 				If $CureStatus = 1 Then
 					CureMe()
 				EndIf
+
 				If $TargetStatus = 1 Then
 					AttackModeReader()
 				EndIf
+
 				If $HealerStatus = 1 Then
 					TimeToHeal()
 				EndIf
@@ -148,13 +142,17 @@ While 1
 			WEnd
 		EndIf
 	Else
+		; Debug
+		ConsoleWrite("[Debug] Process '" & $ProcessName & "' not found, or not running." & @CRLF)
+
 		Local $msg = GUIGetMsg()
 		If $msg = $ExitButton Or $msg = $GUI_EVENT_CLOSE Then
-			_WinAPI_CloseHandle($hProcess)
+			_MemoryClose($MemOpen)
 			GUIDelete($Gui)
 			Exit
 		EndIf
 		If $msg = $KillButton Then
+			ConsoleWrite("[Info] Kill button pressed, but process not running. Exiting loop." & @CRLF)
 			ProcessClose($ProcessID)
 			ExitLoop
 		EndIf
@@ -164,21 +162,113 @@ WEnd
 
 ; Cleanup
 GUIDelete($Gui)
-_WinAPI_CloseHandle($hProcess)
-Exit
 
-; ------------------------------------------------------------------------------
-;                                LOAD CONFIG
-; ------------------------------------------------------------------------------
+; ---------------------------------------------------------------------------------------
+Func LoadConfig() ;hotkey config load;
+	; Default hotkey settings
+	Local $defaultHealHotkey = "{1}"
+	Local $defaultCureHotkey = "{2}"
+	Local $defaultTargetHotkey = "{3}"
+	Local $defaultExitHotkey = "{4}"
 
-; ------------------------------------------------------------------------------
-;                       READ AND UPDATE GUI FROM MEMORY
-; ------------------------------------------------------------------------------
+	; Construct default JSON configuration string
+	Local $defaultConfig = StringFormat('{\r\n    "HealHotkey": "%s",\r\n    "CureHotkey": "%s",\r\n    "TargetHotkey": "%s",\r\n    "ExitHotkey": "%s"\r\n}', _
+			$defaultHealHotkey, $defaultCureHotkey, $defaultTargetHotkey, $defaultExitHotkey)
+
+	; Check if Config.json exists, create it with defaults if not
+	If Not FileExists($configPath) Then
+		FileWrite($configPath, $defaultConfig)
+		ConsoleWrite("[Info] Config.json created with default hotkeys." & @CRLF)
+	Else
+		ConsoleWrite("[Info] Config.json found." & @CRLF)
+	EndIf
+
+	; Read and validate JSON content
+	Local $json = FileRead($configPath)
+	If @error Or $json = "" Then
+		ConsoleWrite("[Error] Failed to read Config.json or file is empty. Writing default config." & @CRLF)
+		FileWrite($configPath, $defaultConfig)
+		$json = $defaultConfig ; Load defaults into the script
+	EndIf
+
+	; Remove any unwanted characters from the JSON string
+	$json = StringReplace($json, "`r", "")
+	$json = StringReplace($json, "`n", "")
+
+	; Re-validate JSON structure
+	If Not StringRegExp($json, '^\s*\{\s*("([^"]+)"\s*:\s*"[^"]*",?\s*)+\}\s*$', 0) Then
+		ConsoleWrite("[Error] Config.json structure invalid. Resetting to defaults." & @CRLF)
+		FileWrite($configPath, $defaultConfig)
+		$json = $defaultConfig
+	EndIf
+
+	; Debug output if needed
+	; Initialize settings with default values
+	Local $HealHotkey = $defaultHealHotkey
+	Local $CureHotkey = $defaultCureHotkey
+	Local $TargetHotkey = $defaultTargetHotkey
+	Local $ExitHotkey = $defaultExitHotkey
+
+	; Extract and assign each hotkey from JSON
+	Local $matchHeal = StringRegExp($json, '"HealHotkey"\s*:\s*"\{([^}]*)\}"', 1)
+	Local $matchCure = StringRegExp($json, '"CureHotkey"\s*:\s*"\{([^}]*)\}"', 1)
+	Local $matchTarget = StringRegExp($json, '"TargetHotkey"\s*:\s*"\{([^}]*)\}"', 1)
+	Local $matchExit = StringRegExp($json, '"ExitHotkey"\s*:\s*"\{([^}]*)\}"', 1)
+
+	; Apply extracted hotkey values or retain defaults if missing
+	If IsArray($matchHeal) Then $HealHotkey = "{" & $matchHeal[0] & "}"
+	If IsArray($matchCure) Then $CureHotkey = "{" & $matchCure[0] & "}"
+	If IsArray($matchTarget) Then $TargetHotkey = "{" & $matchTarget[0] & "}"
+	If IsArray($matchExit) Then $ExitHotkey = "{" & $matchExit[0] & "}"
+
+	; Check and update JSON file if any hotkeys are missing
+	Local $missingConfig = False
+	If Not IsArray($matchHeal) Then
+		$json = StringRegExpReplace($json, '}', ',\r\n    "HealHotkey": "' & $HealHotkey & '"\r\n}')
+		$missingConfig = True
+	EndIf
+	If Not IsArray($matchCure) Then
+		$json = StringRegExpReplace($json, '}', ',\r\n    "CureHotkey": "' & $CureHotkey & '"\r\n}')
+		$missingConfig = True
+	EndIf
+	If Not IsArray($matchTarget) Then
+		$json = StringRegExpReplace($json, '}', ',\r\n    "TargetHotkey": "' & $TargetHotkey & '"\r\n}')
+		$missingConfig = True
+	EndIf
+	If Not IsArray($matchExit) Then
+		$json = StringRegExpReplace($json, '}', ',\r\n    "ExitHotkey": "' & $ExitHotkey & '"\r\n}')
+		$missingConfig = True
+	EndIf
+
+	; Write any changes to the configuration file
+	If $missingConfig Then
+		FileWrite($configPath, $json)
+		ConsoleWrite("[Info] Config.json updated with missing hotkeys." & @CRLF)
+	EndIf
+
+	; Assign hotkeys to actions
+	HotKeySet($HealHotkey, "Hotkeyshit")
+	HotKeySet($CureHotkey, "CureKeyShit")
+	HotKeySet($TargetHotkey, "TargetKeyShit")
+	HotKeySet($ExitHotkey, "KilledWithFire")
+
+	; Display the final configuration for confirmation
+	ConsoleWrite("[Config] HealHotkey set to: " & $HealHotkey & @CRLF)
+	ConsoleWrite("[Config] CureHotkey set to: " & $CureHotkey & @CRLF)
+	ConsoleWrite("[Config] TargetHotkey set to: " & $TargetHotkey & @CRLF)
+	ConsoleWrite("[Config] ExitHotkey set to: " & $ExitHotkey & @CRLF)
+EndFunc   ;==>LoadConfig
+
 Func GUIReadMemory()
-	If $hProcess = 0 Then Return
+	If Not IsPtr($MemOpen) Then
+		ConsoleWrite("[Error] $MemOpen is not a valid pointer. Memory not open." & @CRLF)
+		Return
+	EndIf
 
 	; Read Type
-	$Type = _ReadMemory($hProcess, $TypeAddress)
+	$Type = _MemoryRead($TypeAddress, $MemOpen, "dword")
+	ConsoleWrite("[Debug] $TypeAddress=0x" & Hex($TypeAddress) & " -> Type=" & $Type & @CRLF)
+
 	If $Type = 0 Then
 		GUICtrlSetData($TypeLabel, "Type: Player")
 	ElseIf $Type = 1 Then
@@ -191,8 +281,10 @@ Func GUIReadMemory()
 		GUICtrlSetData($TypeLabel, "Type: Unknown (" & $Type & ")")
 	EndIf
 
-	; Attack Mode
-	Local $AttackMode = _ReadMemory($hProcess, $AttackModeAddress)
+	; Read AttackMode
+	$AttackMode = _MemoryRead($AttackModeAddress, $MemOpen, "dword")
+	ConsoleWrite("[Debug] $AttackModeAddress=0x" & Hex($AttackModeAddress) & " -> AttackMode=" & $AttackMode & @CRLF)
+
 	If $AttackMode = 0 Then
 		GUICtrlSetData($AttackModeLabel, "Attack Mode: Safe")
 	ElseIf $AttackMode = 1 Then
@@ -201,73 +293,85 @@ Func GUIReadMemory()
 		GUICtrlSetData($AttackModeLabel, "Attack Mode: No Target")
 	EndIf
 
-	; Position
-	Local $PosX = _ReadMemory($hProcess, $PosXAddress)
-	Local $PosY = _ReadMemory($hProcess, $PosYAddress)
+	; Read Position
+	$PosX = _MemoryRead($PosXAddress, $MemOpen, "dword")
+	ConsoleWrite("[Debug] $PosXAddress=0x" & Hex($PosXAddress) & " -> PosX=" & $PosX & @CRLF)
 	GUICtrlSetData($PosXLabel, "Pos X: " & $PosX)
+
+	$PosY = _MemoryRead($PosYAddress, $MemOpen, "dword")
+	ConsoleWrite("[Debug] $PosYAddress=0x" & Hex($PosYAddress) & " -> PosY=" & $PosY & @CRLF)
 	GUICtrlSetData($PosYLabel, "Pos Y: " & $PosY)
 
-	; HP
-	Local $HP = _ReadMemory($hProcess, $HPAddress)
+	; Read HP and MaxHP
+	$HP = _MemoryRead($HPAddress, $MemOpen, "dword")
+	ConsoleWrite("[Debug] $HPAddress=0x" & Hex($HPAddress) & " -> HP=" & $HP & @CRLF)
 	GUICtrlSetData($HPLabel, "HP: " & $HP)
 	GUICtrlSetData($HP2Label, "RealHp: " & $HP / 65536)
 
-	; MaxHP
-	Local $MaxHP = _ReadMemory($hProcess, $MaxHPAddress)
+	$MaxHP = _MemoryRead($MaxHPAddress, $MemOpen, "dword")
+	ConsoleWrite("[Debug] $MaxHPAddress=0x" & Hex($MaxHPAddress) & " -> MaxHP=" & $MaxHP & @CRLF)
 	GUICtrlSetData($MaxHPLabel, "MaxHP: " & $MaxHP)
 
-	; Chat
-	Local $ChatVal = _ReadMemory($hProcess, $ChattOpenAddress)
-	$Chat = $ChatVal
-	GUICtrlSetData($ChatLabel, "Chat: " & $ChatVal)
+	; Read Chat
+	$Chat = _MemoryRead($ChattOpenAddress, $MemOpen, "dword")
+	ConsoleWrite("[Debug] $ChattOpenAddress=0x" & Hex($ChattOpenAddress) & " -> Chat status=" & $Chat & @CRLF)
 
-	; Sickness
-	Local $SickVal = _ReadMemory($hProcess, $SicknessAddress)
-	$Sickness = $SickVal
-	$SicknessDescription = GetSicknessDescription($SickVal)
+	If $Chat = 0 Then
+		GUICtrlSetData($ChatLabel, "Chat: Closed")
+	ElseIf $Chat = 1 Then
+		GUICtrlSetData($ChatLabel, "Chat: Open")
+	Else
+		GUICtrlSetData($ChatLabel, "Chat: Unknown (" & $Chat & ")")
+	EndIf
+
+	; Read Sickness
+	$Sickness = _MemoryRead($SicknessAddress, $MemOpen, "dword")
+	ConsoleWrite("[Debug] $SicknessAddress=0x" & Hex($SicknessAddress) & " -> Sickness=" & $Sickness & @CRLF)
+
+	$SicknessDescription = GetSicknessDescription($Sickness)
 	GUICtrlSetData($SicknessLabel, "Sickness: " & $SicknessDescription)
 
 	Sleep(50)
 EndFunc   ;==>GUIReadMemory
 
-; ------------------------------------------------------------------------------
-;                                  CURE FUNCTION
-; ------------------------------------------------------------------------------
 Func CureMe()
 	If $CureStatus = 1 Then
+		; Debug
+		ConsoleWrite("[Debug][CureMe] $Sickness=" & $Sickness & ", Chat=" & $Chat & @CRLF)
+
 		If _ArraySearch($sicknessArray, $Sickness) <> -1 Then
 			Local $elapsedTime = TimerDiff($currentTime)
 			If $elapsedTime >= $HealDelay And $Chat = 0 Then
 				ControlSend("Project Rogue", "", "", "{3}")
 				ConsoleWrite("[Heal] Healing triggered for sickness condition." & @CRLF)
-				; $currentTime = TimerInit() ; Optionally reset the timer
+				; currentTime not reset here in your code. Possibly missing?
+				; $currentTime = TimerInit()
 				Return "Healing triggered due to sickness condition"
 			EndIf
 		EndIf
 	EndIf
 EndFunc   ;==>CureMe
 
-; ------------------------------------------------------------------------------
-;                                   HEALER
-; ------------------------------------------------------------------------------
 Func TimeToHeal()
-	; Re-read HP, MaxHP, Chat, Sickness each time
-	Local $HP = _ReadMemory($hProcess, $HPAddress)
-	Local $RealHP = $HP / 65536
-	Local $MaxHP = _ReadMemory($hProcess, $MaxHPAddress)
-	Local $ChatVal = _ReadMemory($hProcess, $ChattOpenAddress)
-	Local $SickVal = _ReadMemory($hProcess, $SicknessAddress)
+	$HP = _MemoryRead($HPAddress, $MemOpen, "dword")
+	$RealHP = $HP / 65536
+	$MaxHP = _MemoryRead($MaxHPAddress, $MemOpen, "dword")
+	$Chat = _MemoryRead($ChattOpenAddress, $MemOpen, "dword")
+	$Sickness = _MemoryRead($SicknessAddress, $MemOpen, "dword")
 
 	Local $elapsedTime = TimerDiff($currentTime)
 
-	; If you want special logic for sickness, do it here
-	If _ArraySearch($sicknessArray, $SickVal) <> -1 Then
-		; e.g., ControlSend for cure or something else
+	ConsoleWrite("[Debug][TimeToHeal] HP=" & $HP & " RealHP=" & $RealHP & ", MaxHP=" & $MaxHP & ", Sickness=" & $Sickness & ", Chat=" & $Chat & ", elapsedTime=" & $elapsedTime & @CRLF)
+
+	; If we see some sickness
+	If _ArraySearch($sicknessArray, $Sickness) <> -1 Then
+		; (Your code doesn't heal automatically here unless in CureMe())
+		; Possibly a logic gap, but left intact.
 	ElseIf $RealHP < ($MaxHP * 0.95) Then
 		If $elapsedTime >= $HealDelay Then
 			ControlSend("Project Rogue", "", "", "{2}")
 			ConsoleWrite("[Heal] Healing triggered due to low HP." & @CRLF)
-			$currentTime = TimerInit()
+			$currentTime = TimerInit() ; Reset timer after healing
 			Return "Healing triggered due to low HP"
 		EndIf
 	EndIf
@@ -275,17 +379,18 @@ Func TimeToHeal()
 	Return "No healing required at this time"
 EndFunc   ;==>TimeToHeal
 
-; ------------------------------------------------------------------------------
-;                                  TARGETING
-; ------------------------------------------------------------------------------
 Func AttackModeReader()
-	Local $AttackMode = _ReadMemory($hProcess, $AttackModeAddress)
+	$AttackMode = _MemoryRead($AttackModeAddress, $MemOpen, "dword")
+	; Debug
+	ConsoleWrite("[Debug][AttackModeReader] AttackMode=" & $AttackMode & ", Type=" & $Type & ", Chat=" & $Chat & @CRLF)
+
 	If $AttackMode = 0 Then
 		GUICtrlSetData($AttackModeLabel, "Attack Mode: Safe")
 	ElseIf $AttackMode = 1 Then
 		GUICtrlSetData($AttackModeLabel, "Attack Mode: Attack")
+
 		If $Type = 0 Then
-			ConsoleWrite("Type: Player" & @CRLF)
+			ConsoleWrite("[Debug] Type: Player" & @CRLF)
 		ElseIf $Type = 65535 Then
 			Local $elapsedTime = TimerDiff($currentTime)
 			If $Chat = 0 Then
@@ -300,9 +405,11 @@ Func AttackModeReader()
 				EndIf
 			EndIf
 		ElseIf $Type = 1 Then
-			; "Monster targeted"
+			; [Debug] "Monster targeted" etc.
 		ElseIf $Type = 2 Then
-			; "Type: NPC"
+			; NPC
+		ElseIf $Type = 65535 Then
+			; No Target
 		Else
 			ConsoleWrite("Type: " & $Type & @CRLF)
 		EndIf
@@ -311,28 +418,17 @@ Func AttackModeReader()
 	EndIf
 EndFunc   ;==>AttackModeReader
 
-; ------------------------------------------------------------------------------
-;                     CONNECT TO PROCESS & GET BASE ADDRESS
-; ------------------------------------------------------------------------------
 Func ConnectToBaseAddress()
-	; 1) Open handle
-	$hProcess = _WinAPI_OpenProcess(0x1F0FFF, False, $ProcessID)
-	If $hProcess = 0 Then
-		ConsoleWrite("[Error] Failed to open process! Try running as administrator." & @CRLF)
-		Return
-	EndIf
+	ConsoleWrite("[Debug][ConnectToBaseAddress] Opening memory for PID=" & $ProcessID & @CRLF)
+	$MemOpen = _MemoryOpen($ProcessID)
+	ConsoleWrite("[Debug][ConnectToBaseAddress] $MemOpen=" & $MemOpen & @CRLF)
 
-	; 2) Get base address via EnumProcessModules
-	$BaseAddress = _GetModuleBase_EnumModules($hProcess)
-	If $BaseAddress = 0 Then
-		ConsoleWrite("[Error] Failed to obtain a valid base address!" & @CRLF)
-	EndIf
+	$BaseAddress = _EnumProcessModules($MemOpen)
+	ConsoleWrite("[Debug][ConnectToBaseAddress] _EnumProcessModules returned 0x" & Hex($BaseAddress) & @CRLF)
 EndFunc   ;==>ConnectToBaseAddress
 
-; ------------------------------------------------------------------------------
-;                    UPDATE GLOBAL OFFSETS WITH BASE ADDRESS
-; ------------------------------------------------------------------------------
 Func ChangeAddressToBase()
+	ConsoleWrite("[Debug][ChangeAddressToBase] $BaseAddress=0x" & Hex($BaseAddress) & @CRLF)
 	$TypeAddress = $BaseAddress + $TypeOffset
 	$AttackModeAddress = $BaseAddress + $AttackModeOffset
 	$PosXAddress = $BaseAddress + $PosXOffset
@@ -341,80 +437,77 @@ Func ChangeAddressToBase()
 	$MaxHPAddress = $BaseAddress + $MaxHPOffset
 	$ChattOpenAddress = $BaseAddress + $ChattOpenOffset
 	$SicknessAddress = $BaseAddress + $SicknessOffset
+
+	ConsoleWrite("[Debug][ChangeAddressToBase] Addresses set:" & @CRLF & _
+			"    $TypeAddress=0x" & Hex($TypeAddress) & @CRLF & _
+			"    $AttackModeAddress=0x" & Hex($AttackModeAddress) & @CRLF & _
+			"    $PosXAddress=0x" & Hex($PosXAddress) & @CRLF & _
+			"    $PosYAddress=0x" & Hex($PosYAddress) & @CRLF & _
+			"    $HPAddress=0x" & Hex($HPAddress) & @CRLF & _
+			"    $MaxHPAddress=0x" & Hex($MaxHPAddress) & @CRLF & _
+			"    $ChattOpenAddress=0x" & Hex($ChattOpenAddress) & @CRLF & _
+			"    $SicknessAddress=0x" & Hex($SicknessAddress) & @CRLF)
 EndFunc   ;==>ChangeAddressToBase
 
-; ------------------------------------------------------------------------------
-;                     WINAPI-BASED MODULE ENUM & MEM READ
-; ------------------------------------------------------------------------------
-Func _GetModuleBase_EnumModules($hProcess)
-	Local $hPsapi = DllOpen("psapi.dll")
-	If $hPsapi = 0 Then Return 0
+Func _EnumProcessModules($hProcess)
+	; Create a single pointer structure to hold one module (the main module).
+	Local $hMod = DllStructCreate("ptr")
+	Local $moduleSize = DllStructGetSize($hMod)
 
-	Local $tModules = DllStructCreate("ptr[1024]")
-	Local $tBytesNeeded = DllStructCreate("dword")
+	ConsoleWrite("[Debug][_EnumProcessModules] $hProcess=" & $hProcess & ", structSize=" & $moduleSize & @CRLF)
 
-	; Call EnumProcessModules
-	Local $aCall = DllCall("psapi.dll", "bool", "EnumProcessModules", _
-			"handle", $hProcess, _
-			"ptr", DllStructGetPtr($tModules), _
-			"dword", DllStructGetSize($tModules), _
-			"ptr", DllStructGetPtr($tBytesNeeded))
+	Local $aModules = DllCall("psapi.dll", "int", "EnumProcessModulesEx", _
+			"ptr", $hProcess, _
+			"ptr", DllStructGetPtr($hMod), _
+			"dword", $moduleSize, _
+			"dword*", 0, _
+			"dword", 0x03)                   ; LIST_MODULES_ALL = 0x03
 
-	If @error Or Not $aCall[0] Then
-		DllClose($hPsapi)
+	If @error Then
+		ConsoleWrite("[Error] DllCall EnumProcessModulesEx failed with @error=" & @error & @CRLF)
 		Return 0
 	EndIf
 
-	; The first module in the list is typically the main base address
-	Local $pBaseAddress = DllStructGetData($tModules, 1, 1)
-	DllClose($hPsapi)
-	Return $pBaseAddress
-EndFunc   ;==>_GetModuleBase_EnumModules
+	; The return in $aModules[0] is nonzero if successful (TRUE).
+	ConsoleWrite("[Debug][_EnumProcessModules] Return from EnumProcessModulesEx: " & $aModules[0] & @CRLF)
 
-Func _ReadMemory($hProcess, $pAddress)
-	If $hProcess = 0 Or $pAddress = 0 Then Return 0
-	Local $tBuffer = DllStructCreate("dword") ; read a 32-bit value
-	Local $aRead = DllCall("kernel32.dll", "bool", "ReadProcessMemory", _
-			"handle", $hProcess, _
-			"ptr", $pAddress, _
-			"ptr", DllStructGetPtr($tBuffer), _
-			"dword", DllStructGetSize($tBuffer), _
-			"ptr", 0)
-	If @error Or Not $aRead[0] Then
+	If IsArray($aModules) And $aModules[0] <> 0 Then
+		; The pointer to the first module is in $hMod now
+		Local $hMainMod = DllStructGetData($hMod, 1)
+		ConsoleWrite("[Debug][_EnumProcessModules] Main module pointer=0x" & Hex($hMainMod) & @CRLF)
+		Return $hMainMod
+	Else
+		ConsoleWrite("[Warning] EnumProcessModulesEx did not return a valid module. aModules[0]=" & $aModules[0] & @CRLF)
 		Return 0
 	EndIf
-	Return DllStructGetData($tBuffer, 1)
-EndFunc   ;==>_ReadMemory
+EndFunc   ;==>_EnumProcessModules
 
-; ------------------------------------------------------------------------------
-;                           HOTKEY HANDLERS
-; ------------------------------------------------------------------------------
 Func Hotkeyshit()
 	$HealerStatus = Not $HealerStatus
 	GUICtrlSetData($HealerLabel, "Healer: " & ($HealerStatus ? "On" : "Off"))
+	ConsoleWrite("[Debug][Hotkeyshit] HealerStatus toggled to " & $HealerStatus & @CRLF)
 	Sleep(300)
 EndFunc   ;==>Hotkeyshit
 
 Func CureKeyShit()
 	$CureStatus = Not $CureStatus
 	GUICtrlSetData($CureLabel, "Cure: " & ($CureStatus ? "On" : "Off"))
+	ConsoleWrite("[Debug][CureKeyShit] CureStatus toggled to " & $CureStatus & @CRLF)
 	Sleep(300)
 EndFunc   ;==>CureKeyShit
 
 Func TargetKeyShit()
 	$TargetStatus = Not $TargetStatus
 	GUICtrlSetData($TargetLabel, "Target: " & ($TargetStatus ? "On" : "Off"))
+	ConsoleWrite("[Debug][TargetKeyShit] TargetStatus toggled to " & $TargetStatus & @CRLF)
 	Sleep(300)
 EndFunc   ;==>TargetKeyShit
 
 Func KilledWithFire()
-	If $Debug Then ConsoleWrite("Killed with fire" & @CRLF)
+	ConsoleWrite("[Debug][KilledWithFire] Exiting script now..." & @CRLF)
 	Exit
 EndFunc   ;==>KilledWithFire
 
-; ------------------------------------------------------------------------------
-;                         SICKNESS DESCRIPTION SWITCH
-; ------------------------------------------------------------------------------
 Func GetSicknessDescription($Sick)
 	Global $SicknessDescription = "Unknown"
 	Switch $Sick
@@ -660,12 +753,13 @@ Func GetSicknessDescription($Sick)
 			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Desperation + New Affliction 32"
 		Case 41995
 			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Desperation + Poison1 + New Affliction 32"
+
 		Case Else
-			$SicknessDescription = $Sickness
+			$SicknessDescription = $Sick
 	EndSwitch
 	Return $SicknessDescription
 EndFunc   ;==>GetSicknessDescription
 
 Func TrashHeap()
-	; Remove Function;
+	;Remove Function;
 EndFunc   ;==>TrashHeap
