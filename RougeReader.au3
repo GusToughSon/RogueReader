@@ -55,7 +55,7 @@ Global $PosYOffset = 0xBF3D20 ;Project Rogue Client.exe+BF3D20 #2 Project Rogue 
 Global $HPOffset = 0xAB5C30 ;x
 Global $MaxHPOffset = 0xAB5C34 ;Project Rogue Client.exe+AB5C34
 Global $ChattOpenOffset = 0x9B7A18 ;x
-Global $SicknessOffset = 0x9BFB68
+Global $SicknessOffset = 0xAB5E10
 
 Global $Running = True
 Global $hProcess = 0   ; Our WinAPI handle to the process
