@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.2
+#AutoIt3Wrapper_Res_Fileversion=2.0.0.3
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -104,53 +104,60 @@ Global $TargetStatus = 0
 ;                                   MAIN LOOP
 ; ------------------------------------------------------------------------------
 While 1
-	Global $ProcessID = ProcessExists($ProcessName)
-	If $ProcessID Then
-		ConnectToBaseAddress()
-		If $BaseAddress = 0 Or $hProcess = 0 Then
-			Sleep(1000)
-		Else
-			ChangeAddressToBase()
-			While $Running
-				Local $elapsedTime = TimerDiff($currentTime)
-				Local $msg = GUIGetMsg()
-				If $msg = $ExitButton Or $msg = $GUI_EVENT_CLOSE Then
-					_WinAPI_CloseHandle($hProcess)
-					GUIDelete($Gui)
-					Exit
-				EndIf
-				If $msg = $KillButton Then
-					ProcessClose($ProcessID)
-					ExitLoop
-				EndIf
+    Global $ProcessID = ProcessExists($ProcessName)
 
-				If $CureStatus = 1 Then
-					CureMe()
-				EndIf
-				If $TargetStatus = 1 Then
-					AttackModeReader()
-				EndIf
-				If $HealerStatus = 1 Then
-					TimeToHeal()
-				EndIf
+    If $ProcessID Then
+        ConnectToBaseAddress()
 
-				GUIReadMemory()
-				Sleep(100)
-			WEnd
-		EndIf
-	Else
-		Local $msg = GUIGetMsg()
-		If $msg = $ExitButton Or $msg = $GUI_EVENT_CLOSE Then
-			_WinAPI_CloseHandle($hProcess)
-			GUIDelete($Gui)
-			Exit
-		EndIf
-		If $msg = $KillButton Then
-			ProcessClose($ProcessID)
-			ExitLoop
-		EndIf
-		Sleep(150)
-	EndIf
+        If $BaseAddress = 0 Or $hProcess = 0 Then
+            Sleep(1000)
+        Else
+            ChangeAddressToBase()
+            While $Running And ProcessExists($ProcessID) ; Keep running while process exists
+                Local $elapsedTime = TimerDiff($currentTime)
+                Local $msg = GUIGetMsg()
+
+                If $msg = $ExitButton Or $msg = $GUI_EVENT_CLOSE Then
+                    _WinAPI_CloseHandle($hProcess)
+                    GUIDelete($Gui)
+                    Exit
+                EndIf
+
+                If $msg = $KillButton Then
+                    ProcessClose($ProcessID)
+                    ExitLoop
+                EndIf
+
+                If $CureStatus = 1 Then
+                    CureMe()
+                EndIf
+                If $TargetStatus = 1 Then
+                    AttackModeReader()
+                EndIf
+                If $HealerStatus = 1 Then
+                    TimeToHeal()
+                EndIf
+
+                GUIReadMemory()
+                Sleep(100)
+
+                ; Check if game is still running, if not, exit the inner loop to reconnect
+                If Not ProcessExists($ProcessID) Then
+                    ConsoleWrite("[Info] Game closed, waiting to reconnect..." & @CRLF)
+                    ExitLoop
+                EndIf
+            WEnd
+        EndIf
+    Else
+        ConsoleWrite("[Info] Game not found, waiting..." & @CRLF)
+
+        ; Keep checking every 2 seconds until game is reopened
+        While Not ProcessExists($ProcessName)
+            Sleep(2000)
+        WEnd
+
+        ConsoleWrite("[Info] Game detected, reconnecting..." & @CRLF)
+    EndIf
 WEnd
 
 ; Cleanup
