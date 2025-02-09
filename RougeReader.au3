@@ -2,14 +2,15 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.18
+#AutoIt3Wrapper_Res_Fileversion=2.0.0.20
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
 #AutoIt3Wrapper_Res_LegalCopyright=Use only for authorized security testing. Unauthorized use is illegal. No liability for misuse. © MacroIsFun.LLc 2024
 #AutoIt3Wrapper_Res_LegalTradeMarks=Macro Is Fun .LLC
 #AutoIt3Wrapper_Res_Language=1033
-#AutoIt3Wrapper_Run_Tidy=y
+#AutoIt3Wrapper_Run_AU3Check=n
+#AutoIt3Wrapper_Tidy_Stop_OnError=n
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 ; --- Removed: #include "NomadMemory.au3"
@@ -185,9 +186,16 @@ While 1
 				ProcessClose($ProcessID)
 				ExitLoop
 			EndIf
+			$iValue = GUICtrlRead($healSlider)
+			; Update label only if the value has changed
+			If $iValue <> $iPrevValue Then
+				GUICtrlSetData($healLabel, "Heal at: " & $iValue & "%")
+				$iPrevValue = $iValue ; Store new value for comparison
+			EndIf
 		WEnd
 		ConsoleWrite("[Info] Game detected, reconnecting..." & @CRLF)
 	EndIf
+
 WEnd
 ; Cleanup
 GUIDelete($Gui)
