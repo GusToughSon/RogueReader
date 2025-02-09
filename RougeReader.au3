@@ -2,13 +2,14 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.14
+#AutoIt3Wrapper_Res_Fileversion=2.0.0.18
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
 #AutoIt3Wrapper_Res_LegalCopyright=Use only for authorized security testing. Unauthorized use is illegal. No liability for misuse. © MacroIsFun.LLc 2024
 #AutoIt3Wrapper_Res_LegalTradeMarks=Macro Is Fun .LLC
 #AutoIt3Wrapper_Res_Language=1033
+#AutoIt3Wrapper_Run_Tidy=y
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 ; --- Removed: #include "NomadMemory.au3"
@@ -23,9 +24,9 @@
 
 Opt("MouseCoordMode", 2)
 
-Global 			$version = FileGetVersion(@ScriptFullPath)
-Global Const 	$LOCATION_FILE = @ScriptDir & "\LocationLog.cfg"
-Global Const 	$configPath = @ScriptDir & "\Config.json"
+Global $version = FileGetVersion(@ScriptFullPath)
+Global Const $LOCATION_FILE = @ScriptDir & "\LocationLog.cfg"
+Global Const $configPath = @ScriptDir & "\Config.json"
 
 ConsoleWrite("Script Version: " & $version & @CRLF)
 
@@ -49,58 +50,57 @@ ConsoleWrite("Exit: " & $ExitHotkey & @CRLF)
 Global $Debug = False
 
 ; Define the game process and memory offsets
-Global $ProcessName 		= "Project Rogue Client.exe"
-Global $WindowName 			= "Project Rogue"
-Global $TypeOffset 			= 0xBF0B98 ;x
-Global $AttackModeOffset 	= 0xAACCC0 ;x
-Global $PosXOffset 			= 0xBF3D28 ;Project Rogue Client.exe+BF3D28 #2 Project Rogue Client.exe+BF3D3C
-Global $PosYOffset 			= 0xBF3D20 ;Project Rogue Client.exe+BF3D20 #2 Project Rogue Client.exe+BF3D34
-Global $HPOffset 			= 0xAB5C30 ;x
-Global $MaxHPOffset 		= 0xAB5C34 ;Project Rogue Client.exe+AB5C34
-Global $ChattOpenOffset 	= 0x9B7A18 ;x
-Global $SicknessOffset 		= 0xAB5E10
+Global $ProcessName = "Project Rogue Client.exe"
+Global $WindowName = "Project Rogue"
+Global $TypeOffset = 0xBF0B98             ;x
+Global $AttackModeOffset = 0xAACCC0     ;x
+Global $PosXOffset = 0xBF3D28             ;Project Rogue Client.exe+BF3D28 #2 Project Rogue Client.exe+BF3D3C
+Global $PosYOffset = 0xBF3D20             ;Project Rogue Client.exe+BF3D20 #2 Project Rogue Client.exe+BF3D34
+Global $HPOffset = 0xAB5C30             ;x
+Global $MaxHPOffset = 0xAB5C34         ;Project Rogue Client.exe+AB5C34
+Global $ChattOpenOffset = 0x9B7A18     ;x
+Global $SicknessOffset = 0xAB5E10
 
-Global $currentTime 		= TimerInit()
-Global $elapsedTime			= TimerDiff($currentTime)
-Global $Running 			= True ;Does it loop;
-Global $HealerStatus 		= 0
-Global $CureStatus 			= 0
-Global $TargetStatus 		= 0
-Global $iPrevValue			= 95
-Global $hProcess 			= 0   ; Our WinAPI handle to the process
-Global $BaseAddress			= 0 ; Base address of the module
+Global $currentTime = TimerInit()
+Global $elapsedTime = TimerDiff($currentTime)
+
+Global $Running = True             ;Does it loop;
+Global $HealerStatus = 0
+Global $CureStatus = 0
+Global $TargetStatus = 0
+Global $iPrevValue = 95
+Global $hProcess = 0               ; Our WinAPI handle to the process
+Global $BaseAddress = 0            ; Base address of the module
 
 
 Global $TypeAddress, $AttackModeAddress, $PosXAddress, $PosYAddress
 Global $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress
-Global $Type, $Chat, $Sickness, $PrevType
+Global $Type, $Chat, $Sickness, $AttackMode, $PrevType
 Global $SicknessDescription = GetSicknessDescription(0)
 
 ; This array is used in CureMe and TimeToHeal checks
 Global $sicknessArray = [1, 2, 65, 66, 67, 68, 69, 72, 73, 81, 97, 98, 99, 513, 514, 515, 577, 8193, 8194, 8195, 8257, 8258, 8705, 8706, 8707, 8708, 8709, 8712, 8713, 8721, 8737, 8769, 8770, 16385, 16386, 16449, 16450, 16451, 16452, 16897, 16898, 24577, 24578, 24579, 24581, 24582, 24583, 24585, 24609, 24641, 24642, 24643, 24645, 24646, 24647, 24649, 25089, 25090, 25091, 25093, 25094, 25095, 25097, 25121, 33283, 33284, 33285, 33286, 33287, 33288, 33289, 33291, 33293, 33294, 33295, 33793, 41985, 41986, 41987, 41988, 41989, 41990, 41991, 41993, 41995]
 
-Global $currentTime 		= TimerInit(), $TargetDelay = 400, $HealDelay = 1700
-Global $aMousePos 			= MouseGetPos()
+Global $currentTime = TimerInit(), $TargetDelay = 400, $HealDelay = 1700
+Global $aMousePos = MouseGetPos()
 
 ; Create the GUI
-Global $Gui 				= GUICreate("RougeReader " & "Version - " & $version, 400, 400, 15, 15)
-Global $TypeLabel			= GUICtrlCreateLabel("Type: N/A", 20, 30, 250, 20)
-Global $AttackModeLabel 	= GUICtrlCreateLabel("Attack Mode: N/A", 20, 60, 250, 20)
-Global $PosXLabel 			= GUICtrlCreateLabel("Pos X: N/A", 20, 90, 250, 20)
-Global $PosYLabel 			= GUICtrlCreateLabel("Pos Y: N/A", 20, 120, 250, 20)
-Global $HPLabel 			= GUICtrlCreateLabel("HP: N/A", 20, 150, 250, 20)
-Global $ChatLabel 			= GUICtrlCreateLabel("Chat: N/A", 120, 150, 250, 20)
-Global $HP2Label 			= GUICtrlCreateLabel("RealHp: N/A", 20, 180, 250, 20)
-Global $SicknessLabel 		= GUICtrlCreateLabel("Sickness: N/A", 120, 180, 250, 20)
-Global $MaxHPLabel 			= GUICtrlCreateLabel("MaxHP: N/A", 20, 210, 250, 20)
-Global $TargetLabel 		= GUICtrlCreateLabel("Target: Off", 120, 210, 250, 20)
-Global $HealerLabel 		= GUICtrlCreateLabel("Healer: Off", 20, 240, 250, 20)
-Global $CureLabel 			= GUICtrlCreateLabel("Cure: Off", 120, 240, 250, 20)
-Global $HotkeyLabel 		= GUICtrlCreateLabel("Set hotkeys in the config file", 20, 270, 350, 20)
-Global $KillButton 			= GUICtrlCreateButton("Kill Rogue", 20, 300, 100, 30)
-Global $ExitButton 			= GUICtrlCreateButton("Exit", 150, 300, 100, 30)
-
-
+Global $Gui = GUICreate("RougeReader " & "Version - " & $version, 400, 400, 15, 15)
+Global $TypeLabel = GUICtrlCreateLabel("Type: N/A", 20, 30, 250, 20)
+Global $AttackModeLabel = GUICtrlCreateLabel("Attack Mode: N/A", 20, 60, 250, 20)
+Global $PosXLabel = GUICtrlCreateLabel("Pos X: N/A", 20, 90, 250, 20)
+Global $PosYLabel = GUICtrlCreateLabel("Pos Y: N/A", 20, 120, 250, 20)
+Global $HPLabel = GUICtrlCreateLabel("HP: N/A", 20, 150, 250, 20)
+Global $ChatLabel = GUICtrlCreateLabel("Chat: N/A", 120, 150, 250, 20)
+Global $HP2Label = GUICtrlCreateLabel("RealHp: N/A", 20, 180, 250, 20)
+Global $SicknessLabel = GUICtrlCreateLabel("Sickness: N/A", 120, 180, 250, 20)
+Global $MaxHPLabel = GUICtrlCreateLabel("MaxHP: N/A", 20, 210, 250, 20)
+Global $TargetLabel = GUICtrlCreateLabel("Target: Off", 120, 210, 250, 20)
+Global $HealerLabel = GUICtrlCreateLabel("Healer: Off", 20, 240, 250, 20)
+Global $CureLabel = GUICtrlCreateLabel("Cure: Off", 120, 240, 250, 20)
+Global $HotkeyLabel = GUICtrlCreateLabel("Set hotkeys in the config file", 20, 270, 350, 20)
+Global $KillButton = GUICtrlCreateButton("Kill Rogue", 20, 300, 100, 30)
+Global $ExitButton = GUICtrlCreateButton("Exit", 150, 300, 100, 30)
 
 Global $healSlider = GUICtrlCreateSlider(20, 350, 200, 20)
 Global $healsliderlimit = GUICtrlSetLimit($healSlider, 95, 45) ; Set range from 45 to 95
@@ -109,41 +109,35 @@ Global $setsliderdata = GUICtrlSetData($healSlider, 90) ; Set initial position t
 ; Create a label with initial text
 Global $healLabel = GUICtrlCreateLabel("Heal at: 90%", 230, 350, 100, 20)
 
-
-
-
-
 GUISetState(@SW_SHOW)
 ; ------------------------------------------------------------------------------
 ;                                   MAIN LOOP
 ; ------------------------------------------------------------------------------
 While 1
-    Global $ProcessID = ProcessExists($ProcessName)
+	Global $ProcessID = ProcessExists($ProcessName)
+	If $ProcessID Then
+		ConnectToBaseAddress()
+		If $BaseAddress = 0 Or $hProcess = 0 Then
+			Sleep(300)
+		Else
+			ChangeAddressToBase()
+			While $Running And ProcessExists($ProcessID) ; Keep running while process exists
+				Local $elapsedTime = TimerDiff($currentTime)
+				Local $msg = GUIGetMsg()
 
-    If $ProcessID Then
-        ConnectToBaseAddress()
-
-        If $BaseAddress = 0 Or $hProcess = 0 Then
-            Sleep(300)
-        Else
-            ChangeAddressToBase()
-            While $Running And ProcessExists($ProcessID) ; Keep running while process exists
-                Local $elapsedTime = TimerDiff($currentTime)
-                Local $msg = GUIGetMsg()
-
-                If $msg = $ExitButton Or $msg = $GUI_EVENT_CLOSE Then
-                    _WinAPI_CloseHandle($hProcess)
-                    GUIDelete($Gui)
+				If $msg = $ExitButton Or $msg = $GUI_EVENT_CLOSE Then
+					_WinAPI_CloseHandle($hProcess)
+					GUIDelete($Gui)
 					ConsoleWrite("[Debug] Trainer closed, 3" & @CRLF)
-                    Exit
-                EndIf
+					Exit
+				EndIf
 
-                If $msg = $KillButton Then
-                    ProcessClose($ProcessID)
-                    ExitLoop
-                EndIf
+				If $msg = $KillButton Then
+					ProcessClose($ProcessID)
+					ExitLoop
+				EndIf
 
-				If $Chat = 0 then ;make sure chat is closed to send heals/target
+				If $Chat = 0 Then ;make sure chat is closed to send heals/target
 					If $CureStatus = 1 Then
 						CureMe()
 					EndIf
@@ -154,42 +148,19 @@ While 1
 						TimeToHeal()
 					EndIf
 				EndIf
-
-
-                GUIReadMemory()
-                Sleep(100)
-
-                ; Check if game is still running, if not, exit the inner loop to reconnect
-                If Not ProcessExists($ProcessID) Then
-                    ConsoleWrite("[Info] Game closed, waiting to reconnect..." & @CRLF)
-                    ExitLoop
-                EndIf
-            WEnd
-			                Local $msg = GUIGetMsg()
-
-                If $msg = $ExitButton Or $msg = $GUI_EVENT_CLOSE Then
-                    _WinAPI_CloseHandle($hProcess)
-                    GUIDelete($Gui)
-					ConsoleWrite("[Debug] Trainer closed, 1" & @CRLF)
-                    Exit
-                EndIf
-
-                If $msg = $KillButton Then
-                    ProcessClose($ProcessID)
-                    ExitLoop
-                EndIf
-        EndIf
-    Else
-        ConsoleWrite("[Info] Game not found, waiting..." & @CRLF)
-
-        ; Keep checking every 2 seconds until game is reopened
-        While Not ProcessExists($ProcessName)
-            Local $msg = GUIGetMsg()
-			Sleep(50)
+				GUIReadMemory()
+				Sleep(100)
+				; Check if game is still running, if not, exit the inner loop to reconnect
+				If Not ProcessExists($ProcessID) Then
+					ConsoleWrite("[Info] Game closed, waiting to reconnect..." & @CRLF)
+					ExitLoop
+				EndIf
+			WEnd
+			Local $msg = GUIGetMsg()
 			If $msg = $ExitButton Or $msg = $GUI_EVENT_CLOSE Then
 				_WinAPI_CloseHandle($hProcess)
 				GUIDelete($Gui)
-				ConsoleWrite("[Debug] Trainer closed, 2" & @CRLF)
+				ConsoleWrite("[Debug] Trainer closed, 1" & @CRLF)
 				Exit
 			EndIf
 
@@ -197,15 +168,27 @@ While 1
 				ProcessClose($ProcessID)
 				ExitLoop
 			EndIf
-
-        WEnd
-
-        ConsoleWrite("[Info] Game detected, reconnecting..." & @CRLF)
-
-
-    EndIf
+		EndIf
+	Else
+		ConsoleWrite("[Info] Game not found, waiting..." & @CRLF)
+		; Keep checking every 2 seconds until game is reopened
+		While Not ProcessExists($ProcessName)
+			Local $msg = GUIGetMsg()
+			Sleep(50)
+			If $msg = $ExitButton Or $msg = $GUI_EVENT_CLOSE Then
+				_WinAPI_CloseHandle($hProcess)
+				GUIDelete($Gui)
+				ConsoleWrite("[Debug] Trainer closed, 2" & @CRLF)
+				Exit
+			EndIf
+			If $msg = $KillButton Then
+				ProcessClose($ProcessID)
+				ExitLoop
+			EndIf
+		WEnd
+		ConsoleWrite("[Info] Game detected, reconnecting..." & @CRLF)
+	EndIf
 WEnd
-
 ; Cleanup
 GUIDelete($Gui)
 _WinAPI_CloseHandle($hProcess)
@@ -217,10 +200,10 @@ Exit
 ; ------------------------------------------------------------------------------
 Func LoadConfig() ;hotkey config load;
 	; Default hotkey settings
-	Local $defaultHealHotkey 	= 	"{`}"
-	Local $defaultCureHotkey 	=	"{-}"
-	Local $defaultTargetHotkey	= 	"{=}"
-	Local $defaultExitHotkey 	= 	"{/}"
+	Local $defaultHealHotkey = "{`}"
+	Local $defaultCureHotkey = "{-}"
+	Local $defaultTargetHotkey = "{=}"
+	Local $defaultExitHotkey = "{/}"
 	; Construct default JSON configuration string
 	Local $defaultConfig = StringFormat('{\r\n    "HealHotkey": "%s",\r\n    "CureHotkey": "%s",\r\n    "TargetHotkey": "%s",\r\n    "ExitHotkey": "%s"\r\n}', _
 			$defaultHealHotkey, $defaultCureHotkey, $defaultTargetHotkey, $defaultExitHotkey)
@@ -297,17 +280,16 @@ Func LoadConfig() ;hotkey config load;
 	ConsoleWrite("[Config] TargetHotkey set to: " & $TargetHotkey & @CRLF)
 	ConsoleWrite("[Config] ExitHotkey set to: " & $ExitHotkey & @CRLF)
 EndFunc   ;==>LoadConfig
+
 ; ------------------------------------------------------------------------------
 ;                       READ AND UPDATE GUI FROM MEMORY
 ; ------------------------------------------------------------------------------
 Func GUIReadMemory()
 	If $hProcess = 0 Then Return
-
 	; Read Type
 	$Type = _ReadMemory($hProcess, $TypeAddress)
 	If $Type <> $PrevType Then
 		If $Type = 0 Then
-
 			GUICtrlSetData($TypeLabel, "Type: Player")
 			$PrevType = $Type
 		ElseIf $Type = 1 Then
@@ -324,10 +306,8 @@ Func GUIReadMemory()
 			$PrevType = $Type
 		EndIf
 	EndIf
-
-
 	; Attack Mode
-	Local $AttackMode = _ReadMemory($hProcess, $AttackModeAddress)
+	$AttackMode = _ReadMemory($hProcess, $AttackModeAddress)
 	If $AttackMode = 0 Then
 		GUICtrlSetData($AttackModeLabel, "Attack Mode: Safe")
 	ElseIf $AttackMode = 1 Then
@@ -336,38 +316,32 @@ Func GUIReadMemory()
 		GUICtrlSetData($AttackModeLabel, "Attack Mode: No Target")
 	EndIf
 	$iValue = GUICtrlRead($healSlider)
-
-    ; Update label only if the value has changed
-    If $iValue <> $iPrevValue Then
-        GUICtrlSetData($healLabel, "Heal at: " & $iValue &"%")
-        $iPrevValue = $iValue ; Store new value for comparison
-    EndIf                                                                      ;<--gui live update
+	; Update label only if the value has changed
+	If $iValue <> $iPrevValue Then
+		GUICtrlSetData($healLabel, "Heal at: " & $iValue & "%")
+		$iPrevValue = $iValue ; Store new value for comparison
+	EndIf                                                                      ;<--gui live update
 	; Position
 	Local $PosX = _ReadMemory($hProcess, $PosXAddress)
 	Local $PosY = _ReadMemory($hProcess, $PosYAddress)
 	GUICtrlSetData($PosXLabel, "Pos X: " & $PosX)
 	GUICtrlSetData($PosYLabel, "Pos Y: " & $PosY)
-
 	; HP
 	Local $HP = _ReadMemory($hProcess, $HPAddress)
 	GUICtrlSetData($HPLabel, "HP: " & $HP)
 	GUICtrlSetData($HP2Label, "RealHp: " & $HP / 65536)
-
 	; MaxHP
 	Local $MaxHP = _ReadMemory($hProcess, $MaxHPAddress)
 	GUICtrlSetData($MaxHPLabel, "MaxHP: " & $MaxHP)
-
 	; Chat
 	Local $ChatVal = _ReadMemory($hProcess, $ChattOpenAddress)
 	$Chat = $ChatVal
 	GUICtrlSetData($ChatLabel, "Chat: " & $ChatVal)
-
 	; Sickness
 	Local $SickVal = _ReadMemory($hProcess, $SicknessAddress)
 	$Sickness = $SickVal
 	$SicknessDescription = GetSicknessDescription($SickVal)
 	GUICtrlSetData($SicknessLabel, "Sickness: " & $SicknessDescription)
-
 	Sleep(50)
 EndFunc   ;==>GUIReadMemory
 
@@ -375,7 +349,6 @@ EndFunc   ;==>GUIReadMemory
 ;                                  CURE FUNCTION
 ; ------------------------------------------------------------------------------
 Func CureMe()
-
 	If $Chat = 0 Then
 		If $CureStatus = 1 Then
 			If _ArraySearch($sicknessArray, $Sickness) <> -1 Then
@@ -390,9 +363,8 @@ Func CureMe()
 			EndIf
 		EndIf
 	Else
-		Sleep (50)
+		Sleep(50)
 	EndIf
-
 EndFunc   ;==>CureMe
 
 ; ------------------------------------------------------------------------------
@@ -400,45 +372,36 @@ EndFunc   ;==>CureMe
 ; ------------------------------------------------------------------------------
 ; Update function to read slider value
 Func TimeToHeal()
-    Local $HP = _ReadMemory($hProcess, $HPAddress)
-    Local $RealHP = $HP / 65536
-    Local $MaxHP = _ReadMemory($hProcess, $MaxHPAddress)
-    Local $ChatVal = _ReadMemory($hProcess, $ChattOpenAddress)
-    Local $SickVal = _ReadMemory($hProcess, $SicknessAddress)
-
-
-    ; Ensure the heal threshold updates before reading
-
-    Local $HealThreshold = GUICtrlRead($HealSlider) / 100
-
-    ; Heal logic based on dynamic threshold
-    If $ChatVal = 0 Then
-        If _ArraySearch($sicknessArray, $SickVal) <> -1 Then
-            ; Handle sickness-based healing
-        ElseIf $RealHP < ($MaxHP * $HealThreshold) Then
-            If $elapsedTime >= $HealDelay Then
-                ControlSend("Project Rogue", "", "", "{2}")
-                ConsoleWrite("[Heal] Healing triggered at " & $healSlider * 100 & "% HP." & @CRLF)
-                $currentTime = TimerInit()
-                Return "Healing triggered due to low HP"
-            EndIf
-        EndIf
-    Else
-        Sleep(50)
-    EndIf
-
-    Return "No healing required at this time"
-EndFunc
-
-; Hook slider event
-
-
+	Local $HP = _ReadMemory($hProcess, $HPAddress)
+	Local $RealHP = $HP / 65536
+	Local $MaxHP = _ReadMemory($hProcess, $MaxHPAddress)
+	Local $ChatVal = _ReadMemory($hProcess, $ChattOpenAddress)
+	Local $SickVal = _ReadMemory($hProcess, $SicknessAddress)
+	; Ensure the heal threshold updates before reading
+	Local $HealThreshold = GUICtrlRead($healSlider) / 100
+	; Heal logic based on dynamic threshold
+	If $ChatVal = 0 Then
+		If _ArraySearch($sicknessArray, $SickVal) <> -1 Then
+			; Handle sickness-based healing
+		ElseIf $RealHP < ($MaxHP * $HealThreshold) Then
+			If $elapsedTime >= $HealDelay Then
+				ControlSend("Project Rogue", "", "", "{2}")
+				ConsoleWrite("[Heal] Healing triggered at " & $healSlider * 100 & "% HP." & @CRLF)
+				$currentTime = TimerInit()
+				Return "Healing triggered due to low HP"
+			EndIf
+		EndIf
+	Else
+		Sleep(50)
+	EndIf
+	Return "No healing required at this time"
+EndFunc   ;==>TimeToHeal
 
 ; ------------------------------------------------------------------------------
 ;                                  TARGETING
 ; ------------------------------------------------------------------------------
 Func AttackModeReader()
-	Local $AttackMode = _ReadMemory($hProcess, $AttackModeAddress)
+	$AttackMode = _ReadMemory($hProcess, $AttackModeAddress)
 	If $AttackMode = 0 Then
 		GUICtrlSetData($AttackModeLabel, "Attack Mode: Safe")
 	ElseIf $AttackMode = 1 Then
@@ -449,12 +412,12 @@ Func AttackModeReader()
 			Local $elapsedTime = TimerDiff($currentTime)
 			If $Chat = 0 Then
 				If $elapsedTime >= $TargetDelay Then
-					ControlSend("Project Rogue", "", "", "{TAB}")
+					ControlSend("Project Rogue", "", "", "{TAB}") ;target next mob
 					$currentTime = TimerInit()
 				EndIf
 			Else
 				If $elapsedTime >= $TargetDelay Then
-					ConsoleWrite("[Debug] chat open" & @CRLF)
+					ConsoleWrite("[Debug] chat open" & @CRLF) ;chat is open it shouldnt do anything
 					$currentTime = TimerInit()
 				EndIf
 			EndIf
@@ -470,27 +433,18 @@ Func AttackModeReader()
 	EndIf
 EndFunc   ;==>AttackModeReader
 
-; ------------------------------------------------------------------------------
-;                     CONNECT TO PROCESS & GET BASE ADDRESS
-; ------------------------------------------------------------------------------
 Func ConnectToBaseAddress()
-	; 1) Open handle
 	$hProcess = _WinAPI_OpenProcess(0x1F0FFF, False, $ProcessID)
 	If $hProcess = 0 Then
 		ConsoleWrite("[Error] Failed to open process! Try running as administrator." & @CRLF)
 		Return
 	EndIf
-
-	; 2) Get base address via EnumProcessModules
 	$BaseAddress = _GetModuleBase_EnumModules($hProcess)
 	If $BaseAddress = 0 Then
 		ConsoleWrite("[Error] Failed to obtain a valid base address!" & @CRLF)
 	EndIf
 EndFunc   ;==>ConnectToBaseAddress
 
-; ------------------------------------------------------------------------------
-;                    UPDATE GLOBAL OFFSETS WITH BASE ADDRESS
-; ------------------------------------------------------------------------------
 Func ChangeAddressToBase()
 	$TypeAddress = $BaseAddress + $TypeOffset
 	$AttackModeAddress = $BaseAddress + $AttackModeOffset
@@ -502,29 +456,20 @@ Func ChangeAddressToBase()
 	$SicknessAddress = $BaseAddress + $SicknessOffset
 EndFunc   ;==>ChangeAddressToBase
 
-; ------------------------------------------------------------------------------
-;                     WINAPI-BASED MODULE ENUM & MEM READ
-; ------------------------------------------------------------------------------
 Func _GetModuleBase_EnumModules($hProcess)
 	Local $hPsapi = DllOpen("psapi.dll")
 	If $hPsapi = 0 Then Return 0
-
 	Local $tModules = DllStructCreate("ptr[1024]")
 	Local $tBytesNeeded = DllStructCreate("dword")
-
-	; Call EnumProcessModules
 	Local $aCall = DllCall("psapi.dll", "bool", "EnumProcessModules", _
 			"handle", $hProcess, _
 			"ptr", DllStructGetPtr($tModules), _
 			"dword", DllStructGetSize($tModules), _
 			"ptr", DllStructGetPtr($tBytesNeeded))
-
 	If @error Or Not $aCall[0] Then
 		DllClose($hPsapi)
 		Return 0
 	EndIf
-
-	; The first module in the list is typically the main base address
 	Local $pBaseAddress = DllStructGetData($tModules, 1, 1)
 	DllClose($hPsapi)
 	Return $pBaseAddress
@@ -532,7 +477,7 @@ EndFunc   ;==>_GetModuleBase_EnumModules
 
 Func _ReadMemory($hProcess, $pAddress)
 	If $hProcess = 0 Or $pAddress = 0 Then Return 0
-	Local $tBuffer = DllStructCreate("dword") ; read a 32-bit value
+	Local $tBuffer = DllStructCreate("dword")
 	Local $aRead = DllCall("kernel32.dll", "bool", "ReadProcessMemory", _
 			"handle", $hProcess, _
 			"ptr", $pAddress, _
@@ -545,9 +490,6 @@ Func _ReadMemory($hProcess, $pAddress)
 	Return DllStructGetData($tBuffer, 1)
 EndFunc   ;==>_ReadMemory
 
-; ------------------------------------------------------------------------------
-;                           HOTKEY HANDLERS
-; ------------------------------------------------------------------------------
 Func Hotkeyshit()
 	$HealerStatus = Not $HealerStatus
 	GUICtrlSetData($HealerLabel, "Healer: " & ($HealerStatus ? "On" : "Off"))
@@ -571,9 +513,6 @@ Func KilledWithFire()
 	Exit
 EndFunc   ;==>KilledWithFire
 
-; ------------------------------------------------------------------------------
-;                         SICKNESS DESCRIPTION SWITCH
-; ------------------------------------------------------------------------------
 Func GetSicknessDescription($Sick)
 	Global $SicknessDescription = "Unknown"
 	Switch $Sick
