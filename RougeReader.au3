@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.12
+#AutoIt3Wrapper_Res_Fileversion=2.0.0.14
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -60,6 +60,8 @@ Global $MaxHPOffset 		= 0xAB5C34 ;Project Rogue Client.exe+AB5C34
 Global $ChattOpenOffset 	= 0x9B7A18 ;x
 Global $SicknessOffset 		= 0xAB5E10
 
+Global $currentTime 		= TimerInit()
+Global $elapsedTime			= TimerDiff($currentTime)
 Global $Running 			= True ;Does it loop;
 Global $HealerStatus 		= 0
 Global $CureStatus 			= 0
@@ -71,7 +73,7 @@ Global $BaseAddress			= 0 ; Base address of the module
 
 Global $TypeAddress, $AttackModeAddress, $PosXAddress, $PosYAddress
 Global $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress
-Global $Type, $Chat, $Sickness
+Global $Type, $Chat, $Sickness, $PrevType
 Global $SicknessDescription = GetSicknessDescription(0)
 
 ; This array is used in CureMe and TimeToHeal checks
@@ -122,7 +124,7 @@ While 1
         ConnectToBaseAddress()
 
         If $BaseAddress = 0 Or $hProcess = 0 Then
-            Sleep(1000)
+            Sleep(300)
         Else
             ChangeAddressToBase()
             While $Running And ProcessExists($ProcessID) ; Keep running while process exists
@@ -132,6 +134,7 @@ While 1
                 If $msg = $ExitButton Or $msg = $GUI_EVENT_CLOSE Then
                     _WinAPI_CloseHandle($hProcess)
                     GUIDelete($Gui)
+					ConsoleWrite("[Debug] Trainer closed, 3" & @CRLF)
                     Exit
                 EndIf
 
@@ -162,6 +165,19 @@ While 1
                     ExitLoop
                 EndIf
             WEnd
+			                Local $msg = GUIGetMsg()
+
+                If $msg = $ExitButton Or $msg = $GUI_EVENT_CLOSE Then
+                    _WinAPI_CloseHandle($hProcess)
+                    GUIDelete($Gui)
+					ConsoleWrite("[Debug] Trainer closed, 1" & @CRLF)
+                    Exit
+                EndIf
+
+                If $msg = $KillButton Then
+                    ProcessClose($ProcessID)
+                    ExitLoop
+                EndIf
         EndIf
     Else
         ConsoleWrite("[Info] Game not found, waiting..." & @CRLF)
@@ -173,6 +189,7 @@ While 1
 			If $msg = $ExitButton Or $msg = $GUI_EVENT_CLOSE Then
 				_WinAPI_CloseHandle($hProcess)
 				GUIDelete($Gui)
+				ConsoleWrite("[Debug] Trainer closed, 2" & @CRLF)
 				Exit
 			EndIf
 
@@ -192,6 +209,7 @@ WEnd
 ; Cleanup
 GUIDelete($Gui)
 _WinAPI_CloseHandle($hProcess)
+ConsoleWrite("[Debug] Trainer closed, 0" & @CRLF)
 Exit
 
 ; ------------------------------------------------------------------------------
@@ -199,10 +217,10 @@ Exit
 ; ------------------------------------------------------------------------------
 Func LoadConfig() ;hotkey config load;
 	; Default hotkey settings
-	Local $defaultHealHotkey 	= 	"{1}"
-	Local $defaultCureHotkey 	=	"{2}"
-	Local $defaultTargetHotkey	= 	"{3}"
-	Local $defaultExitHotkey 	= 	"{4}"
+	Local $defaultHealHotkey 	= 	"{`}"
+	Local $defaultCureHotkey 	=	"{-}"
+	Local $defaultTargetHotkey	= 	"{=}"
+	Local $defaultExitHotkey 	= 	"{/}"
 	; Construct default JSON configuration string
 	Local $defaultConfig = StringFormat('{\r\n    "HealHotkey": "%s",\r\n    "CureHotkey": "%s",\r\n    "TargetHotkey": "%s",\r\n    "ExitHotkey": "%s"\r\n}', _
 			$defaultHealHotkey, $defaultCureHotkey, $defaultTargetHotkey, $defaultExitHotkey)
@@ -287,17 +305,26 @@ Func GUIReadMemory()
 
 	; Read Type
 	$Type = _ReadMemory($hProcess, $TypeAddress)
-	If $Type = 0 Then
-		GUICtrlSetData($TypeLabel, "Type: Player")
-	ElseIf $Type = 1 Then
-		GUICtrlSetData($TypeLabel, "Type: Monster")
-	ElseIf $Type = 2 Then
-		GUICtrlSetData($TypeLabel, "Type: NPC")
-	ElseIf $Type = 65535 Then
-		GUICtrlSetData($TypeLabel, "Type: No Target")
-	Else
-		GUICtrlSetData($TypeLabel, "Type: Unknown (" & $Type & ")")
+	If $Type <> $PrevType Then
+		If $Type = 0 Then
+
+			GUICtrlSetData($TypeLabel, "Type: Player")
+			$PrevType = $Type
+		ElseIf $Type = 1 Then
+			GUICtrlSetData($TypeLabel, "Type: Monster")
+			$PrevType = $Type
+		ElseIf $Type = 2 Then
+			GUICtrlSetData($TypeLabel, "Type: NPC")
+			$PrevType = $Type
+		ElseIf $Type = 65535 Then
+			GUICtrlSetData($TypeLabel, "Type: No Target")
+			$PrevType = $Type
+		Else
+			GUICtrlSetData($TypeLabel, "Type: Unknown (" & $Type & ")")
+			$PrevType = $Type
+		EndIf
 	EndIf
+
 
 	; Attack Mode
 	Local $AttackMode = _ReadMemory($hProcess, $AttackModeAddress)
@@ -348,20 +375,22 @@ EndFunc   ;==>GUIReadMemory
 ;                                  CURE FUNCTION
 ; ------------------------------------------------------------------------------
 Func CureMe()
+
 	If $Chat = 0 Then
 		If $CureStatus = 1 Then
 			If _ArraySearch($sicknessArray, $Sickness) <> -1 Then
-				Local $elapsedTime = TimerDiff($currentTime)
+
 				If $elapsedTime >= $HealDelay And $Chat = 0 Then
 					ControlSend("Project Rogue", "", "", "{3}")
 					ConsoleWrite("[Heal] Healing triggered for sickness condition." & @CRLF)
-					; $currentTime = TimerInit() ; Optionally reset the timer
+					$currentTime = TimerInit() ; Optionally reset the timer
+
 					Return "Healing triggered due to sickness condition"
 				EndIf
 			EndIf
 		EndIf
 	Else
-	Sleep (50)
+		Sleep (50)
 	EndIf
 
 EndFunc   ;==>CureMe
@@ -376,7 +405,7 @@ Func TimeToHeal()
     Local $MaxHP = _ReadMemory($hProcess, $MaxHPAddress)
     Local $ChatVal = _ReadMemory($hProcess, $ChattOpenAddress)
     Local $SickVal = _ReadMemory($hProcess, $SicknessAddress)
-    Local $elapsedTime = TimerDiff($currentTime)
+
 
     ; Ensure the heal threshold updates before reading
 
