@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.4
+#AutoIt3Wrapper_Res_Fileversion=2.0.0.5
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -23,9 +23,10 @@
 
 Opt("MouseCoordMode", 2)
 
-Global $version = FileGetVersion(@ScriptFullPath)
-Global Const $LOCATION_FILE = @ScriptDir & "\LocationLog.cfg"
-Global Const $configPath = @ScriptDir & "\Config.json"
+Global 			$version = FileGetVersion(@ScriptFullPath)
+Global Const 	$LOCATION_FILE = @ScriptDir & "\LocationLog.cfg"
+Global Const 	$configPath = @ScriptDir & "\Config.json"
+
 ConsoleWrite("Script Version: " & $version & @CRLF)
 
 ; --- Load Config Settings ---
@@ -48,57 +49,57 @@ ConsoleWrite("Exit: " & $ExitHotkey & @CRLF)
 Global $Debug = False
 
 ; Define the game process and memory offsets
-Global $ProcessName = "Project Rogue Client.exe"
-Global $WindowName = "Project Rogue"
-Global $TypeOffset = 0xBF0B98 ;x
-Global $AttackModeOffset = 0xAACCC0 ;x
-Global $PosXOffset = 0xBF3D28 ;Project Rogue Client.exe+BF3D28 #2 Project Rogue Client.exe+BF3D3C
-Global $PosYOffset = 0xBF3D20 ;Project Rogue Client.exe+BF3D20 #2 Project Rogue Client.exe+BF3D34
-Global $HPOffset = 0xAB5C30 ;x
-Global $MaxHPOffset = 0xAB5C34 ;Project Rogue Client.exe+AB5C34
-Global $ChattOpenOffset = 0x9B7A18 ;x
-Global $SicknessOffset = 0xAB5E10
+Global $ProcessName 		= "Project Rogue Client.exe"
+Global $WindowName 			= "Project Rogue"
+Global $TypeOffset 			= 0xBF0B98 ;x
+Global $AttackModeOffset 	= 0xAACCC0 ;x
+Global $PosXOffset 			= 0xBF3D28 ;Project Rogue Client.exe+BF3D28 #2 Project Rogue Client.exe+BF3D3C
+Global $PosYOffset 			= 0xBF3D20 ;Project Rogue Client.exe+BF3D20 #2 Project Rogue Client.exe+BF3D34
+Global $HPOffset 			= 0xAB5C30 ;x
+Global $MaxHPOffset 		= 0xAB5C34 ;Project Rogue Client.exe+AB5C34
+Global $ChattOpenOffset 	= 0x9B7A18 ;x
+Global $SicknessOffset 		= 0xAB5E10
 
-Global $Running = True
-Global $hProcess = 0   ; Our WinAPI handle to the process
-Global $BaseAddress = 0 ; Base address of the module
+Global $Running 			= True ;Does it loop;
+Global $HealerStatus 		= 0
+Global $CureStatus 			= 0
+Global $TargetStatus 		= 0
+
+Global $hProcess 			= 0   ; Our WinAPI handle to the process
+Global $BaseAddress			= 0 ; Base address of the module
+
 
 Global $TypeAddress, $AttackModeAddress, $PosXAddress, $PosYAddress
 Global $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress
 Global $Type, $Chat, $Sickness
+Global $SicknessDescription = GetSicknessDescription(0)
 
 ; This array is used in CureMe and TimeToHeal checks
 Global $sicknessArray = [1, 2, 65, 66, 67, 68, 69, 72, 73, 81, 97, 98, 99, 513, 514, 515, 577, 8193, 8194, 8195, 8257, 8258, 8705, 8706, 8707, 8708, 8709, 8712, 8713, 8721, 8737, 8769, 8770, 16385, 16386, 16449, 16450, 16451, 16452, 16897, 16898, 24577, 24578, 24579, 24581, 24582, 24583, 24585, 24609, 24641, 24642, 24643, 24645, 24646, 24647, 24649, 25089, 25090, 25091, 25093, 25094, 25095, 25097, 25121, 33283, 33284, 33285, 33286, 33287, 33288, 33289, 33291, 33293, 33294, 33295, 33793, 41985, 41986, 41987, 41988, 41989, 41990, 41991, 41993, 41995]
 
-Global $currentTime = TimerInit(), $TargetDelay = 400, $HealDelay = 1700
-Global $aMousePos = MouseGetPos()
+Global $currentTime 		= TimerInit(), $TargetDelay = 400, $HealDelay = 1700
+Global $aMousePos 			= MouseGetPos()
 
 ; Create the GUI
-Global $Gui = GUICreate("RougeReader " & "Version - " & $version, 400, 400, 15, 15)
-Global $TypeLabel = GUICtrlCreateLabel("Type: N/A", 20, 30, 250, 20)
-Global $AttackModeLabel = GUICtrlCreateLabel("Attack Mode: N/A", 20, 60, 250, 20)
-Global $PosXLabel = GUICtrlCreateLabel("Pos X: N/A", 20, 90, 250, 20)
-Global $PosYLabel = GUICtrlCreateLabel("Pos Y: N/A", 20, 120, 250, 20)
-Global $HPLabel = GUICtrlCreateLabel("HP: N/A", 20, 150, 250, 20)
-Global $ChatLabel = GUICtrlCreateLabel("Chat: N/A", 120, 150, 250, 20)
-Global $HP2Label = GUICtrlCreateLabel("RealHp: N/A", 20, 180, 250, 20)
-Global $SicknessLabel = GUICtrlCreateLabel("Sickness: N/A", 120, 180, 250, 20)
-Global $MaxHPLabel = GUICtrlCreateLabel("MaxHP: N/A", 20, 210, 250, 20)
-Global $TargetLabel = GUICtrlCreateLabel("Target: Off", 120, 210, 250, 20)
-Global $HealerLabel = GUICtrlCreateLabel("Healer: Off", 20, 240, 250, 20)
-Global $CureLabel = GUICtrlCreateLabel("Cure: Off", 120, 240, 250, 20)
-Global $HotkeyLabel = GUICtrlCreateLabel("Set hotkeys in the config file", 20, 270, 350, 20)
-Global $KillButton = GUICtrlCreateButton("Kill Rogue", 20, 300, 100, 30)
-Global $ExitButton = GUICtrlCreateButton("Exit", 150, 300, 100, 30)
-
-; Just to initialize with something
-Global $SicknessDescription = GetSicknessDescription(0)
+Global $Gui 				= GUICreate("RougeReader " & "Version - " & $version, 400, 400, 15, 15)
+Global $TypeLabel			= GUICtrlCreateLabel("Type: N/A", 20, 30, 250, 20)
+Global $AttackModeLabel 	= GUICtrlCreateLabel("Attack Mode: N/A", 20, 60, 250, 20)
+Global $PosXLabel 			= GUICtrlCreateLabel("Pos X: N/A", 20, 90, 250, 20)
+Global $PosYLabel 			= GUICtrlCreateLabel("Pos Y: N/A", 20, 120, 250, 20)
+Global $HPLabel 			= GUICtrlCreateLabel("HP: N/A", 20, 150, 250, 20)
+Global $ChatLabel 			= GUICtrlCreateLabel("Chat: N/A", 120, 150, 250, 20)
+Global $HP2Label 			= GUICtrlCreateLabel("RealHp: N/A", 20, 180, 250, 20)
+Global $SicknessLabel 		= GUICtrlCreateLabel("Sickness: N/A", 120, 180, 250, 20)
+Global $MaxHPLabel 			= GUICtrlCreateLabel("MaxHP: N/A", 20, 210, 250, 20)
+Global $TargetLabel 		= GUICtrlCreateLabel("Target: Off", 120, 210, 250, 20)
+Global $HealerLabel 		= GUICtrlCreateLabel("Healer: Off", 20, 240, 250, 20)
+Global $CureLabel 			= GUICtrlCreateLabel("Cure: Off", 120, 240, 250, 20)
+Global $HotkeyLabel 		= GUICtrlCreateLabel("Set hotkeys in the config file", 20, 270, 350, 20)
+Global $KillButton 			= GUICtrlCreateButton("Kill Rogue", 20, 300, 100, 30)
+Global $ExitButton 			= GUICtrlCreateButton("Exit", 150, 300, 100, 30)
 
 GUISetState(@SW_SHOW)
 
-Global $HealerStatus = 0
-Global $CureStatus = 0
-Global $TargetStatus = 0
 
 ; ------------------------------------------------------------------------------
 ;                                   MAIN LOOP
@@ -173,10 +174,10 @@ Exit
 ; ------------------------------------------------------------------------------
 Func LoadConfig() ;hotkey config load;
 	; Default hotkey settings
-	Local $defaultHealHotkey = "{1}"
-	Local $defaultCureHotkey = "{2}"
-	Local $defaultTargetHotkey = "{3}"
-	Local $defaultExitHotkey = "{4}"
+	Local $defaultHealHotkey 	= 	"{1}"
+	Local $defaultCureHotkey 	=	"{2}"
+	Local $defaultTargetHotkey	= 	"{3}"
+	Local $defaultExitHotkey 	= 	"{4}"
 	; Construct default JSON configuration string
 	Local $defaultConfig = StringFormat('{\r\n    "HealHotkey": "%s",\r\n    "CureHotkey": "%s",\r\n    "TargetHotkey": "%s",\r\n    "ExitHotkey": "%s"\r\n}', _
 			$defaultHealHotkey, $defaultCureHotkey, $defaultTargetHotkey, $defaultExitHotkey)
@@ -316,17 +317,20 @@ EndFunc   ;==>GUIReadMemory
 ;                                  CURE FUNCTION
 ; ------------------------------------------------------------------------------
 Func CureMe()
-	If $CureStatus = 1 Then
-		If _ArraySearch($sicknessArray, $Sickness) <> -1 Then
-			Local $elapsedTime = TimerDiff($currentTime)
-			If $elapsedTime >= $HealDelay And $Chat = 0 Then
-				ControlSend("Project Rogue", "", "", "{3}")
-				ConsoleWrite("[Heal] Healing triggered for sickness condition." & @CRLF)
-				; $currentTime = TimerInit() ; Optionally reset the timer
-				Return "Healing triggered due to sickness condition"
+	If $Chat = 0 Then
+		If $CureStatus = 1 Then
+			If _ArraySearch($sicknessArray, $Sickness) <> -1 Then
+				Local $elapsedTime = TimerDiff($currentTime)
+				If $elapsedTime >= $HealDelay And $Chat = 0 Then
+					ControlSend("Project Rogue", "", "", "{3}")
+					ConsoleWrite("[Heal] Healing triggered for sickness condition." & @CRLF)
+					; $currentTime = TimerInit() ; Optionally reset the timer
+					Return "Healing triggered due to sickness condition"
+				EndIf
 			EndIf
 		EndIf
 	EndIf
+
 EndFunc   ;==>CureMe
 
 ; ------------------------------------------------------------------------------
@@ -343,6 +347,7 @@ Func TimeToHeal()
 	Local $elapsedTime = TimerDiff($currentTime)
 
 	; If you want special logic for sickness, do it here
+	if $chat = 0 then
 	If _ArraySearch($sicknessArray, $SickVal) <> -1 Then
 		; e.g., ControlSend for cure or something else
 	ElseIf $RealHP < ($MaxHP * 0.95) Then
@@ -355,6 +360,8 @@ Func TimeToHeal()
 	EndIf
 
 	Return "No healing required at this time"
+	EndIf
+
 EndFunc   ;==>TimeToHeal
 
 ; ------------------------------------------------------------------------------
