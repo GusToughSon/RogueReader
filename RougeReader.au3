@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.11
+#AutoIt3Wrapper_Res_Fileversion=2.0.0.12
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -105,7 +105,7 @@ Global $healsliderlimit = GUICtrlSetLimit($healSlider, 95, 45) ; Set range from 
 Global $setsliderdata = GUICtrlSetData($healSlider, 90) ; Set initial position to 45
 
 ; Create a label with initial text
-Global $healLabel = GUICtrlCreateLabel("Heal at: "& $healSlider &"%", 230, 350, 100, 20)
+Global $healLabel = GUICtrlCreateLabel("Heal at: 90%", 230, 350, 100, 20)
 
 
 
