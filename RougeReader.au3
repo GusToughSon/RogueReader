@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.3
+#AutoIt3Wrapper_Res_Fileversion=2.0.0.4
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -128,15 +128,18 @@ While 1
                     ExitLoop
                 EndIf
 
-                If $CureStatus = 1 Then
-                    CureMe()
-                EndIf
-                If $TargetStatus = 1 Then
-                    AttackModeReader()
-                EndIf
-                If $HealerStatus = 1 Then
-                    TimeToHeal()
-                EndIf
+				If $Chat = 0 then ;make sure chat is closed to send heals/target
+					If $CureStatus = 1 Then
+						CureMe()
+					EndIf
+					If $TargetStatus = 1 Then
+						AttackModeReader()
+					EndIf
+					If $HealerStatus = 1 Then
+						TimeToHeal()
+					EndIf
+				EndIf
+
 
                 GUIReadMemory()
                 Sleep(100)
