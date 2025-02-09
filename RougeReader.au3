@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.10
+#AutoIt3Wrapper_Res_Fileversion=2.0.0.11
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -168,10 +168,24 @@ While 1
 
         ; Keep checking every 2 seconds until game is reopened
         While Not ProcessExists($ProcessName)
-            Sleep(2000)
+            Local $msg = GUIGetMsg()
+			Sleep(50)
+			If $msg = $ExitButton Or $msg = $GUI_EVENT_CLOSE Then
+				_WinAPI_CloseHandle($hProcess)
+				GUIDelete($Gui)
+				Exit
+			EndIf
+
+			If $msg = $KillButton Then
+				ProcessClose($ProcessID)
+				ExitLoop
+			EndIf
+
         WEnd
 
         ConsoleWrite("[Info] Game detected, reconnecting..." & @CRLF)
+
+
     EndIf
 WEnd
 
