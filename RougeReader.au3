@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.5
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.1
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -16,7 +16,7 @@
 #include <File.au3>
 #include <JSON.au3>
 #include <Misc.au3>
-
+#include <WindowsConstants.au3>
 ; --- ADDED for WinAPI-based memory approach:
 #include <WinAPI.au3>
 #include <Process.au3>
@@ -64,7 +64,7 @@ Global $Running 			= True ;Does it loop;
 Global $HealerStatus 		= 0
 Global $CureStatus 			= 0
 Global $TargetStatus 		= 0
-
+Global $iPrevValue			= 95
 Global $hProcess 			= 0   ; Our WinAPI handle to the process
 Global $BaseAddress			= 0 ; Base address of the module
 
@@ -98,9 +98,20 @@ Global $HotkeyLabel 		= GUICtrlCreateLabel("Set hotkeys in the config file", 20,
 Global $KillButton 			= GUICtrlCreateButton("Kill Rogue", 20, 300, 100, 30)
 Global $ExitButton 			= GUICtrlCreateButton("Exit", 150, 300, 100, 30)
 
+
+
+Global $healSlider = GUICtrlCreateSlider(20, 350, 200, 20)
+Global $healsliderlimit = GUICtrlSetLimit($healSlider, 95, 45) ; Set range from 45 to 95
+Global $setsliderdata = GUICtrlSetData($healSlider, 90) ; Set initial position to 45
+
+; Create a label with initial text
+Global $healLabel = GUICtrlCreateLabel("Heal at: "& $healSlider &"%", 230, 350, 100, 20)
+
+
+
+
+
 GUISetState(@SW_SHOW)
-
-
 ; ------------------------------------------------------------------------------
 ;                                   MAIN LOOP
 ; ------------------------------------------------------------------------------
@@ -283,7 +294,13 @@ Func GUIReadMemory()
 	Else
 		GUICtrlSetData($AttackModeLabel, "Attack Mode: No Target")
 	EndIf
+	$iValue = GUICtrlRead($healSlider)
 
+    ; Update label only if the value has changed
+    If $iValue <> $iPrevValue Then
+        GUICtrlSetData($healLabel, "Heal at: " & $iValue &"%")
+        $iPrevValue = $iValue ; Store new value for comparison
+    EndIf                                                                      ;<--gui live update
 	; Position
 	Local $PosX = _ReadMemory($hProcess, $PosXAddress)
 	Local $PosY = _ReadMemory($hProcess, $PosYAddress)
@@ -329,6 +346,8 @@ Func CureMe()
 				EndIf
 			EndIf
 		EndIf
+	Else
+	Sleep (50)
 	EndIf
 
 EndFunc   ;==>CureMe
@@ -336,33 +355,41 @@ EndFunc   ;==>CureMe
 ; ------------------------------------------------------------------------------
 ;                                   HEALER
 ; ------------------------------------------------------------------------------
+; Update function to read slider value
 Func TimeToHeal()
-	; Re-read HP, MaxHP, Chat, Sickness each time
-	Local $HP = _ReadMemory($hProcess, $HPAddress)
-	Local $RealHP = $HP / 65536
-	Local $MaxHP = _ReadMemory($hProcess, $MaxHPAddress)
-	Local $ChatVal = _ReadMemory($hProcess, $ChattOpenAddress)
-	Local $SickVal = _ReadMemory($hProcess, $SicknessAddress)
+    Local $HP = _ReadMemory($hProcess, $HPAddress)
+    Local $RealHP = $HP / 65536
+    Local $MaxHP = _ReadMemory($hProcess, $MaxHPAddress)
+    Local $ChatVal = _ReadMemory($hProcess, $ChattOpenAddress)
+    Local $SickVal = _ReadMemory($hProcess, $SicknessAddress)
+    Local $elapsedTime = TimerDiff($currentTime)
 
-	Local $elapsedTime = TimerDiff($currentTime)
+    ; Ensure the heal threshold updates before reading
 
-	; If you want special logic for sickness, do it here
-	if $chat = 0 then
-	If _ArraySearch($sicknessArray, $SickVal) <> -1 Then
-		; e.g., ControlSend for cure or something else
-	ElseIf $RealHP < ($MaxHP * 0.95) Then
-		If $elapsedTime >= $HealDelay Then
-			ControlSend("Project Rogue", "", "", "{2}")
-			ConsoleWrite("[Heal] Healing triggered due to low HP." & @CRLF)
-			$currentTime = TimerInit()
-			Return "Healing triggered due to low HP"
-		EndIf
-	EndIf
+    Local $HealThreshold = GUICtrlRead($HealSlider) / 100
 
-	Return "No healing required at this time"
-	EndIf
+    ; Heal logic based on dynamic threshold
+    If $ChatVal = 0 Then
+        If _ArraySearch($sicknessArray, $SickVal) <> -1 Then
+            ; Handle sickness-based healing
+        ElseIf $RealHP < ($MaxHP * $HealThreshold) Then
+            If $elapsedTime >= $HealDelay Then
+                ControlSend("Project Rogue", "", "", "{2}")
+                ConsoleWrite("[Heal] Healing triggered at " & $healSlider * 100 & "% HP." & @CRLF)
+                $currentTime = TimerInit()
+                Return "Healing triggered due to low HP"
+            EndIf
+        EndIf
+    Else
+        Sleep(50)
+    EndIf
 
-EndFunc   ;==>TimeToHeal
+    Return "No healing required at this time"
+EndFunc
+
+; Hook slider event
+
+
 
 ; ------------------------------------------------------------------------------
 ;                                  TARGETING
