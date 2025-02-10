@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.27
+#AutoIt3Wrapper_Res_Fileversion=2.0.0.28
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -24,9 +24,13 @@
 Opt("MouseCoordMode", 2)
 
 Global $version = FileGetVersion(@ScriptFullPath)
+
 Global Const $OldConfigFile 	= @ScriptDir & "\Config.json"
+
 Global Const $sConfigFile 	= @ScriptDir & "\Locations.json"
+
 Global Const $sButtonConfigFile = @ScriptDir & "\ButtonConfig.ini"
+
 If FileExists ($OldConfigFile) Then FileDelete ($OldConfigFile)
 	If True Then
 		ConsoleWrite ("Old config removed" & @CRLF)
@@ -230,6 +234,7 @@ Func LoadButtonConfig()
 EndFunc
 
 Func CreateButtonDefaultConfig()
+
     ; Create default .ini file with hotkeys
     IniWrite($sButtonConfigFile, "Hotkeys", "HealHotkey", "{`}")
     IniWrite($sButtonConfigFile, "Hotkeys", "CureHotkey", "{-}")
@@ -243,6 +248,7 @@ EndFunc
 ;                       READ AND UPDATE GUI FROM MEMORY
 ; ------------------------------------------------------------------------------
 Func GUIReadMemory()
+
 	If $hProcess = 0 Then Return
 	; Read Type
 	$Type = _ReadMemory($hProcess, $TypeAddress)
@@ -461,12 +467,15 @@ Func CureKeyShit()
 EndFunc   ;==>CureKeyShit
 
 Func TargetKeyShit()
+
 	$TargetStatus = Not $TargetStatus
 	GUICtrlSetData($TargetLabel, "Target: " & ($TargetStatus ? "On" : "Off"))
 	Sleep(300)
+
 EndFunc   ;==>TargetKeyShit
 
 Func KilledWithFire()
+
 	If $Debug Then ConsoleWrite("Killed with fire" & @CRLF)
 	Exit
 EndFunc   ;==>KilledWithFire
@@ -725,13 +734,18 @@ EndFunc   ;==>GetSicknessDescription
 Func SaveLocation()
 
     MsgBox(48, "Error", "All 200 locations are filled. Figure it out in Less Locations...")
+
 EndFunc
 
 Func EraseLocations()
+
     FileDelete($sConfigFile)
     MsgBox(64, "Success", "All locations erased.")
+
 EndFunc
 
 Func TrashHeap()
 	; Remove Function;
 EndFunc   ;==>TrashHeap
+
+
