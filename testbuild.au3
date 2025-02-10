@@ -2,11 +2,11 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.24
+#AutoIt3Wrapper_Res_Fileversion=2.0.0.22
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
-#AutoIt3Wrapper_Res_LegalCopyright=Use only for authorized security testing. Unauthorized use is illegal. No liability for misuse. Â© MacroIsFun.LLc 2024
+#AutoIt3Wrapper_Res_LegalCopyright=Use only for authorized security testing. Unauthorized use is illegal. No liability for misuse. © MacroIsFun.LLc 2024
 #AutoIt3Wrapper_Res_LegalTradeMarks=Macro Is Fun .LLC
 #AutoIt3Wrapper_Res_Language=1033
 #AutoIt3Wrapper_Run_AU3Check=n
@@ -16,21 +16,19 @@
 ; --- Removed: #include "NomadMemory.au3"
 #include <GUIConstantsEx.au3>
 #include <File.au3>
+#include <JSON.au3>
 #include <Misc.au3>
 #include <WindowsConstants.au3>
+; --- ADDED for WinAPI-based memory approach:
 #include <WinAPI.au3>
 #include <Process.au3>
 
 Opt("MouseCoordMode", 2)
 
 Global $version = FileGetVersion(@ScriptFullPath)
-Global Const $OldConfigFile 	= @ScriptDir & "\Config.json"
+
 Global Const $sConfigFile 	= @ScriptDir & "\Locations.json"
-Global Const $sButtonConfigFile = @ScriptDir & "\ButtonConfig.ini"
-If FileExists ($OldConfigFile) Then FileDelete ($OldConfigFile)
-	If True Then
-		ConsoleWrite ("Old config removed" & @CRLF)
-	EndIf
+Global Const $configPath 	= @ScriptDir & "\Config.json"
 
 ConsoleWrite("Script Version: " & $version & @CRLF)
 
@@ -41,10 +39,7 @@ Global $TargetHotkey		 	= "{]}" 	; Default Target Hotkey
 Global $ExitHotkey 				= "{/}"  	; Default Exit Hotkey
 Global $SaveLocationHotkey 		= "{,}" 	; Default Waypoint path location hotkey
 Global $EraseLocationsHotkey	= "{.}"		; Default Location Clear
-; Ensure Config File Exists and Load Config Settings
-If Not FileExists($sButtonConfigFile) Then CreateButtonDefaultConfig()
-LoadButtonConfig() ; Load or reload configuration settings
-
+LoadConfig()
 
 ; --- Set Hotkeys from Config ---
 HotKeySet($HealHotkey, "Hotkeyshit")
@@ -212,33 +207,55 @@ Exit
 ; ------------------------------------------------------------------------------
 ;                                LOAD CONFIG
 ; ------------------------------------------------------------------------------
-Func LoadButtonConfig()
-    ; Load hotkeys or assign default ones
-    $HealHotkey = IniRead($sButtonConfigFile, "Hotkeys", "HealHotkey", "{`}")
-    $CureHotkey = IniRead($sButtonConfigFile, "Hotkeys", "CureHotkey", "{-}")
-    $TargetHotkey = IniRead($sButtonConfigFile, "Hotkeys", "TargetHotkey", "{]}")
-    $ExitHotkey = IniRead($sButtonConfigFile, "Hotkeys", "ExitHotkey", "{/}")
-    $SaveLocationHotkey = IniRead($sButtonConfigFile, "Hotkeys", "SaveLocationHotkey", "{,}")
-    $EraseLocationsHotkey = IniRead($sButtonConfigFile, "Hotkeys", "EraseLocationsHotkey", "{.}")
+Func LoadConfig()
+    ; Ensure the Config file exists, otherwise create it with default values
+    If Not FileExists($configPath) Then
+        Local $DefaultConfig = _
+        '{' & @CRLF & _
+        '   "HealHotkey": "{`}",' & @CRLF & _
+        '   "CureHotkey": "{-}",' & @CRLF & _
+        '   "TargetHotkey": "{]}",' & @CRLF & _
+        '   "ExitHotkey": "{/}",' & @CRLF & _
+        '   "SaveLocationHotkey": "{,}",' & @CRLF & _
+        '   "EraseLocationsHotkey": "{.}"' & @CRLF & _
+        '}'
+        FileWrite($configPath, $DefaultConfig)
+        ConsoleWrite("[Info] Created default Config.json." & @CRLF)
+    EndIf
 
+    ; Read and decode JSON
+    Local $jsonData = FileRead($configPath)
+    If @error Or $jsonData = "" Then
+        ConsoleWrite("[Error] Failed to read Config.json, using defaults." & @CRLF)
+        Return
+    EndIf
+
+    Local $oConfig = _JSONDecode($jsonData)
+    If Not IsObj($oConfig) Then
+        ConsoleWrite("[Error] JSON parse failed. Resetting Config.json." & @CRLF)
+        FileWrite($configPath, $DefaultConfig)
+        $oConfig = _JSONDecode($DefaultConfig)
+    EndIf
+
+    ; Load values (if they exist)
+    Global $HealHotkey = _JSONGet($oConfig, "HealHotkey", "{`}")
+    Global $CureHotkey = _JSONGet($oConfig, "CureHotkey", "{-}")
+    Global $TargetHotkey = _JSONGet($oConfig, "TargetHotkey", "{]}")
+    Global $ExitHotkey = _JSONGet($oConfig, "ExitHotkey", "{/}")
+    Global $SaveLocationHotkey = _JSONGet($oConfig, "SaveLocationHotkey", "{,}")
+    Global $EraseLocationsHotkey = _JSONGet($oConfig, "EraseLocationsHotkey", "{.}")
+
+    ; Apply hotkeys
     HotKeySet($HealHotkey, "Hotkeyshit")
-    HotKeySet($CureHotkey, "CureKeyShit")
-    HotKeySet($TargetHotkey, "TargetKeyShit")
+    HotKeySet($CureHotkey, "Curekeyshit")
+    HotKeySet($TargetHotkey, "Targetkeyshit")
     HotKeySet($ExitHotkey, "KilledWithFire")
     HotKeySet($SaveLocationHotkey, "SaveLocation")
     HotKeySet($EraseLocationsHotkey, "EraseLocations")
+
+    ConsoleWrite("[Config] Hotkeys loaded successfully." & @CRLF)
 EndFunc
 
-Func CreateButtonDefaultConfig()
-    ; Create default .ini file with hotkeys
-    IniWrite($sButtonConfigFile, "Hotkeys", "HealHotkey", "{`}")
-    IniWrite($sButtonConfigFile, "Hotkeys", "CureHotkey", "{-}")
-    IniWrite($sButtonConfigFile, "Hotkeys", "TargetHotkey", "{]}")
-    IniWrite($sButtonConfigFile, "Hotkeys", "ExitHotkey", "{/}")
-    IniWrite($sButtonConfigFile, "Hotkeys", "SaveLocationHotkey", "{,}")
-    IniWrite($sButtonConfigFile, "Hotkeys", "EraseLocationsHotkey", "{.}")
-    ConsoleWrite("[Info] Default ButtonConfig.ini created with hotkeys." & @CRLF)
-EndFunc
 ; ------------------------------------------------------------------------------
 ;                       READ AND UPDATE GUI FROM MEMORY
 ; ------------------------------------------------------------------------------
@@ -723,35 +740,48 @@ Func GetSicknessDescription($Sick)
 EndFunc   ;==>GetSicknessDescription
 
 Func SaveLocation()
-    If Not IsDeclared("Json_Decode") Then
-    MsgBox(16, "Error", "JSON UDF not loaded correctly.")
-    Exit
-Else
-    MsgBox(64, "Success", "JSON UDF is working!")
-EndIf
-	Local $oJSON = Json_Decode(FileRead($sConfigFile))
+    If Not ProcessExists($ProcessName) Then
+        MsgBox(16, "Error", "Game process not found.")
+        Return
+    EndIf
 
-    If Not IsObj($oJSON) Then $oJSON = Json_ObjCreate()
+    Local $PosX = _ReadMemory($hProcess, $PosXAddress)
+    Local $PosY = _ReadMemory($hProcess, $PosYAddress)
 
-    ; Find first available slot (Starting at 1)
+    If $PosX = 0 Or $PosY = 0 Then
+        MsgBox(16, "Error", "Failed to retrieve player position.")
+        Return
+    EndIf
+
+    Local $oJSON = _JSONDecode(FileRead($sConfigFile))
+    If Not IsObj($oJSON) Then $oJSON = ObjCreate("Scripting.Dictionary")
+
+    ; Find first available slot (1-200)
     For $i = 1 To 200
-        If Not Json_ObjExists($oJSON, $i) Then
+        If Not $oJSON.Exists($i) Then
+            $oJSON.Item($i) = ObjCreate("Scripting.Dictionary")
+            $oJSON.Item($i).Add("X", $PosX)
+            $oJSON.Item($i).Add("Y", $PosY)
 
-            Json_ObjPut($oJSON, $i, Json_ObjCreate("X", $PosXOffset, "Y", $PosYOffset))
-
-            ; Save back to file
-            FileWrite($sConfigFile, Json_Encode($oJSON, 1))
-            ConsoleWrite("Location " & $i & " saved: X=" & $PosXOffset & ", Y=" & $PosYOffset & @CRLF)
+            ; Save back to JSON
+            FileWrite($sConfigFile, _JSONEncode($oJSON, 1))
+            ConsoleWrite("Saved location " & $i & ": X=" & $PosX & ", Y=" & $PosY & @CRLF)
             Return
         EndIf
     Next
-    MsgBox(48, "Error", "All 200 locations are filled. Figure it out in Less Locations...")
+    MsgBox(48, "Error", "All 200 locations are filled. Delete some first.")
 EndFunc
 
 Func EraseLocations()
-    FileDelete($sConfigFile)
-    MsgBox(64, "Success", "All locations erased.")
+    If FileExists($sConfigFile) Then
+        FileDelete($sConfigFile)
+        MsgBox(64, "Success", "All locations erased.")
+        ConsoleWrite("[Info] Locations erased." & @CRLF)
+    Else
+        MsgBox(48, "Error", "No location file found.")
+    EndIf
 EndFunc
+
 
 Func TrashHeap()
 	; Remove Function;
