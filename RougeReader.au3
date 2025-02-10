@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.26
+#AutoIt3Wrapper_Res_Fileversion=2.0.0.27
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -723,28 +723,7 @@ Func GetSicknessDescription($Sick)
 EndFunc   ;==>GetSicknessDescription
 
 Func SaveLocation()
-    If Not IsDeclared("Json_Decode") Then
-    MsgBox(16, "Error", "JSON UDF not loaded correctly.")
-    Exit
-Else
-    MsgBox(64, "Success", "JSON UDF is working!")
-EndIf
-	Local $oJSON = Json_Decode(FileRead($sConfigFile))
 
-    If Not IsObj($oJSON) Then $oJSON = Json_ObjCreate()
-
-    ; Find first available slot (Starting at 1)
-    For $i = 1 To 200
-        If Not Json_ObjExists($oJSON, $i) Then
-
-            Json_ObjPut($oJSON, $i, Json_ObjCreate("X", $PosXOffset, "Y", $PosYOffset))
-
-            ; Save back to file
-            FileWrite($sConfigFile, Json_Encode($oJSON, 1))
-            ConsoleWrite("Location " & $i & " saved: X=" & $PosXOffset & ", Y=" & $PosYOffset & @CRLF)
-            Return
-        EndIf
-    Next
     MsgBox(48, "Error", "All 200 locations are filled. Figure it out in Less Locations...")
 EndFunc
 
