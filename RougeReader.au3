@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.25
+#AutoIt3Wrapper_Res_Fileversion=2.0.0.26
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -30,7 +30,6 @@ Global Const $sButtonConfigFile = @ScriptDir & "\ButtonConfig.ini"
 If FileExists ($OldConfigFile) Then FileDelete ($OldConfigFile)
 	If True Then
 		ConsoleWrite ("Old config removed" & @CRLF)
-		Exit
 	EndIf
 
 ConsoleWrite("Script Version: " & $version & @CRLF)
