@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.20
+#AutoIt3Wrapper_Res_Fileversion=2.0.0.21
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -26,16 +26,19 @@
 Opt("MouseCoordMode", 2)
 
 Global $version = FileGetVersion(@ScriptFullPath)
-Global Const $LOCATION_FILE = @ScriptDir & "\LocationLog.cfg"
-Global Const $configPath = @ScriptDir & "\Config.json"
+
+Global Const $sConfigFile 	= @ScriptDir & "\Locations.json"
+Global Const $configPath 	= @ScriptDir & "\Config.json"
 
 ConsoleWrite("Script Version: " & $version & @CRLF)
 
 ; --- Load Config Settings ---
-Global $HealHotkey = "{`}" ; Default Heal Hotkey
-Global $CureHotkey = "{-}" ; Default Cure Hotkey
-Global $TargetHotkey = "{]}" ; Default Target Hotkey
-Global $ExitHotkey = "{/}"  ; Default Exit Hotkey
+Global $HealHotkey 				= "{`}" 	; Default Heal Hotkey
+Global $CureHotkey 				= "{-}"		; Default Cure Hotkey
+Global $TargetHotkey		 	= "{]}" 	; Default Target Hotkey
+Global $ExitHotkey 				= "{/}"  	; Default Exit Hotkey
+Global $SaveLocationHotkey 		= "{,}" 	; Default Waypoint path location hotkey
+Global $EraseLocationsHotkey	= "{.}"		; Default Location Clear
 LoadConfig()
 
 ; --- Set Hotkeys from Config ---
@@ -43,11 +46,14 @@ HotKeySet($HealHotkey, "Hotkeyshit")
 HotKeySet($CureHotkey, "CureKeyShit")
 HotKeySet($TargetHotkey, "TargetKeyShit")
 HotKeySet($ExitHotkey, "KilledWithFire")
+HotKeySet($SaveLocationHotkey, "SaveLocation")
+HotKeySet($EraseLocationsHotkey, "EraseLocations")
 ConsoleWrite("Heal: " & $HealHotkey & @CRLF)
 ConsoleWrite("Cure: " & $CureHotkey & @CRLF)
 ConsoleWrite("Target: " & $TargetHotkey & @CRLF)
 ConsoleWrite("Exit: " & $ExitHotkey & @CRLF)
-
+ConsoleWrite("SaveLocation: " & $SaveLocationHotkey & @CRLF)
+ConsoleWrite("EraseLocations: " & $EraseLocationsHotkey & @CRLF)
 Global $Debug = False
 
 ; Define the game process and memory offsets
@@ -771,6 +777,30 @@ Func GetSicknessDescription($Sick)
 	EndSwitch
 	Return $SicknessDescription
 EndFunc   ;==>GetSicknessDescription
+
+Func SaveLocation()
+    Local $oJSON = Json_Decode(FileRead($sConfigFile))
+    If Not IsObj($oJSON) Then $oJSON = Json_ObjCreate()
+
+    ; Find first available slot (Starting at 1)
+    For $i = 1 To 200
+        If Not Json_ObjExists($oJSON, $i) Then
+
+            Json_ObjPut($oJSON, $i, Json_ObjCreate("X", $PosXOffset, "Y", $PosYOffset))
+
+            ; Save back to file
+            FileWrite($sConfigFile, Json_Encode($oJSON, 1))
+            ConsoleWrite("Location " & $i & " saved: X=" & $PosXOffset & ", Y=" & $PosYOffset & @CRLF)
+            Return
+        EndIf
+    Next
+    MsgBox(48, "Error", "All 200 locations are filled. Figure it out in Less Locations...")
+EndFunc
+
+Func EraseLocations()
+    FileDelete($sConfigFile)
+    MsgBox(64, "Success", "All locations erased.")
+EndFunc
 
 Func TrashHeap()
 	; Remove Function;
