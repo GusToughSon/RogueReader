@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.36
+#AutoIt3Wrapper_Res_Fileversion=2.0.0.37
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -369,9 +369,14 @@ Func TimeToHeal()
 
     ; Use actual GUI labels and parse the numeric value
     $CurrentX = Number(StringRegExpReplace(GUICtrlRead($PosXLabel), "[^\d]", ""))
+
+
     $CurrentY = Number(StringRegExpReplace(GUICtrlRead($PosYLabel), "[^\d]", ""))
+
     Static $LastX = $CurrentX
+
     Static $LastY = $CurrentY
+
     Static $MovementTime = TimerInit()
 
 
@@ -380,8 +385,9 @@ Func TimeToHeal()
 
 	ConsoleWrite("Healing check initiated..." & @CRLF)
 
-   ConsoleWrite("Current HP: " & $RealHP & " / " & $MaxHP & " Threshold: " & $HealThreshold & @CRLF)
-    ConsoleWrite("Heal Delay: " & $HealDelay & " ms" & @CRLF)
+	ConsoleWrite("Current HP: " & $RealHP & " / " & $MaxHP & " Threshold: " & $HealThreshold & @CRLF)
+
+	ConsoleWrite("Heal Delay: " & $HealDelay & " ms" & @CRLF)
 
    ConsoleWrite("Current Position: X=" & $CurrentX & " Y=" & $CurrentY & " Last Position: X=" & $LastX & " Y=" & $LastY & @CRLF)
     ConsoleWrite("Time since last move: " & TimerDiff($MovementTime) & " ms" & @CRLF)
@@ -394,7 +400,7 @@ Func TimeToHeal()
         $MovementTime = TimerInit()  ; Reset timer if position changed
     EndIf
 
-    If $ChatVal = 0 And $SickVal = 0 Then
+    If $ChatVal = 0 And $SickVal = 0 And $elapsedTime >= $HealDelay Then
         If $RealHP < ($MaxHP * $HealThreshold) Then
             If TimerDiff($MovementTime) > $HealDelay Then
 
