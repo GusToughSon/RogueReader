@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.33
+#AutoIt3Wrapper_Res_Fileversion=2.0.0.34
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -365,39 +365,51 @@ EndFunc   ;==>CureMe
 ; ------------------------------------------------------------------------------
 ; Update function to read slider value
 Func TimeToHeal()
-    Local $HP = _ReadMemory($hProcess, $HPAddress)
-    Local $RealHP = $HP / 65536
-    Local $MaxHP = _ReadMemory($hProcess, $MaxHPAddress)
-    Local $ChatVal = _ReadMemory($hProcess, $ChattOpenAddress)
-    Local $SickVal = _ReadMemory($hProcess, $SicknessAddress)
-    Local $HealThreshold = GUICtrlRead($healSlider) / 100
-    Local $CurrentX = _ReadMemory($hProcess, $PosXOffset)
-    Local $CurrentY = _ReadMemory($hProcess, $PosYOffset)
-    Static $LastX = $CurrentX
-    Static $LastY = $CurrentY
-    Static $MovementTime = TimerInit()
+	$HP = _ReadMemory($hProcess, $HPAddress)
+    $RealHP = $HP / 65536
+    $MaxHP = _ReadMemory($hProcess, $MaxHPAddress)
+    $ChatVal = _ReadMemory($hProcess, $ChattOpenAddress)
+    $SickVal = _ReadMemory($hProcess, $SicknessAddress)
+    $HealThreshold = GUICtrlRead($healSlider) / 100
+    $CurrentX = _ReadMemory($hProcess, $PosXOffset)
+    $CurrentY = _ReadMemory($hProcess, $PosYOffset)
+    $LastX = $CurrentX
+	$LastY = $CurrentY
+	$MovementTime = TimerInit()
+
+    ;ConsoleWrite("Checking healing conditions..." & @CRLF)
+    ;ConsoleWrite("Current HP: " & $RealHP & " / " & $MaxHP & " Threshold: " & $HealThreshold & @CRLF)
+    ;ConsoleWrite("Current Position: X=" & $CurrentX & " Y=" & $CurrentY & @CRLF)
+    ;ConsoleWrite("Last Position: X=" & $LastX & " Y=" & $LastY & @CRLF)
+    ;ConsoleWrite("Time since last movement: " & TimerDiff($MovementTime) & " Slider setting: " & GUICtrlRead($MovmentSlider) & @CRLF)
 
     If $ChatVal = 0 Then
         If _ArraySearch($sicknessArray, $SickVal) <> -1 Then
-            ; Handle sickness-based healing
+            ConsoleWrite("Healing blocked due to sickness." & @CRLF)
         ElseIf $RealHP < ($MaxHP * $HealThreshold) Then
             If $CurrentX <> $LastX Or $CurrentY <> $LastY Then
                 $MovementTime = TimerInit()  ; Reset timer if position changed
                 $LastX = $CurrentX
                 $LastY = $CurrentY
-                ConsoleWrite("[Movement] Position changed, resetting heal timer." & @CRLF)
+                ConsoleWrite("Position changed, resetting heal timer." & @CRLF)
             ElseIf TimerDiff($MovementTime) >= GUICtrlRead($MovementSlider) Then
                 ControlSend("Project Rogue", "", "", "{2}")
-                ConsoleWrite("[Heal] Healing triggered after " & GUICtrlRead($MovementSlider) & " ms of no movement." & @CRLF)
+                ConsoleWrite("Healing triggered after " & GUICtrlRead($MovementSlider) & " ms of no movement." & @CRLF)
                 $MovementTime = TimerInit()  ; Reset timer after healing
                 Return "Healing triggered due to low HP"
+            Else
+                ConsoleWrite("No healing: Waiting for no movement period to pass." & @CRLF)
             EndIf
+        Else
+            ConsoleWrite("HP is above threshold; no healing needed." & @CRLF)
         EndIf
     Else
+        ConsoleWrite("Chat is open; healing blocked." & @CRLF)
         Sleep(50)
     EndIf
     Return "No healing required at this time"
 EndFunc   ;==>TimeToHeal
+
 
 
 ; ------------------------------------------------------------------------------
