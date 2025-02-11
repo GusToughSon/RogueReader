@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.34
+#AutoIt3Wrapper_Res_Fileversion=2.0.0.35
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -374,23 +374,31 @@ Func TimeToHeal()
     Static $LastY = $CurrentY
     Static $MovementTime = TimerInit()
 
-    ConsoleWrite("Healing check initiated..." & @CRLF)
-    ConsoleWrite("Current HP: " & $RealHP & " / " & $MaxHP & " Threshold: " & $HealThreshold & @CRLF)
+
+
+
+
+	ConsoleWrite("Healing check initiated..." & @CRLF)
+
+   ConsoleWrite("Current HP: " & $RealHP & " / " & $MaxHP & " Threshold: " & $HealThreshold & @CRLF)
     ConsoleWrite("Heal Delay: " & $HealDelay & " ms" & @CRLF)
-    ConsoleWrite("Current Position: X=" & $CurrentX & " Y=" & $CurrentY & " Last Position: X=" & $LastX & " Y=" & $LastY & @CRLF)
+
+   ConsoleWrite("Current Position: X=" & $CurrentX & " Y=" & $CurrentY & " Last Position: X=" & $LastX & " Y=" & $LastY & @CRLF)
     ConsoleWrite("Time since last move: " & TimerDiff($MovementTime) & " ms" & @CRLF)
 
     If $CurrentX <> $LastX Or $CurrentY <> $LastY Then
         ConsoleWrite("Movement detected, resetting timer." & @CRLF)
         $LastX = $CurrentX
-        $LastY = $CurrentY
+
+	   $LastY = $CurrentY
         $MovementTime = TimerInit()  ; Reset timer if position changed
     EndIf
 
     If $ChatVal = 0 And $SickVal = 0 Then
         If $RealHP < ($MaxHP * $HealThreshold) Then
             If TimerDiff($MovementTime) > $HealDelay Then
-                ControlSend("Project Rogue", "", "", "{2}")
+
+			   ControlSend("Project Rogue", "", "", "{2}")
                 ConsoleWrite("Healing triggered: HP below threshold and no movement for " & $HealDelay & " ms." & @CRLF)
                 $MovementTime = TimerInit()  ; Reset timer after healing
             Else
@@ -430,10 +438,18 @@ Func AttackModeReader()
 			EndIf
 		ElseIf $Type = 1 Then
 			; "Monster targeted"
+
 		ElseIf $Type = 2 Then
+
+
 			; "Type: NPC"
+
+
 		Else
 			ConsoleWrite("Type: " & $Type & @CRLF)
+
+
+
 		EndIf
 	Else
 		GUICtrlSetData($AttackModeLabel, "Attack Mode: No Target")
