@@ -25,16 +25,9 @@ Opt("MouseCoordMode", 2)
 
 Global $version = FileGetVersion(@ScriptFullPath)
 
-Global Const $OldConfigFile 	= @ScriptDir & "\Config.json"
-
 Global Const $sConfigFile 	= @ScriptDir & "\Locations.json"
 
 Global Const $sButtonConfigFile = @ScriptDir & "\ButtonConfig.ini"
-
-If FileExists ($OldConfigFile) Then FileDelete ($OldConfigFile)
-	If True Then
-		ConsoleWrite ("Old config removed" & @CRLF)
-	EndIf
 
 ConsoleWrite("Script Version: " & $version & @CRLF)
 
@@ -365,52 +358,51 @@ EndFunc   ;==>CureMe
 ; ------------------------------------------------------------------------------
 ; Update function to read slider value
 Func TimeToHeal()
-	$HP = _ReadMemory($hProcess, $HPAddress)
+    Local $HealDelay = GUICtrlRead($MovmentSlider)  ; Read movement slider value for delay
+
+    $HP = _ReadMemory($hProcess, $HPAddress)
     $RealHP = $HP / 65536
     $MaxHP = _ReadMemory($hProcess, $MaxHPAddress)
     $ChatVal = _ReadMemory($hProcess, $ChattOpenAddress)
     $SickVal = _ReadMemory($hProcess, $SicknessAddress)
     $HealThreshold = GUICtrlRead($healSlider) / 100
-    $CurrentX = _ReadMemory($hProcess, $PosXOffset)
-    $CurrentY = _ReadMemory($hProcess, $PosYOffset)
-    $LastX = $CurrentX
-	$LastY = $CurrentY
-	$MovementTime = TimerInit()
 
-    ;ConsoleWrite("Checking healing conditions..." & @CRLF)
-    ;ConsoleWrite("Current HP: " & $RealHP & " / " & $MaxHP & " Threshold: " & $HealThreshold & @CRLF)
-    ;ConsoleWrite("Current Position: X=" & $CurrentX & " Y=" & $CurrentY & @CRLF)
-    ;ConsoleWrite("Last Position: X=" & $LastX & " Y=" & $LastY & @CRLF)
-    ;ConsoleWrite("Time since last movement: " & TimerDiff($MovementTime) & " Slider setting: " & GUICtrlRead($MovmentSlider) & @CRLF)
+    ; Use actual GUI labels and parse the numeric value
+    $CurrentX = Number(StringRegExpReplace(GUICtrlRead($PosXLabel), "[^\d]", ""))
+    $CurrentY = Number(StringRegExpReplace(GUICtrlRead($PosYLabel), "[^\d]", ""))
+    Static $LastX = $CurrentX
+    Static $LastY = $CurrentY
+    Static $MovementTime = TimerInit()
 
-    If $ChatVal = 0 Then
-        If _ArraySearch($sicknessArray, $SickVal) <> -1 Then
-            ConsoleWrite("Healing blocked due to sickness." & @CRLF)
-        ElseIf $RealHP < ($MaxHP * $HealThreshold) Then
-            If $CurrentX <> $LastX Or $CurrentY <> $LastY Then
-                $MovementTime = TimerInit()  ; Reset timer if position changed
-                $LastX = $CurrentX
-                $LastY = $CurrentY
-                ConsoleWrite("Position changed, resetting heal timer." & @CRLF)
-            ElseIf TimerDiff($MovementTime) >= GUICtrlRead($MovementSlider) Then
+    ConsoleWrite("Healing check initiated..." & @CRLF)
+    ConsoleWrite("Current HP: " & $RealHP & " / " & $MaxHP & " Threshold: " & $HealThreshold & @CRLF)
+    ConsoleWrite("Heal Delay: " & $HealDelay & " ms" & @CRLF)
+    ConsoleWrite("Current Position: X=" & $CurrentX & " Y=" & $CurrentY & " Last Position: X=" & $LastX & " Y=" & $LastY & @CRLF)
+    ConsoleWrite("Time since last move: " & TimerDiff($MovementTime) & " ms" & @CRLF)
+
+    If $CurrentX <> $LastX Or $CurrentY <> $LastY Then
+        ConsoleWrite("Movement detected, resetting timer." & @CRLF)
+        $LastX = $CurrentX
+        $LastY = $CurrentY
+        $MovementTime = TimerInit()  ; Reset timer if position changed
+    EndIf
+
+    If $ChatVal = 0 And $SickVal = 0 Then
+        If $RealHP < ($MaxHP * $HealThreshold) Then
+            If TimerDiff($MovementTime) > $HealDelay Then
                 ControlSend("Project Rogue", "", "", "{2}")
-                ConsoleWrite("Healing triggered after " & GUICtrlRead($MovementSlider) & " ms of no movement." & @CRLF)
+                ConsoleWrite("Healing triggered: HP below threshold and no movement for " & $HealDelay & " ms." & @CRLF)
                 $MovementTime = TimerInit()  ; Reset timer after healing
-                Return "Healing triggered due to low HP"
             Else
-                ConsoleWrite("No healing: Waiting for no movement period to pass." & @CRLF)
+                ConsoleWrite("No healing: " & TimerDiff($MovementTime) & " ms elapsed, waiting for " & $HealDelay & " ms of no movement." & @CRLF)
             EndIf
         Else
-            ConsoleWrite("HP is above threshold; no healing needed." & @CRLF)
+            ConsoleWrite("No healing needed: HP above threshold." & @CRLF)
         EndIf
     Else
-        ConsoleWrite("Chat is open; healing blocked." & @CRLF)
-        Sleep(50)
+        ConsoleWrite("Healing blocked: Chat open or under sickness effect." & @CRLF)
     EndIf
-    Return "No healing required at this time"
 EndFunc   ;==>TimeToHeal
-
-
 
 ; ------------------------------------------------------------------------------
 ;                                  TARGETING
