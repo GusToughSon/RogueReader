@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.28
+#AutoIt3Wrapper_Res_Fileversion=2.0.0.30
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -80,13 +80,14 @@ Global $HealerStatus 	= 0
 Global $CureStatus 		= 0
 Global $TargetStatus 	= 0
 Global $iPrevValue 		= 95
+Global $MPrevValue		= " "
 Global $hProcess 		= 0               ; Our WinAPI handle to the process
 Global $BaseAddress 	= 0            ; Base address of the module
 
 
 Global $TypeAddress, $AttackModeAddress, $PosXAddress, $PosYAddress
 Global $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress
-Global $Type, $Chat, $Sickness, $AttackMode, $PrevType
+Global $Type, $Chat, $Sickness, $AttackMode
 Global $SicknessDescription = GetSicknessDescription(0)
 
 ; This array is used in CureMe and TimeToHeal checks
@@ -115,11 +116,19 @@ Global $ExitButton = GUICtrlCreateButton("Exit", 150, 300, 100, 30)
 
 Global $healSlider = GUICtrlCreateSlider(20, 350, 200, 20)
 Global $healsliderlimit = GUICtrlSetLimit($healSlider, 95, 45) ; Set range from 45 to 95
-Global $setsliderdata = GUICtrlSetData($healSlider, 90) ; Set initial position to 45
+Global $setsliderdata = GUICtrlSetData($healSlider, 75) ; Set initial position to 45
 
 ; Create a label with initial text
-Global $healLabel = GUICtrlCreateLabel("Heal at: 90%", 230, 350, 100, 20)
+Global $healLabel = GUICtrlCreateLabel("Heal at: " & $healSlider&"%", 230, 350, 100, 20)
 
+
+Global $MovmentSlider = GUICtrlCreateSlider(20, 370, 180, 20)
+Global $Movmentsliderlimit = GUICtrlSetLimit($MovmentSlider, 1000, 50)
+Global $setsliderdata = GUICtrlSetData($MovmentSlider, 150)
+
+
+Global $MoveLabel = GUICtrlCreateLabel("Heal After  "&$MovmentSlider, 185, 370, 100, 20)
+Global $MoveLabell = GUICtrlCreateLabel("ms of no movment.", 280, 370, 100, 20)
 GUISetState(@SW_SHOW)
 ; ------------------------------------------------------------------------------
 ;                                   MAIN LOOP
@@ -196,11 +205,16 @@ While 1
 				ProcessClose($ProcessID)
 				ExitLoop
 			EndIf
+			$MValue = GUICtrlRead($MovmentSlider)
 			$iValue = GUICtrlRead($healSlider)
 			; Update label only if the value has changed
-			If $iValue <> $iPrevValue Then
+			If $iValue <> $iPrevValue Then ;healing percent Lable in Gui Updater when game is not loaded;
 				GUICtrlSetData($healLabel, "Heal at: " & $iValue & "%")
 				$iPrevValue = $iValue ; Store new value for comparison
+			EndIf
+			If $MValue <> $MPrevValue Then ;Movement timer Lable in Gui Updater when game is not loaded;
+				GUICtrlSetData($MoveLabel, "Heal After  "& $MValue)
+				$MPrevValue = $MValue ; Store new value for comparison
 			EndIf
 		WEnd
 		ConsoleWrite("[Info] Game detected, reconnecting..." & @CRLF)
@@ -251,7 +265,8 @@ Func GUIReadMemory()
 
 	If $hProcess = 0 Then Return
 	; Read Type
-	$Type = _ReadMemory($hProcess, $TypeAddress)
+	Local $PrevType = " "
+	Local $Type = _ReadMemory($hProcess, $TypeAddress)
 	If $Type <> $PrevType Then
 		If $Type = 0 Then
 			GUICtrlSetData($TypeLabel, "Type: Player")
@@ -271,6 +286,7 @@ Func GUIReadMemory()
 		EndIf
 	EndIf
 	; Attack Mode
+
 	$AttackMode = _ReadMemory($hProcess, $AttackModeAddress)
 	If $AttackMode = 0 Then
 		GUICtrlSetData($AttackModeLabel, "Attack Mode: Safe")
@@ -284,12 +300,25 @@ Func GUIReadMemory()
 	If $iValue <> $iPrevValue Then
 		GUICtrlSetData($healLabel, "Heal at: " & $iValue & "%")
 		$iPrevValue = $iValue ; Store new value for comparison
-	EndIf                                                                      ;<--gui live update
+	EndIf
+	$MValue = GUICtrlRead($MovmentSlider)
+	If $MValue <> $MPrevValue Then ;Movement timer Lable in Gui Updater when game is loaded;
+		GUICtrlSetData($MoveLabel, "Heal After  "& $MValue)
+		$MPrevValue = $MValue ; Store new value for comparison
+	EndIf
 	; Position
+	Local $PosXOld = " "
+	Local $PosYOld = " "
 	Local $PosX = _ReadMemory($hProcess, $PosXAddress)
 	Local $PosY = _ReadMemory($hProcess, $PosYAddress)
-	GUICtrlSetData($PosXLabel, "Pos X: " & $PosX)
-	GUICtrlSetData($PosYLabel, "Pos Y: " & $PosY)
+	If $PosX <> $PosXOld Then
+		GUICtrlSetData($PosXLabel, "Pos X: " & $PosX)
+		$PosXOld = $PosX
+	EndIf
+	If $PosY <> $PosYOld Then
+		GUICtrlSetData($PosYLabel, "Pos Y: " & $PosY)
+		$PosYOld = $PosY
+	EndIf
 	; HP
 	Local $HP = _ReadMemory($hProcess, $HPAddress)
 	GUICtrlSetData($HPLabel, "HP: " & $HP)
@@ -336,29 +365,42 @@ EndFunc   ;==>CureMe
 ; ------------------------------------------------------------------------------
 ; Update function to read slider value
 Func TimeToHeal()
-	Local $HP = _ReadMemory($hProcess, $HPAddress)
-	Local $RealHP = $HP / 65536
-	Local $MaxHP = _ReadMemory($hProcess, $MaxHPAddress)
-	Local $ChatVal = _ReadMemory($hProcess, $ChattOpenAddress)
-	Local $SickVal = _ReadMemory($hProcess, $SicknessAddress)
-	; Ensure the heal threshold updates before reading
-	Local $HealThreshold = GUICtrlRead($healSlider) / 100
-	; Heal logic based on dynamic threshold
-	If $ChatVal = 0 Then
-		If _ArraySearch($sicknessArray, $SickVal) <> -1 Then
-			; Handle sickness-based healing
-		ElseIf $RealHP < ($MaxHP * $HealThreshold) Then
-			If $elapsedTime >= $HealDelay Then
-				ControlSend("Project Rogue", "", "", "{2}")
-				ConsoleWrite("[Heal] Healing triggered at " & $healSlider * 100 & "% HP." & @CRLF)
-				$currentTime = TimerInit()
-				Return "Healing triggered due to low HP"
-			EndIf
-		EndIf
-	Else
-		Sleep(50)
-	EndIf
-	Return "No healing required at this time"
+    Local $HP = _ReadMemory($hProcess, $HPAddress)
+    Local $RealHP = $HP / 65536
+    Local $MaxHP = _ReadMemory($hProcess, $MaxHPAddress)
+    Local $ChatVal = _ReadMemory($hProcess, $ChattOpenAddress)
+    Local $SickVal = _ReadMemory($hProcess, $SicknessAddress)
+    ; Ensure the heal threshold updates before reading
+    Local $HealThreshold = GUICtrlRead($healSlider) / 100
+    Local $CurrentX = _ReadMemory($hProcess, $PosXOffset)
+    Local $CurrentY = _ReadMemory($hProcess, $PosYOffset)
+    Static $LastX = $CurrentX
+    Static $LastY = $CurrentY
+    Static $MovementTime = 0
+
+    ; Heal logic based on dynamic threshold and position check
+    If $ChatVal = 0 Then
+        If _ArraySearch($sicknessArray, $SickVal) <> -1 Then
+            ; Handle sickness-based healing
+        ElseIf $RealHP < ($MaxHP * $HealThreshold) Then
+            If TimerDiff($MovementTime) >= GUICtrlRead($MovmentSlider) Then
+                If $CurrentX <> $LastX Or $CurrentY <> $LastY Then
+                    $MovementTime = TimerInit()  ; Reset timer if position changed
+                    $LastX = $CurrentX
+                    $LastY = $CurrentY
+                    ConsoleWrite("[Movement] Position changed, resetting heal timer." & @CRLF)
+                Else
+                    ControlSend("Project Rogue", "", "", "{2}")
+                    ConsoleWrite("[Heal] Healing triggered at " & $healSlider * 100 & "% HP." & @CRLF)
+                    $MovementTime = TimerInit()  ; Reset timer after healing
+                    Return "Healing triggered due to low HP"
+                EndIf
+            EndIf
+        EndIf
+    Else
+        Sleep(50)
+    EndIf
+    Return "No healing required at this time"
 EndFunc   ;==>TimeToHeal
 
 ; ------------------------------------------------------------------------------
