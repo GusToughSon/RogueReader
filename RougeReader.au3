@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.31
+#AutoIt3Wrapper_Res_Fileversion=2.0.0.32
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -370,31 +370,27 @@ Func TimeToHeal()
     Local $MaxHP = _ReadMemory($hProcess, $MaxHPAddress)
     Local $ChatVal = _ReadMemory($hProcess, $ChattOpenAddress)
     Local $SickVal = _ReadMemory($hProcess, $SicknessAddress)
-    ; Ensure the heal threshold updates before reading
     Local $HealThreshold = GUICtrlRead($healSlider) / 100
     Local $CurrentX = _ReadMemory($hProcess, $PosXOffset)
     Local $CurrentY = _ReadMemory($hProcess, $PosYOffset)
     Static $LastX = $CurrentX
     Static $LastY = $CurrentY
-    Static $MovementTime = 0
+    Static $MovementTime = TimerInit()  ; Ensure the timer is initialized outside the conditions if not yet set
 
-    ; Heal logic based on dynamic threshold and position check
     If $ChatVal = 0 Then
         If _ArraySearch($sicknessArray, $SickVal) <> -1 Then
             ; Handle sickness-based healing
         ElseIf $RealHP < ($MaxHP * $HealThreshold) Then
-            If TimerDiff($MovementTime) >= GUICtrlRead($MovmentSlider) Then
-                If $CurrentX <> $LastX Or $CurrentY <> $LastY Then
-                    $MovementTime = TimerInit()  ; Reset timer if position changed
-                    $LastX = $CurrentX
-                    $LastY = $CurrentY
-                    ConsoleWrite("[Movement] Position changed, resetting heal timer." & @CRLF)
-                Else
-                    ControlSend("Project Rogue", "", "", "{2}")
-                    ConsoleWrite("[Heal] Healing triggered at " & $healSlider * 100 & "% HP." & @CRLF)
-                    $MovementTime = TimerInit()  ; Reset timer after healing
-                    Return "Healing triggered due to low HP"
-                EndIf
+            If $CurrentX <> $LastX Or $CurrentY <> $LastY Then
+                $MovementTime = TimerInit()  ; Reset timer if position changed
+                $LastX = $CurrentX
+                $LastY = $CurrentY
+                ConsoleWrite("[Movement] Position changed, resetting heal timer." & @CRLF)
+            ElseIf TimerDiff($MovementTime) >= GUICtrlRead($MovmentSlider) Then
+                ControlSend("Project Rogue", "", "", "{2}")
+                ConsoleWrite("[Heal] Healing triggered at " & $healSlider * 100 & "% HP." & @CRLF)
+                $MovementTime = TimerInit()  ; Reset timer after healing
+                Return "Healing triggered due to low HP"
             EndIf
         EndIf
     Else
@@ -402,6 +398,7 @@ Func TimeToHeal()
     EndIf
     Return "No healing required at this time"
 EndFunc   ;==>TimeToHeal
+
 
 ; ------------------------------------------------------------------------------
 ;                                  TARGETING
