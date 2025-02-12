@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.44
+#AutoIt3Wrapper_Res_Fileversion=2.0.0.45
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -67,7 +67,10 @@ Global $SicknessOffset 		= 0xAB5E10
 
 Global $currentTime 	= TimerInit()
 Global $elapsedTime 	= TimerDiff($currentTime)
+
 Global $LastHealTime    = TimerInit()
+Global $elapsedTimeSinceHeal = TimerDiff($LastHealTime)
+Global $MovementTime 	= TimerInit()
 
 Global $Running 		= True             ;Does it loop;
 Global $HealerStatus 	= 0
@@ -87,8 +90,8 @@ Global $SicknessDescription = GetSicknessDescription(0)
 ; This array is used in CureMe and TimeToHeal checks
 Global $sicknessArray = [1, 2, 65, 66, 67, 68, 69, 72, 73, 81, 97, 98, 99, 513, 514, 515, 577, 8193, 8194, 8195, 8257, 8258, 8705, 8706, 8707, 8708, 8709, 8712, 8713, 8721, 8737, 8769, 8770, 16385, 16386, 16449, 16450, 16451, 16452, 16897, 16898, 24577, 24578, 24579, 24581, 24582, 24583, 24585, 24609, 24641, 24642, 24643, 24645, 24646, 24647, 24649, 25089, 25090, 25091, 25093, 25094, 25095, 25097, 25121, 33283, 33284, 33285, 33286, 33287, 33288, 33289, 33291, 33293, 33294, 33295, 33793, 41985, 41986, 41987, 41988, 41989, 41990, 41991, 41993, 41995]
 
-Global $elapsedTimeSinceHeal = TimerDiff($LastHealTime)
-Global $currentTime = TimerInit(), $TargetDelay = 400, $HealDelay = 1700
+
+Global $TargetDelay = 400, $HealDelay = 1700
 Global $aMousePos = MouseGetPos()
 
 ; Create the GUI
@@ -342,7 +345,7 @@ Func CureMe()
         Return ; Optionally add a return message if needed
     EndIf
 
-    If $CureStatus = _ArraySearch($sicknessArray, $Sickness) <> -1 Then
+    If $CureStatus = _ArraySearch($sicknessArray, $Sickness) <> 1 Then
 
 	$Healwait = GUICtrlRead($MovmentSlider)  ; Read movement slider value for delay
     $HP = _ReadMemory($hProcess, $HPAddress)
@@ -356,7 +359,7 @@ Func CureMe()
     $CurrentY = Number(StringRegExpReplace(GUICtrlRead($PosYLabel), "[^\d]", ""))
     Static $LastX = $CurrentX
     Static $LastY = $CurrentY
-    Static $MovementTime = TimerInit()
+
 
     $elapsedTimeSinceHeal = TimerDiff($LastHealTime)  ; Update the elapsed time since last heal
 
@@ -393,7 +396,7 @@ EndFunc   ;==>CureMe
 ;                                   HEALER
 ; ------------------------------------------------------------------------------
 ; Update function to read slider value
-Global $LastHealTime = TimerInit() ; Initialize this at the start of your script
+; Initialize this at the start of your script
 
 Func TimeToHeal()
     $Healwait = GUICtrlRead($MovmentSlider)  ; Read movement slider value for delay
@@ -408,7 +411,6 @@ Func TimeToHeal()
     $CurrentY = Number(StringRegExpReplace(GUICtrlRead($PosYLabel), "[^\d]", ""))
     Static $LastX = $CurrentX
     Static $LastY = $CurrentY
-    Static $MovementTime = TimerInit()
 
     $elapsedTimeSinceHeal = TimerDiff($LastHealTime)  ; Update the elapsed time since last heal
 
