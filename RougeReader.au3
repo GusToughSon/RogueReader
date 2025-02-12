@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.43
+#AutoIt3Wrapper_Res_Fileversion=2.0.0.44
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -118,7 +118,7 @@ Global $healLabel = GUICtrlCreateLabel("Heal at: " & $healSlider&"%", 230, 350, 
 
 
 Global $MovmentSlider = GUICtrlCreateSlider(20, 370, 180, 20)
-Global $Movmentsliderlimit = GUICtrlSetLimit($MovmentSlider, 750, 0)
+Global $Movmentsliderlimit = GUICtrlSetLimit($MovmentSlider, 750, 50)
 Global $setsliderdata = GUICtrlSetData($MovmentSlider, 150)
 
 
@@ -425,21 +425,21 @@ Func TimeToHeal()
         $MovementTime = TimerInit()  ; Reset timer if position changed
     EndIf
 
-    If $ChatVal = 0 And _ArraySearch($sicknessArray, $Sickness) <> -1 And $elapsedTimeSinceHeal >= $HealDelay Then
-        If $RealHP < ($MaxHP * $HealThreshold) Then
-            If TimerDiff($MovementTime) > $Healwait Then
-                ControlSend("Project Rogue", "", "", "{2}")
-                ConsoleWrite("Healing triggered: HP below threshold and no movement for " & $Healwait & " ms." & @CRLF)
-                $LastHealTime = TimerInit()  ; Reset main timer after healing
-            Else
-                ConsoleWrite("No healing: Waiting for no movement duration to pass. " & (TimerDiff($MovementTime)) & " ms passed." & @CRLF)
-            EndIf
+    If $ChatVal = 0 And _ArraySearch($sicknessArray, $Sickness) = -1 And $elapsedTimeSinceHeal >= $HealDelay Then
+    If $RealHP < ($MaxHP * $HealThreshold) Then
+        If TimerDiff($MovementTime) > $Healwait Then
+            ControlSend("Project Rogue", "", "", "{2}")
+            ConsoleWrite("Healing triggered: HP below threshold and no movement for " & $Healwait & " ms." & @CRLF)
+            $LastHealTime = TimerInit()  ; Reset main timer after healing
         Else
-            ConsoleWrite("No healing needed: HP above threshold." & @CRLF)
+            ConsoleWrite("No healing: Waiting for no movement duration to pass. " & (TimerDiff($MovementTime)) & " ms passed." & @CRLF)
         EndIf
     Else
-        ConsoleWrite("Healing blocked: Chat open or under sickness effect, or insufficient time elapsed since last heal." & @CRLF)
+        ConsoleWrite("No healing needed: HP above threshold." & @CRLF)
     EndIf
+Else
+    ConsoleWrite("Healing blocked: Chat open or under sickness effect, or insufficient time elapsed since last heal." & @CRLF)
+EndIf
 EndFunc   ;==>TimeToHeal
 
 ; ------------------------------------------------------------------------------
