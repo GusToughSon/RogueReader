@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.45
+#AutoIt3Wrapper_Res_Fileversion=2.0.0.46
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
@@ -345,7 +345,7 @@ Func CureMe()
         Return ; Optionally add a return message if needed
     EndIf
 
-    If $CureStatus = _ArraySearch($sicknessArray, $Sickness) <> 1 Then
+    If $CureStatus = _ArraySearch($sicknessArray, $Sickness) <> -1 Then
 
 	$Healwait = GUICtrlRead($MovmentSlider)  ; Read movement slider value for delay
     $HP = _ReadMemory($hProcess, $HPAddress)
