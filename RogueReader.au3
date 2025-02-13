@@ -2,18 +2,20 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=2.0.0.49
+#AutoIt3Wrapper_Res_Fileversion=3.0.0.2
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
-#AutoIt3Wrapper_Res_CompanyName=Macro Is Fun .LLC
-#AutoIt3Wrapper_Res_LegalCopyright=Use only for authorized security testing. Unauthorized use is illegal. No liability for misuse. © MacroIsFun.LLc 2024
-#AutoIt3Wrapper_Res_LegalTradeMarks=Macro Is Fun .LLC
+#AutoIt3Wrapper_Res_ProductVersion=3
+#AutoIt3Wrapper_Res_CompanyName=Training Trainers.LLC
+#AutoIt3Wrapper_Res_LegalCopyright=Use only for authorized security testing. Unauthorized use is illegal. No liability for misuse. ©TrainingTrainers.LLc 2024
+#AutoIt3Wrapper_Res_LegalTradeMarks=TrainingTrainersLLC
 #AutoIt3Wrapper_Res_Language=1033
 #AutoIt3Wrapper_Run_AU3Check=n
+#AutoIt3Wrapper_Run_After="C:\Program Files (x86)\AutoIt3\AutoIt3.exe" /ErrorStdOut "C:\Users\gooro\OneDrive\Documents\GitHub\RogueReader\UpdateVersion.au3"
 #AutoIt3Wrapper_Tidy_Stop_OnError=n
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
-; --- Removed: #include "NomadMemory.au3"
+
 #include <GUIConstantsEx.au3>
 #include <File.au3>
 #include <Misc.au3>
@@ -448,6 +450,8 @@ EndFunc   ;==>TimeToHeal
 ;                                  TARGETING
 ; ------------------------------------------------------------------------------
 Func AttackModeReader()
+	$ChatVal = _ReadMemory($hProcess, $ChattOpenAddress)
+	$Chat = $ChatVal
 	$AttackMode = _ReadMemory($hProcess, $AttackModeAddress)
 	If $AttackMode = 0 Then
 		GUICtrlSetData($AttackModeLabel, "Attack Mode: Safe")
@@ -459,8 +463,11 @@ Func AttackModeReader()
 			Local $elapsedTime = TimerDiff($currentTime)
 			If $Chat = 0 Then
 				If $elapsedTime >= $TargetDelay Then
+					If $chat = 0 Then
 					ControlSend("Project Rogue", "", "", "{TAB}") ;target next mob
 					$currentTime = TimerInit()
+					EndIf
+
 				EndIf
 			Else
 				If $elapsedTime >= $TargetDelay Then
@@ -840,5 +847,3 @@ EndFunc
 Func TrashHeap()
 	; Remove Function;
 EndFunc   ;==>TrashHeap
-
-

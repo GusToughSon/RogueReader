@@ -33,15 +33,20 @@ GUICtrlSetColor($label, 0xFFFFFF) ; White text
 ; Register close function
 GUISetOnEvent($GUI_EVENT_CLOSE, "CloseOverlay")
 
-; Adjust overlay based on game window
-AdaptOverlay()
-
-; Show the GUI
-GUISetState(@SW_SHOW, $overlayGUI)
+Global $isVisible = False
+Global $lastActive = False
 
 While 1
-    Sleep(100)
-    AdaptOverlay()
+    Sleep(500) ; Increase delay to reduce CPU usage and flickering
+    Local $isActive = WinActive($gameTitle)
+
+    If $isActive And Not $isVisible Then
+        AdaptOverlay()
+        $isVisible = True
+    ElseIf Not $isActive And $isVisible Then
+        GUISetState(@SW_HIDE, $overlayGUI)
+        $isVisible = False
+    EndIf
 WEnd
 
 Func AdaptOverlay()
@@ -49,6 +54,7 @@ Func AdaptOverlay()
     If Not @error Then
         ConsoleWrite("Updating overlay position to top: " & $pos[1] & " left: " & $pos[0] & " width: " & $pos[2] & " height: " & $pos[3] & @CRLF)
         WinMove($overlayGUI, "", $pos[0] + $pos[2] - 200, $pos[1] + $pos[3] - 50, 200, 50)
+        GUISetState(@SW_SHOW, $overlayGUI)
     Else
         ConsoleWrite("Error: Unable to get game window position." & @CRLF)
     EndIf
