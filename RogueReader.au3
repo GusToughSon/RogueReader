@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=3.0.0.2
+#AutoIt3Wrapper_Res_Fileversion=3.0.0.4
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=3
@@ -231,31 +231,64 @@ Exit
 ;                                LOAD CONFIG
 ; ------------------------------------------------------------------------------
 Func LoadButtonConfig()
-    ; Load hotkeys or assign default ones
-    $HealHotkey = IniRead($sButtonConfigFile, "Hotkeys", "HealHotkey", "{`}")
-    $CureHotkey = IniRead($sButtonConfigFile, "Hotkeys", "CureHotkey", "{-}")
-    $TargetHotkey = IniRead($sButtonConfigFile, "Hotkeys", "TargetHotkey", "{]}")
-    $ExitHotkey = IniRead($sButtonConfigFile, "Hotkeys", "ExitHotkey", "{/}")
-    $SaveLocationHotkey = IniRead($sButtonConfigFile, "Hotkeys", "SaveLocationHotkey", "{,}")
-    $EraseLocationsHotkey = IniRead($sButtonConfigFile, "Hotkeys", "EraseLocationsHotkey", "{.}")
+    ; Declare the array with dimensions
+    Local $aKeys[7][2]
 
-    HotKeySet($HealHotkey, "Hotkeyshit")
-    HotKeySet($CureHotkey, "CureKeyShit")
-    HotKeySet($TargetHotkey, "TargetKeyShit")
-    HotKeySet($ExitHotkey, "KilledWithFire")
-    HotKeySet($SaveLocationHotkey, "SaveLocation")
-    HotKeySet($EraseLocationsHotkey, "EraseLocations")
+    ; Initialize the array with hotkeys and default values
+    $aKeys[0][0] = "HealHotkey"
+    $aKeys[0][1] = "{`}"
+    $aKeys[1][0] = "CureHotkey"
+    $aKeys[1][1] = "{-}"
+    $aKeys[2][0] = "TargetHotkey"
+    $aKeys[2][1] = "{]}"
+    $aKeys[3][0] = "ExitHotkey"
+    $aKeys[3][1] = "{/}"
+    $aKeys[4][0] = "SaveLocationHotkey"
+    $aKeys[4][1] = "{,}"
+    $aKeys[5][0] = "EraseLocationsHotkey"
+    $aKeys[5][1] = "{.}"
+    $aKeys[6][0] = "PlayLocationsHotkey"
+    $aKeys[6][1] = "{*}"
+
+    For $i = 0 To UBound($aKeys) - 1
+        $sKey = IniRead($sButtonConfigFile, "Hotkeys", $aKeys[$i][0], "")
+        If $sKey = "" Then
+            IniWrite($sButtonConfigFile, "Hotkeys", $aKeys[$i][0], $aKeys[$i][1])
+            $sKey = $aKeys[$i][1] ; Update $sKey with the default since it was missing
+        EndIf
+        HotKeySet($sKey, $aKeys[$i][0] & "Shit") ; Adjust function names accordingly
+    Next
 EndFunc
 
 Func CreateButtonDefaultConfig()
+    ; Declare the array with dimensions
+    Local $aKeys[7][2]
 
-    ; Create default .ini file with hotkeys
-    IniWrite($sButtonConfigFile, "Hotkeys", "HealHotkey", "{`}")
-    IniWrite($sButtonConfigFile, "Hotkeys", "CureHotkey", "{-}")
-    IniWrite($sButtonConfigFile, "Hotkeys", "TargetHotkey", "{]}")
-    IniWrite($sButtonConfigFile, "Hotkeys", "ExitHotkey", "{/}")
-    IniWrite($sButtonConfigFile, "Hotkeys", "SaveLocationHotkey", "{,}")
-    IniWrite($sButtonConfigFile, "Hotkeys", "EraseLocationsHotkey", "{.}")
+    ; Initialize the array with hotkeys and default values
+    $aKeys[0][0] = "HealHotkey"
+    $aKeys[0][1] = "{`}"
+
+    $aKeys[1][0] = "CureHotkey"
+    $aKeys[1][1] = "{-}"
+
+    $aKeys[2][0] = "TargetHotkey"
+    $aKeys[2][1] = "{]}"
+
+    $aKeys[3][0] = "ExitHotkey"
+    $aKeys[3][1] = "{/}"
+
+    $aKeys[4][0] = "SaveLocationHotkey"
+    $aKeys[4][1] = "{,}"
+
+    $aKeys[5][0] = "EraseLocationsHotkey"
+    $aKeys[5][1] = "{.}"
+    $aKeys[6][0] = "PlayLocationsHotkey"
+    $aKeys[6][1] = "{*}"
+
+    For $i = 0 To UBound($aKeys) - 1
+        IniWrite($sButtonConfigFile, "Hotkeys", $aKeys[$i][0], $aKeys[$i][1])
+    Next
+
     ConsoleWrite("[Info] Default ButtonConfig.ini created with hotkeys." & @CRLF)
 EndFunc
 ; ------------------------------------------------------------------------------
@@ -833,14 +866,14 @@ EndFunc   ;==>GetSicknessDescription
 
 Func SaveLocation()
 
-    MsgBox(48, "Error", "All 200 locations are filled. Figure it out in Less Locations...")
+    ;MsgBox(48, "Error", "All 200 locations are filled. Figure it out in Less Locations...")
 
 EndFunc
 
 Func EraseLocations()
 
-    FileDelete($sConfigFile)
-    MsgBox(64, "Success", "All locations erased.")
+    ;FileDelete($sConfigFile)
+    ;MsgBox(64, "Success", "All locations erased.")
 
 EndFunc
 
