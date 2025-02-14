@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=Include\RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=3.0.0.9
+#AutoIt3Wrapper_Res_Fileversion=3.0.0.10
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=3
@@ -33,12 +33,12 @@ Global Const $sButtonConfigFile = @ScriptDir & "\ButtonConfig.ini"
 ConsoleWrite("Script Version: " & $version & @CRLF)
 
 ; --- Load Config Settings ---
-Global $HealHotkey 				= "{`}" 	; Default Heal Hotkey
-Global $CureHotkey 				= "{-}"		; Default Cure Hotkey
-Global $TargetHotkey		 	= "{]}" 	; Default Target Hotkey
-Global $ExitHotkey 				= "{/}"  	; Default Exit Hotkey
-Global $SaveLocationHotkey 		= "{,}" 	; Default Waypoint path location hotkey
-Global $EraseLocationsHotkey	= "{.}"		; Default Location Clear
+Global $HealHotkey 				= "{f7}" 	; Default Heal Hotkey
+Global $CureHotkey 				= "{f8}"		; Default Cure Hotkey
+Global $TargetHotkey		 	= "{f9}" 	; Default Target Hotkey
+Global $ExitHotkey 				= "{f10}"  	; Default Exit Hotkey
+Global $SaveLocationHotkey 		= "{f11}" 	; Default Waypoint path location hotkey
+Global $EraseLocationsHotkey	= "{f12}"		; Default Location Clear
 ; Ensure Config File Exists and Load Config Settings
 If Not FileExists($sButtonConfigFile) Then CreateButtonDefaultConfig()
 LoadButtonConfig() ; Load or reload configuration settings
@@ -239,32 +239,36 @@ Exit
 ;                                LOAD CONFIG
 ; ------------------------------------------------------------------------------
 Func LoadButtonConfig()
-    ; Declare the array with dimensions
-    Local $aKeys[7][2]
-
-    ; Initialize the array with hotkeys and default values
-    $aKeys[0][0] = "HealHotkey"
-    $aKeys[0][1] = "{`}"
-    $aKeys[1][0] = "CureHotkey"
-    $aKeys[1][1] = "{-}"
-    $aKeys[2][0] = "TargetHotkey"
-    $aKeys[2][1] = "{]}"
-    $aKeys[3][0] = "ExitHotkey"
-    $aKeys[3][1] = "{/}"
-    $aKeys[4][0] = "SaveLocationHotkey"
-    $aKeys[4][1] = "{,}"
-    $aKeys[5][0] = "EraseLocationsHotkey"
-    $aKeys[5][1] = "{.}"
-    $aKeys[6][0] = "PlayLocationsHotkey"
-    $aKeys[6][1] = "{*}"
-
+    Local $aKeys[7][2] = [["HealHotkey", "{f7}"], ["CureHotkey", "{f8}"], ["TargetHotkey", "{f9}"], ["ExitHotkey", "{f10}"], ["SaveLocationHotkey", "{f11}"], ["EraseLocationsHotkey", "{f12}"], ["PlayLocationsHotkey", "{*}"]]
     For $i = 0 To UBound($aKeys) - 1
-        $sKey = IniRead($sButtonConfigFile, "Hotkeys", $aKeys[$i][0], "")
+        ; Read each key from the INI file, default to predefined hotkeys if not found
+        Local $sKey = IniRead($sButtonConfigFile, "Hotkeys", $aKeys[$i][0], $aKeys[$i][1])
         If $sKey = "" Then
-            IniWrite($sButtonConfigFile, "Hotkeys", $aKeys[$i][0], $aKeys[$i][1])
-            $sKey = $aKeys[$i][1] ; Update $sKey with the default since it was missing
+            ; If INI read fails or returns an empty string, log the error and use the default
+            ConsoleWrite("Failed to read " & $aKeys[$i][0] & " from INI. Using default: " & $aKeys[$i][1] & @CRLF)
+            $sKey = $aKeys[$i][1]
         EndIf
-        HotKeySet($sKey, $aKeys[$i][0] & "Shit") ; Adjust function names accordingly
+
+        ; Set the hotkey to the corresponding function based on what is read or defaulted
+        Switch $aKeys[$i][0]
+            Case "HealHotkey"
+                HotKeySet($sKey, "Hotkeyshit")
+            Case "CureHotkey"
+                HotKeySet($sKey, "CureKeyShit")
+            Case "TargetHotkey"
+                HotKeySet($sKey, "TargetKeyShit")
+            Case "ExitHotkey"
+                HotKeySet($sKey, "KilledWithFire")
+            Case "SaveLocationHotkey"
+                HotKeySet($sKey, "SaveLocation")
+            Case "EraseLocationsHotkey"
+                HotKeySet($sKey, "EraseLocations")
+            Case "PlayLocationsHotkey"
+                ; Ensure you have a corresponding function for this hotkey
+                HotKeySet($sKey, "PlayLocationsFunc") ; Make sure the function 'PlayLocationsFunc' exists
+        EndSwitch
+
+        ConsoleWrite("Hotkey for " & $aKeys[$i][0] & " set to " & $sKey & @CRLF)
     Next
 EndFunc
 
