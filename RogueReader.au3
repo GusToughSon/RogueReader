@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=Include\RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=3.0.0.10
+#AutoIt3Wrapper_Res_Fileversion=3.0.0.12
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=3
@@ -13,7 +13,6 @@
 #AutoIt3Wrapper_Run_AU3Check=n
 #AutoIt3Wrapper_Tidy_Stop_OnError=n
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
-
 
 #include <GUIConstantsEx.au3>
 #include <File.au3>
@@ -33,16 +32,15 @@ Global Const $sButtonConfigFile = @ScriptDir & "\ButtonConfig.ini"
 ConsoleWrite("Script Version: " & $version & @CRLF)
 
 ; --- Load Config Settings ---
-Global $HealHotkey 				= "{f7}" 	; Default Heal Hotkey
-Global $CureHotkey 				= "{f8}"		; Default Cure Hotkey
-Global $TargetHotkey		 	= "{f9}" 	; Default Target Hotkey
-Global $ExitHotkey 				= "{f10}"  	; Default Exit Hotkey
-Global $SaveLocationHotkey 		= "{f11}" 	; Default Waypoint path location hotkey
-Global $EraseLocationsHotkey	= "{f12}"		; Default Location Clear
+Global $HealHotkey 				= "" 	; Default Heal Hotkey
+Global $CureHotkey 				= ""		; Default Cure Hotkey
+Global $TargetHotkey		 	= "" 	; Default Target Hotkey
+Global $ExitHotkey 				= ""  	; Default Exit Hotkey
+Global $SaveLocationHotkey 		= "" 	; Default Waypoint path location hotkey
+Global $EraseLocationsHotkey	= ""		; Default Location Clear
 ; Ensure Config File Exists and Load Config Settings
 If Not FileExists($sButtonConfigFile) Then CreateButtonDefaultConfig()
 LoadButtonConfig() ; Load or reload configuration settings
-
 
 ; --- Set Hotkeys from Config ---
 HotKeySet($HealHotkey, "Hotkeyshit")
@@ -69,11 +67,9 @@ Global $SicknessOffset 		= 0xAB5E10
 Global $currentTime 	= TimerInit()
 Global $elapsedTime 	= TimerDiff($currentTime)
 
-
 Global $LastHealTime    = TimerInit()
 Global $elapsedTimeSinceHeal = TimerDiff($LastHealTime)
 Global $MovementTime 	= TimerInit()
-
 
 Global $Running 		= True             ;Does it loop;
 Global $HealerStatus 	= 0
