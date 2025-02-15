@@ -25,7 +25,9 @@ Opt("MouseCoordMode", 2)
 
 Global $version = FileGetVersion(@ScriptFullPath)
 
-Global Const $sConfigFile 	= @ScriptDir & "\Locations.ini"
+Global Const $locationFile 	= @ScriptDir & "\Locations.ini"
+Global $currentLocations = 0
+Global $maxLocations = 200
 
 Global Const $sButtonConfigFile = @ScriptDir & "\ButtonConfig.ini"
 
@@ -79,7 +81,8 @@ Global $iPrevValue 		= 95
 Global $MPrevValue		= " "
 Global $hProcess 		= 0               ; Our WinAPI handle to the process
 Global $BaseAddress 	= 0            ; Base address of the module
-
+Global $PosXOld = -1
+Global $PosYOld = -1
 Global $TypeAddress, $AttackModeAddress, $PosXAddress, $PosYAddress
 Global $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress
 Global $Type, $Chat, $Sickness, $AttackMode
@@ -864,12 +867,40 @@ Func GetSicknessDescription($Sick)
 	Return $SicknessDescription
 EndFunc   ;==>GetSicknessDescription
 
+
+
+
 Func SaveLocation()
+    Local $x = _ReadMemory($hProcess, $PosXOffset)
+    Local $y = _ReadMemory($hProcess, $PosYOffset)
+    Local $pos = [$x, $y]
 
-    ;MsgBox(48, "Error", "All 200 locations are filled. Figure it out in Less Locations...")
+    ConsoleWrite("Current X: " & $x & " Y: " & $y & @CRLF)
 
+    ; Check if the positions have changed since the last check
+    If $x == $PosXOld And $y == $PosYOld Then
+        ConsoleWrite("Position unchanged. No action taken." & @CRLF)
+        Return  ; Exit the function if no change in position
+    EndIf
+
+    ; Update old positions to the current ones
+    $PosXOld = $x
+    $PosYOld = $y
+
+    ; Increment location count
+    $currentLocations += 1
+    ConsoleWrite("Saving new position at index " & $currentLocations & @CRLF)
+
+    ; Save new position
+    _FileWriteFromArray($locationFile, $pos, $currentLocations, False)
+
+    ; Check for maximum capacity
+    If $currentLocations >= $maxLocations Then
+        ConsoleWrite("Maximum locations reached. Emitting beep and resetting counter." & @CRLF)
+        Beep(500, 100)  ; Quieter system beep for 100 milliseconds
+        $currentLocations = 0  ; Optionally reset or handle overflow differently
+    EndIf
 EndFunc
-
 Func EraseLocations()
 
     ;FileDelete($sConfigFile)
