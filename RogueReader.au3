@@ -2,10 +2,9 @@
 #AutoIt3Wrapper_Icon=Include\RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=3.0.0.15
-#AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
+#AutoIt3Wrapper_Res_Fileversion=4.0.0.2
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
-#AutoIt3Wrapper_Res_ProductVersion=3
+#AutoIt3Wrapper_Res_ProductVersion=4
 #AutoIt3Wrapper_Res_CompanyName=Training Trainers.LLC
 #AutoIt3Wrapper_Res_LegalCopyright=Use only for authorized security testing. Unauthorized use is illegal. No liability for misuse. ©TrainingTrainers.LLc 2024
 #AutoIt3Wrapper_Res_LegalTradeMarks=TrainingTrainersLLC
@@ -13,7 +12,7 @@
 #AutoIt3Wrapper_Run_AU3Check=n
 #AutoIt3Wrapper_Tidy_Stop_OnError=n
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
-
+;Comment to change Checksum;;
 #include <GUIConstantsEx.au3>
 #include <File.au3>
 #include <Misc.au3>
@@ -24,11 +23,9 @@
 Opt("MouseCoordMode", 2)
 
 Global $version = FileGetVersion(@ScriptFullPath)
-
 Global Const $locationFile 	= @ScriptDir & "\Locations.ini"
 Global $currentLocations = 1
 Global $maxLocations = 200
-
 Global Const $sButtonConfigFile = @ScriptDir & "\ButtonConfig.ini"
 
 ConsoleWrite("Script Version: " & $version & @CRLF)
@@ -44,6 +41,7 @@ Global $EraseLocationsHotkey	= ""		; Default Location Clear
 HotKeySet("{/}", "TogglePause") ;waypoint walk pause;
 
 ; Ensure Config File Exists and Load Config Settings
+
 If Not FileExists($sButtonConfigFile) Then CreateButtonDefaultConfig()
 LoadButtonConfig() ; Load or reload configuration settings
 
@@ -66,14 +64,14 @@ Global $Debug = False
 ; Define the game process and memory offsets
 Global $ProcessName 		= "Project Rogue Client.exe"
 Global $WindowName 			= "Project Rogue"
-Global $TypeOffset			= 0xBF0B98             ;x
-Global $AttackModeOffset	= 0xAACCC0     ;x
-Global $PosXOffset 			= 0xBF3D28             ;Project Rogue Client.exe+BF3D28 #2 Project Rogue Client.exe+BF3D3C
-Global $PosYOffset 			= 0xBF3D20             ;Project Rogue Client.exe+BF3D20 #2 Project Rogue Client.exe+BF3D34
-Global $HPOffset 			= 0xAB5C30             ;x
-Global $MaxHPOffset 		= 0xAB5C34         ;Project Rogue Client.exe+AB5C34
-Global $ChattOpenOffset 	= 0x9B7A18     ;x
-Global $SicknessOffset 		= 0xAB5E10
+Global $TypeOffset			= 0xBE7944   	;0 = player, 1 =monster, 2 = npc, 65535 = no target
+Global $AttackModeOffset	= 0xB5BBD0      ;x
+Global $PosXOffset 			= 0xBF9DD8  	;x
+Global $PosYOffset 			= 0xBF9DE0 		;x
+Global $HPOffset 			= 0x7C3D0 		;x
+Global $MaxHPOffset 		= 0x7C3D4 		;x
+Global $ChattOpenOffset 	= 0xB678A8 		;x
+Global $SicknessOffset 		= 0x7C5B4 		;x
 
 Global $currentTime 	= TimerInit()
 Global $elapsedTime 	= TimerDiff($currentTime)
@@ -88,7 +86,7 @@ Global $CureStatus 		= 0
 Global $TargetStatus 	= 0
 Global $iPrevValue 		= 95
 Global $MPrevValue		= " "
-Global $hProcess 		= 0               ; Our WinAPI handle to the process
+Global $hProcess 		= 0            ; Our WinAPI handle to the process
 Global $BaseAddress 	= 0            ; Base address of the module
 Global $PosXOld = -1
 Global $PosYOld = -1
@@ -316,7 +314,7 @@ Func GUIReadMemory()
 	$Type = _ReadMemory($hProcess, $TypeAddress)
 	If $Type <> $PrevType Then
 		If $Type = 0 Then
-			GUICtrlSetData($TypeLabel, "Type: Player")
+			GUICtrlSetData($TypeLabel, "Type: Player") ;0 = player, 1 =monster, 2 = npc, 65535 = no target
 			$PrevType = $Type
 		ElseIf $Type = 1 Then
 			GUICtrlSetData($TypeLabel, "Type: Monster")
@@ -925,6 +923,8 @@ Func GetSicknessDescription($Sick)
 			$SicknessDescription = $Sickness
 	EndSwitch
 	Return $SicknessDescription
+
+	;addCommentToChangeChecksum
 EndFunc   ;==>GetSicknessDescription
 
 
@@ -1014,25 +1014,27 @@ Func SaveLocation()
 EndFunc
 
 Func EraseLocations()
-
     FileDelete($locationFile)
-
+	;addCommentToChangeChecksum
 	$currentLocations  = 1
-
+	;addCommentToChangeChecksum
     ConsoleWrite ("Success" & @CRLF & "All locations erased." & @CRLF)
 
 EndFunc
 
 Func MoveToLocations($aLocations)
+
     If Not IsArray($aLocations) Or Not IsArray($aLocations[0]) Or Not IsArray($aLocations[1]) Then
         ConsoleWrite("Incorrect array structure." & @CRLF)
         Return SetError(1, 0, "Array structure error.")
+
     EndIf
 
     ConsoleWrite("Moving to locations, count: " & UBound($aLocations[0]) & @CRLF)
     For $i = 0 To UBound($aLocations[0]) - 1
         If $i > UBound($aLocations[1]) - 1 Then
             ConsoleWrite("Y coordinate index " & $i & " out of bounds." & @CRLF)
+
             ContinueLoop
         EndIf
 
@@ -1042,6 +1044,7 @@ Func MoveToLocations($aLocations)
         ; Proceed only if data types are correct
         If Not IsNumber($aLocations[0][$i]) Or Not IsNumber($aLocations[1][$i]) Then
             ConsoleWrite("Invalid data at index " & $i & @CRLF)
+
             ContinueLoop
         EndIf
     Next
@@ -1058,7 +1061,11 @@ Func TogglePause()
         ConsoleWrite("Pausing at Location: " & $iCurrentLocationIndex & @CRLF)
     Else
         ConsoleWrite("Resuming from Location: " & $iCurrentLocationIndex & @CRLF)
+
+
+
         MoveToLocations($aLocations)  ; Resume movement
+		  ;addCommentToChangeChecksum
     EndIf
 EndFunc   ;==>TogglePause
 
