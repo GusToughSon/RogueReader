@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=Include\RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=3.0.0.12
+#AutoIt3Wrapper_Res_Fileversion=3.0.0.15
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=3
@@ -26,7 +26,7 @@ Opt("MouseCoordMode", 2)
 Global $version = FileGetVersion(@ScriptFullPath)
 
 Global Const $locationFile 	= @ScriptDir & "\Locations.ini"
-Global $currentLocations = 0
+Global $currentLocations = 1
 Global $maxLocations = 200
 
 Global Const $sButtonConfigFile = @ScriptDir & "\ButtonConfig.ini"
@@ -120,6 +120,8 @@ Global $Movmentsliderlimit = GUICtrlSetLimit($MovmentSlider, 750, 50)
 Global $setsliderdata = GUICtrlSetData($MovmentSlider, 150)
 Global $MoveLabel = GUICtrlCreateLabel("Heal After  "&$MovmentSlider, 185, 370, 100, 20)
 Global $MoveLabell = GUICtrlCreateLabel("ms of no movment.", 280, 370, 100, 20)
+Global $Checkbox = GUICtrlCreateCheckbox("Old Style Pothack", 240, 250, 200, 20)
+Global $CheckboxLabel = GUICtrlCreateLabel("(Ignore Heal After)", 240, 270, 200, 20)
 
 GUISetState(@SW_SHOW)
 ; ------------------------------------------------------------------------------
@@ -413,20 +415,31 @@ Func CureMe()
         $LastY = $CurrentY
         $MovementTime = TimerInit()  ; Reset timer if position changed
     EndIf
+	If GUICtrlRead($Checkbox) = $GUI_CHECKED Then
+		ControlSend("Project Rogue", "", "", "{3}")
+					ConsoleWrite("Healing triggered: HP below threshold and no movement for " & $Healwait & " ms." & @CRLF)
+				$LastHealTime = TimerInit()  ; Reset main timer after healing
+		Else
+		If $elapsedTimeSinceHeal >= $HealDelay Then
 
-    If $elapsedTimeSinceHeal >= $HealDelay Then
+				If TimerDiff($MovementTime) > $Healwait Then
+					ControlSend("Project Rogue", "", "", "{3}")
+					ConsoleWrite("Healing triggered: HP below threshold and no movement for " & $Healwait & " ms." & @CRLF)
+				$LastHealTime = TimerInit()  ; Reset main timer after healing
+				Else
+					ConsoleWrite("No healing: Waiting for no movement duration to pass. " & (TimerDiff($MovementTime)) & " ms passed." & @CRLF)
+				EndIf
 
-            If TimerDiff($MovementTime) > $Healwait Then
-                ControlSend("Project Rogue", "", "", "{3}")
-                ConsoleWrite("Healing triggered: HP below threshold and no movement for " & $Healwait & " ms." & @CRLF)
-                $LastHealTime = TimerInit()  ; Reset main timer after healing
-            Else
-                ConsoleWrite("No healing: Waiting for no movement duration to pass. " & (TimerDiff($MovementTime)) & " ms passed." & @CRLF)
-            EndIf
+		Else
+			ConsoleWrite("Healing blocked: Chat open or under sickness effect, or insufficient time elapsed since last heal." & @CRLF)
+		EndIf
+	endif
 
-    Else
-        ConsoleWrite("Healing blocked: Chat open or under sickness effect, or insufficient time elapsed since last heal." & @CRLF)
-    EndIf
+
+
+
+
+
     EndIf
 EndFunc   ;==>CureMe
 
@@ -465,21 +478,49 @@ Func TimeToHeal()
         $MovementTime = TimerInit()  ; Reset timer if position changed
     EndIf
 
+
+	If GUICtrlRead($Checkbox) = $GUI_CHECKED Then
+		If $ChatVal = 0 And _ArraySearch($sicknessArray, $Sickness) = -1 Then
+
+		If $RealHP < ($MaxHP * $HealThreshold) Then
+			If TimerDiff($MovementTime) > $Healwait Then
+				ControlSend("Project Rogue", "", "", "{2}")
+				ConsoleWrite("Healing triggered: HP below threshold and no movement for " & $Healwait & " ms." & @CRLF)
+				$LastHealTime = TimerInit()  ; Reset main timer after healing
+			Else
+				ConsoleWrite("No healing: Waiting for no movement duration to pass. " & (TimerDiff($MovementTime)) & " ms passed." & @CRLF)
+			EndIf
+		Else
+			ConsoleWrite("No healing needed: HP above threshold." & @CRLF)
+		EndIf
+	Else
+		ConsoleWrite("Healing blocked: Chat open or under sickness effect, or insufficient time elapsed since last heal." & @CRLF)
+	EndIf
+	Else
+
+
     If $ChatVal = 0 And _ArraySearch($sicknessArray, $Sickness) = -1 And $elapsedTimeSinceHeal >= $HealDelay Then
-    If $RealHP < ($MaxHP * $HealThreshold) Then
-        If TimerDiff($MovementTime) > $Healwait Then
-            ControlSend("Project Rogue", "", "", "{2}")
-            ConsoleWrite("Healing triggered: HP below threshold and no movement for " & $Healwait & " ms." & @CRLF)
-            $LastHealTime = TimerInit()  ; Reset main timer after healing
-        Else
-            ConsoleWrite("No healing: Waiting for no movement duration to pass. " & (TimerDiff($MovementTime)) & " ms passed." & @CRLF)
-        EndIf
-    Else
-        ConsoleWrite("No healing needed: HP above threshold." & @CRLF)
-    EndIf
-Else
-    ConsoleWrite("Healing blocked: Chat open or under sickness effect, or insufficient time elapsed since last heal." & @CRLF)
-EndIf
+
+		If $RealHP < ($MaxHP * $HealThreshold) Then
+			If TimerDiff($MovementTime) > $Healwait Then
+				ControlSend("Project Rogue", "", "", "{2}")
+				ConsoleWrite("Healing triggered: HP below threshold and no movement for " & $Healwait & " ms." & @CRLF)
+				$LastHealTime = TimerInit()  ; Reset main timer after healing
+			Else
+				ConsoleWrite("No healing: Waiting for no movement duration to pass. " & (TimerDiff($MovementTime)) & " ms passed." & @CRLF)
+			EndIf
+		Else
+			ConsoleWrite("No healing needed: HP above threshold." & @CRLF)
+		EndIf
+	Else
+		ConsoleWrite("Healing blocked: Chat open or under sickness effect, or insufficient time elapsed since last heal." & @CRLF)
+	EndIf
+
+
+	EndIf
+
+
+
 EndFunc   ;==>TimeToHeal
 
 ; ------------------------------------------------------------------------------
@@ -589,18 +630,28 @@ Func _ReadMemory($hProcess, $pAddress)
 EndFunc   ;==>_ReadMemory
 
 Func Hotkeyshit()
+
 	$HealerStatus = Not $HealerStatus
 	GUICtrlSetData($HealerLabel, "Healer: " & ($HealerStatus ? "On" : "Off"))
 	Sleep(300)
 EndFunc   ;==>Hotkeyshit
 
 Func CureKeyShit()
+
+
+
+
+
+
 	$CureStatus = Not $CureStatus
 	GUICtrlSetData($CureLabel, "Cure: " & ($CureStatus ? "On" : "Off"))
 	Sleep(300)
 EndFunc   ;==>CureKeyShit
 
 Func TargetKeyShit()
+
+
+
 
 	$TargetStatus = Not $TargetStatus
 	GUICtrlSetData($TargetLabel, "Target: " & ($TargetStatus ? "On" : "Off"))
@@ -870,44 +921,72 @@ EndFunc   ;==>GetSicknessDescription
 
 
 
+
 Func SaveLocation()
-    Local $x = _ReadMemory($hProcess, $PosXOffset)
-    Local $y = _ReadMemory($hProcess, $PosYOffset)
-    Local $pos = [$x, $y]
+    Local $x = _ReadMemory($hProcess, $PosXAddress)
+    Local $y = _ReadMemory($hProcess, $PosYAddress)
 
-    ConsoleWrite("Current X: " & $x & " Y: " & $y & @CRLF)
 
-    ; Check if the positions have changed since the last check
-    If $x == $PosXOld And $y == $PosYOld Then
-        ConsoleWrite("Position unchanged. No action taken." & @CRLF)
-        Return  ; Exit the function if no change in position
+    ConsoleWrite("Attempting to read X: " & $x & " Y: " & $y & @CRLF)
+
+    If @error Then
+        ConsoleWrite("[Error] Failed to read memory. Error code: " & @error & @CRLF)
+        Return
     EndIf
 
-    ; Update old positions to the current ones
-    $PosXOld = $x
-    $PosYOld = $y
+    If $x == 0 And $y == 0 Then
+        ConsoleWrite("[Warning] Read zero for both coordinates. Possible bad read." & @CRLF)
+        Return
+    EndIf
 
-    ; Increment location count
-    $currentLocations += 1
-    ConsoleWrite("Saving new position at index " & $currentLocations & @CRLF)
+    ; Ensure the location file exists or create it
+    If Not FileExists($locationFile) Then
+        Local $file = FileOpen($locationFile, $FO_CREATEPATH + $FO_OVERWRITE)
+        If $file == -1 Then
+            ConsoleWrite("[Error] Failed to create file: " & $locationFile & @CRLF)
+            Return
+        EndIf
+        FileClose($file)
+        ConsoleWrite("[Info] File created: " & $locationFile & @CRLF)
+    EndIf
 
-    ; Save new position
-    _FileWriteFromArray($locationFile, $pos, $currentLocations, False)
+    ; Format data to append
+    Local $data = " : Location" & $currentLocations & "=X:" & $x & ";Y:" & $y & @CRLF
 
-    ; Check for maximum capacity
-    If $currentLocations >= $maxLocations Then
-        ConsoleWrite("Maximum locations reached. Emitting beep and resetting counter." & @CRLF)
-        Beep(500, 100)  ; Quieter system beep for 100 milliseconds
-        $currentLocations = 0  ; Optionally reset or handle overflow differently
+    ; Append location data to the file
+    If $currentLocations < $maxLocations Then
+
+        _FileWriteLog($locationFile, $data)
+
+            If @error Then
+				ConsoleWrite("[Error] Failed to write to file: " & $locationFile & @CRLF)
+			Else
+            ConsoleWrite("[Info] Data written: " & $data)
+				$currentLocations += 1
+			EndIf
+    Else
+        ConsoleWrite("[Info] Maximum locations reached. Stop pushing the fucking button" & @CRLF)
+        ;$currentLocations = 1 ; Reset to start new if max is reached
     EndIf
 EndFunc
+
 Func EraseLocations()
 
-    ;FileDelete($sConfigFile)
-    ;MsgBox(64, "Success", "All locations erased.")
+    FileDelete($locationFile)
+
+	$currentLocations  = 1
+
+    ConsoleWrite ("Success" & @CRLF & "All locations erased." & @CRLF)
 
 EndFunc
 
 Func TrashHeap()
+
 	; Remove Function;
+
 EndFunc   ;==>TrashHeap
+
+
+
+
+;addCommentToChangeChecksum
