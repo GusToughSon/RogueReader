@@ -40,9 +40,18 @@ Global $TargetHotkey		 	= "" 	; Default Target Hotkey
 Global $ExitHotkey 				= ""  	; Default Exit Hotkey
 Global $SaveLocationHotkey 		= "" 	; Default Waypoint path location hotkey
 Global $EraseLocationsHotkey	= ""		; Default Location Clear
+
+HotKeySet("{/}", "TogglePause") ;waypoint walk pause;
+
 ; Ensure Config File Exists and Load Config Settings
 If Not FileExists($sButtonConfigFile) Then CreateButtonDefaultConfig()
 LoadButtonConfig() ; Load or reload configuration settings
+
+
+Global $iCurrentLocationIndex = 0
+Global $bPaused = True
+Global $aLocations = LoadLocations()
+
 
 ; --- Set Hotkeys from Config ---
 HotKeySet($HealHotkey			, "Hotkeyshit")
@@ -919,7 +928,41 @@ Func GetSicknessDescription($Sick)
 EndFunc   ;==>GetSicknessDescription
 
 
+Func LoadLocations()
+    Local Const $iMaxLocations = 200
+    Local $aLocationX[$iMaxLocations]
+    Local $aLocationY[$iMaxLocations]
 
+    If Not FileExists($locationFile) Then
+        ConsoleWrite("Location file not found: " & $locationFile & @CRLF)
+        Return SetError(1, 0, "No file")
+    EndIf
+
+    Local $aLines = FileReadToArray($locationFile)
+    If @error Then
+        ConsoleWrite("Failed to read file: " & $locationFile & @CRLF)
+        Return SetError(2, 0, "File read error")
+    EndIf
+
+    Local $iLocationCount = 0
+    For $i = 0 To UBound($aLines) - 1
+        Local $aMatches = StringRegExp($aLines[$i], "X:(\d+);Y:(\d+)", 3)
+        If Not @error And UBound($aMatches) = 2 Then
+            $aLocationX[$iLocationCount] = Int($aMatches[0])
+            $aLocationY[$iLocationCount] = Int($aMatches[1])
+            ConsoleWrite("Loaded location " & $iLocationCount + 1 & ": X = " & $aLocationX[$iLocationCount] & ", Y = " & $aLocationY[$iLocationCount] & @CRLF)
+            $iLocationCount += 1
+        EndIf
+        If $iLocationCount >= $iMaxLocations Then ExitLoop
+    Next
+
+    ReDim $aLocationX[$iLocationCount]
+    ReDim $aLocationY[$iLocationCount]
+
+    Local $aLocations[2] = [$aLocationX, $aLocationY]
+    ConsoleWrite("Locations loaded, count: " & $iLocationCount & @CRLF)
+    Return $aLocations
+EndFunc
 
 
 Func SaveLocation()
@@ -979,6 +1022,48 @@ Func EraseLocations()
     ConsoleWrite ("Success" & @CRLF & "All locations erased." & @CRLF)
 
 EndFunc
+
+Func MoveToLocations($aLocations)
+    If Not IsArray($aLocations) Or Not IsArray($aLocations[0]) Or Not IsArray($aLocations[1]) Then
+        ConsoleWrite("Incorrect array structure." & @CRLF)
+        Return SetError(1, 0, "Array structure error.")
+    EndIf
+
+    ConsoleWrite("Moving to locations, count: " & UBound($aLocations[0]) & @CRLF)
+    For $i = 0 To UBound($aLocations[0]) - 1
+        If $i > UBound($aLocations[1]) - 1 Then
+            ConsoleWrite("Y coordinate index " & $i & " out of bounds." & @CRLF)
+            ContinueLoop
+        EndIf
+
+        ; Directly print values before access to check integrity
+        ConsoleWrite("Debug: Index " & $i & ", X = " & $aLocations[0][$i] & ", Y = " & $aLocations[1][$i] & @CRLF)
+
+        ; Proceed only if data types are correct
+        If Not IsNumber($aLocations[0][$i]) Or Not IsNumber($aLocations[1][$i]) Then
+            ConsoleWrite("Invalid data at index " & $i & @CRLF)
+            ContinueLoop
+        EndIf
+    Next
+EndFunc
+
+
+
+
+
+
+Func TogglePause()
+    $bPaused = Not $bPaused
+    If $bPaused Then
+        ConsoleWrite("Pausing at Location: " & $iCurrentLocationIndex & @CRLF)
+    Else
+        ConsoleWrite("Resuming from Location: " & $iCurrentLocationIndex & @CRLF)
+        MoveToLocations($aLocations)  ; Resume movement
+    EndIf
+EndFunc   ;==>TogglePause
+
+
+
 
 Func TrashHeap()
 
