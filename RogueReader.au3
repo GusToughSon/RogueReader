@@ -2,7 +2,8 @@
 #AutoIt3Wrapper_Icon=Include\RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=4.0.0.2
+#AutoIt3Wrapper_Res_Fileversion=4.0.0.5
+#AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
 #AutoIt3Wrapper_Res_CompanyName=Training Trainers.LLC
@@ -129,6 +130,8 @@ Global $MoveLabel = GUICtrlCreateLabel("Heal After  "&$MovmentSlider, 185, 370, 
 Global $MoveLabell = GUICtrlCreateLabel("ms of no movment.", 280, 370, 100, 20)
 Global $Checkbox = GUICtrlCreateCheckbox("Old Style Pothack", 240, 250, 200, 20)
 Global $CheckboxLabel = GUICtrlCreateLabel("(Ignore Heal After)", 240, 270, 200, 20)
+
+Global $NEW = GUICtrlCreateLabel("*This now functions*", 240, 230, 200, 20)
 
 GUISetState(@SW_SHOW)
 ; ------------------------------------------------------------------------------
@@ -417,28 +420,40 @@ Func CureMe()
     ConsoleWrite("Time since last heal: " & $elapsedTimeSinceHeal & " ms" & @CRLF)
 
     If $CurrentX <> $LastX Or $CurrentY <> $LastY Then
+		If GUICtrlRead($Checkbox) = $GUI_CHECKED Then
+			;Movment ignored;
+		Else
         ConsoleWrite("Movement detected, resetting movement timer." & @CRLF)
         $LastX = $CurrentX
         $LastY = $CurrentY
         $MovementTime = TimerInit()  ; Reset timer if position changed
+		EndIf
     EndIf
+
 	If GUICtrlRead($Checkbox) = $GUI_CHECKED Then
-		ControlSend("Project Rogue", "", "", "{3}")
-					ConsoleWrite("Healing triggered: HP below threshold and no movement for " & $Healwait & " ms." & @CRLF)
-				$LastHealTime = TimerInit()  ; Reset main timer after healing
+		If $elapsedTimeSinceHeal >= $HealDelay Then
+
+
+			ControlSend("Project Rogue", "", "", "{3}")
+			ConsoleWrite("Cure Triggered" & @CRLF)
+			$LastHealTime = TimerInit()  ; Reset main timer after healing
 		Else
+			ConsoleWrite("Cure blocked , insufficient time elapsed since last attempt." & @CRLF)
+		EndIf
+
+	Else
 		If $elapsedTimeSinceHeal >= $HealDelay Then
 
 				If TimerDiff($MovementTime) > $Healwait Then
 					ControlSend("Project Rogue", "", "", "{3}")
-					ConsoleWrite("Healing triggered: HP below threshold and no movement for " & $Healwait & " ms." & @CRLF)
-				$LastHealTime = TimerInit()  ; Reset main timer after healing
+					ConsoleWrite("Curing triggered and no movement for " & $Healwait & " ms." & @CRLF)
+					$LastHealTime = TimerInit()  ; Reset main timer after healing
 				Else
-					ConsoleWrite("No healing: Waiting for no movement duration to pass. " & (TimerDiff($MovementTime)) & " ms passed." & @CRLF)
+					ConsoleWrite("No Cure  Waiting for no movement duration to pass. " & (TimerDiff($MovementTime)) & " ms passed." & @CRLF)
 				EndIf
 
 		Else
-			ConsoleWrite("Healing blocked: Chat open or under sickness effect, or insufficient time elapsed since last heal." & @CRLF)
+			ConsoleWrite("Curing blocked: Chat open or under sickness effect, or insufficient time elapsed since last attempt." & @CRLF)
 		EndIf
 	endif
 
@@ -479,10 +494,14 @@ Func TimeToHeal()
     ConsoleWrite("Time since last heal: " & $elapsedTimeSinceHeal & " ms" & @CRLF)
 
     If $CurrentX <> $LastX Or $CurrentY <> $LastY Then
-        ConsoleWrite("Movement detected, resetting movement timer." & @CRLF)
+        If GUICtrlRead($Checkbox) = $GUI_CHECKED Then
+			;Movment ignored;
+		Else
+		ConsoleWrite("Movement detected, resetting movement timer." & @CRLF)
         $LastX = $CurrentX
         $LastY = $CurrentY
         $MovementTime = TimerInit()  ; Reset timer if position changed
+		EndIf
     EndIf
 
 
@@ -490,18 +509,18 @@ Func TimeToHeal()
 		If $ChatVal = 0 And _ArraySearch($sicknessArray, $Sickness) = -1 Then
 
 		If $RealHP < ($MaxHP * $HealThreshold) Then
-			If TimerDiff($MovementTime) > $Healwait Then
+			If TimerDiff($LastHealTime) > $HealDelay Then
 				ControlSend("Project Rogue", "", "", "{2}")
-				ConsoleWrite("Healing triggered: HP below threshold and no movement for " & $Healwait & " ms." & @CRLF)
+				ConsoleWrite("Healing triggered: HP below threshold****"& @CRLF)
 				$LastHealTime = TimerInit()  ; Reset main timer after healing
 			Else
-				ConsoleWrite("No healing: Waiting for no movement duration to pass. " & (TimerDiff($MovementTime)) & " ms passed." & @CRLF)
+				ConsoleWrite("No healing:**" & @CRLF)
 			EndIf
 		Else
-			ConsoleWrite("No healing needed: HP above threshold." & @CRLF)
+			ConsoleWrite("No healing needed: HP above threshold.**" & @CRLF)
 		EndIf
 	Else
-		ConsoleWrite("Healing blocked: Chat open or under sickness effect, or insufficient time elapsed since last heal." & @CRLF)
+		ConsoleWrite("Healing blocked: Chat open or under sickness effect, or insufficient time elapsed since last heal.*" & @CRLF)
 	EndIf
 	Else
 
