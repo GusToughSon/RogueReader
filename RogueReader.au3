@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=Include\RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=4.0.0.5
+#AutoIt3Wrapper_Res_Fileversion=4.0.0.6
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -27,7 +27,7 @@ Global $version = FileGetVersion(@ScriptFullPath)
 Global Const $locationFile 	= @ScriptDir & "\Locations.ini"
 Global $currentLocations = 1
 Global $maxLocations = 200
-Global Const $sButtonConfigFile = @ScriptDir & "\ButtonConfig.ini"
+Global Const $sButtonConfigFile = @ScriptDir & "\NewButtonConfig.ini"
 
 ConsoleWrite("Script Version: " & $version & @CRLF)
 
@@ -38,8 +38,8 @@ Global $TargetHotkey		 	= "" 	; Default Target Hotkey
 Global $ExitHotkey 				= ""  	; Default Exit Hotkey
 Global $SaveLocationHotkey 		= "" 	; Default Waypoint path location hotkey
 Global $EraseLocationsHotkey	= ""		; Default Location Clear
+Global $TogglePauseHotkey		= "" 	;default pause hotkey
 
-HotKeySet("{/}", "TogglePause") ;waypoint walk pause;
 
 ; Ensure Config File Exists and Load Config Settings
 
@@ -59,7 +59,7 @@ HotKeySet($TargetHotkey			, "TargetKeyShit")
 HotKeySet($ExitHotkey			, "KilledWithFire")
 HotKeySet($SaveLocationHotkey	, "SaveLocation")
 HotKeySet($EraseLocationsHotkey	, "EraseLocations")
-
+HotKeySet($TogglePauseHotkey	, "TogglePause")  ;waypoint walk pause;
 Global $Debug = False
 
 ; Define the game process and memory offsets
@@ -67,12 +67,13 @@ Global $ProcessName 		= "Project Rogue Client.exe"
 Global $WindowName 			= "Project Rogue"
 Global $TypeOffset			= 0xBE7944   	;0 = player, 1 =monster, 2 = npc, 65535 = no target
 Global $AttackModeOffset	= 0xB5BBD0      ;x
-Global $PosXOffset 			= 0xBF9DD8  	;x
-Global $PosYOffset 			= 0xBF9DE0 		;x
+Global $PosYOffset 			= 0xBF9DD8  	;x
+Global $PosXOffset 			= 0xBF9DE0 		;x
 Global $HPOffset 			= 0x7C3D0 		;x
 Global $MaxHPOffset 		= 0x7C3D4 		;x
 Global $ChattOpenOffset 	= 0xB678A8 		;x
 Global $SicknessOffset 		= 0x7C5B4 		;x
+
 
 Global $currentTime 	= TimerInit()
 Global $elapsedTime 	= TimerDiff($currentTime)
@@ -235,7 +236,7 @@ Exit
 ;                                LOAD CONFIG
 ; ------------------------------------------------------------------------------
 Func LoadButtonConfig()
-    Local $aKeys[7][2] = [["HealHotkey", "{f7}"], ["CureHotkey", "{f8}"], ["TargetHotkey", "{f9}"], ["ExitHotkey", "{f10}"], ["SaveLocationHotkey", "{f11}"], ["EraseLocationsHotkey", "{f12}"], ["PlayLocationsHotkey", "{*}"]]
+    Local $aKeys[8][2] = [["HealHotkey", "{f7}"], ["CureHotkey", "{f8}"], ["TargetHotkey", "{f9}"], ["ExitHotkey", "{f10}"], ["SaveLocationHotkey", "{f11}"], ["EraseLocationsHotkey", "{f12}"], ["PlayLocationsHotkey", "{*}"], ["TogglePauseHotkey", "{f7}"]]
     For $i = 0 To UBound($aKeys) - 1
         ; Read each key from the INI file, default to predefined hotkeys if not found
         Local $sKey = IniRead($sButtonConfigFile, "Hotkeys", $aKeys[$i][0], $aKeys[$i][1])
@@ -262,6 +263,8 @@ Func LoadButtonConfig()
             Case "PlayLocationsHotkey"
                 ; Ensure you have a corresponding function for this hotkey
                 HotKeySet($sKey, "PlayLocationsFunc") ; Make sure the function 'PlayLocationsFunc' exists
+			Case "TogglePauseHotkey"
+                HotKeySet($sKey, "TogglePause")
         EndSwitch
 
         ConsoleWrite("Hotkey for " & $aKeys[$i][0] & " set to " & $sKey & @CRLF)
@@ -270,7 +273,7 @@ EndFunc
 
 Func CreateButtonDefaultConfig()
     ; Declare the array with dimensions
-    Local $aKeys[7][2]
+    Local $aKeys[8][2]
 
     ; Initialize the array with hotkeys and default values
     $aKeys[0][0] = "HealHotkey"
@@ -299,6 +302,8 @@ Func CreateButtonDefaultConfig()
     $aKeys[6][0] = "PlayLocationsHotkey"
     $aKeys[6][1] = "{*}"
 
+    $aKeys[7][0] = "TogglePauseHotkey"
+    $aKeys[7][1] = "{f7}"
 
     For $i = 0 To UBound($aKeys) - 1
         IniWrite($sButtonConfigFile, "Hotkeys", $aKeys[$i][0], $aKeys[$i][1])
@@ -508,44 +513,41 @@ Func TimeToHeal()
 	If GUICtrlRead($Checkbox) = $GUI_CHECKED Then
 		If $ChatVal = 0 And _ArraySearch($sicknessArray, $Sickness) = -1 Then
 
-		If $RealHP < ($MaxHP * $HealThreshold) Then
-			If TimerDiff($LastHealTime) > $HealDelay Then
-				ControlSend("Project Rogue", "", "", "{2}")
-				ConsoleWrite("Healing triggered: HP below threshold****"& @CRLF)
-				$LastHealTime = TimerInit()  ; Reset main timer after healing
+			If $RealHP < ($MaxHP * $HealThreshold) Then
+				If TimerDiff($LastHealTime) > $HealDelay Then
+					ControlSend("Project Rogue", "", "", "{2}")
+					ConsoleWrite("Healing triggered: HP below threshold****"& @CRLF)
+					$LastHealTime = TimerInit()  ; Reset main timer after healing
+				Else
+					ConsoleWrite("No healing:**" & @CRLF)
+				EndIf
 			Else
-				ConsoleWrite("No healing:**" & @CRLF)
+				ConsoleWrite("No healing needed: HP above threshold.**" & @CRLF)
 			EndIf
 		Else
-			ConsoleWrite("No healing needed: HP above threshold.**" & @CRLF)
+			ConsoleWrite("Healing blocked: Chat open or under sickness effect, or insufficient time elapsed since last heal.*" & @CRLF)
 		EndIf
 	Else
-		ConsoleWrite("Healing blocked: Chat open or under sickness effect, or insufficient time elapsed since last heal.*" & @CRLF)
-	EndIf
-	Else
 
 
-    If $ChatVal = 0 And _ArraySearch($sicknessArray, $Sickness) = -1 And $elapsedTimeSinceHeal >= $HealDelay Then
+		If $ChatVal = 0 And _ArraySearch($sicknessArray, $Sickness) = -1 And $elapsedTimeSinceHeal >= $HealDelay Then
 
-		If $RealHP < ($MaxHP * $HealThreshold) Then
-			If TimerDiff($MovementTime) > $Healwait Then
-				ControlSend("Project Rogue", "", "", "{2}")
-				ConsoleWrite("Healing triggered: HP below threshold and no movement for " & $Healwait & " ms." & @CRLF)
-				$LastHealTime = TimerInit()  ; Reset main timer after healing
+			If $RealHP < ($MaxHP * $HealThreshold) Then
+				If TimerDiff($MovementTime) > $Healwait Then
+					ControlSend("Project Rogue", "", "", "{2}")
+					ConsoleWrite("Healing triggered: HP below threshold and no movement for " & $Healwait & " ms." & @CRLF)
+					$LastHealTime = TimerInit()  ; Reset main timer after healing
+				Else
+					ConsoleWrite("No healing: Waiting for no movement duration to pass. " & (TimerDiff($MovementTime)) & " ms passed." & @CRLF)
+				EndIf
 			Else
-				ConsoleWrite("No healing: Waiting for no movement duration to pass. " & (TimerDiff($MovementTime)) & " ms passed." & @CRLF)
+				ConsoleWrite("No healing needed: HP above threshold." & @CRLF)
 			EndIf
 		Else
-			ConsoleWrite("No healing needed: HP above threshold." & @CRLF)
+			ConsoleWrite("Healing blocked: Chat open or under sickness effect, or insufficient time elapsed since last heal." & @CRLF)
 		EndIf
-	Else
-		ConsoleWrite("Healing blocked: Chat open or under sickness effect, or insufficient time elapsed since last heal." & @CRLF)
-	EndIf
-
 
 	EndIf
-
-
 
 EndFunc   ;==>TimeToHeal
 
@@ -582,15 +584,10 @@ Func AttackModeReader()
 			; "Monster targeted"
 
 		ElseIf $Type = 2 Then
-
-
 			; "Type: NPC"
-
 
 		Else
 			ConsoleWrite("Type: " & $Type & @CRLF)
-
-
 
 		EndIf
 	Else
@@ -656,33 +653,21 @@ Func _ReadMemory($hProcess, $pAddress)
 EndFunc   ;==>_ReadMemory
 
 Func Hotkeyshit()
-
 	$HealerStatus = Not $HealerStatus
 	GUICtrlSetData($HealerLabel, "Healer: " & ($HealerStatus ? "On" : "Off"))
 	Sleep(300)
 EndFunc   ;==>Hotkeyshit
 
 Func CureKeyShit()
-
-
-
-
-
-
 	$CureStatus = Not $CureStatus
 	GUICtrlSetData($CureLabel, "Cure: " & ($CureStatus ? "On" : "Off"))
 	Sleep(300)
 EndFunc   ;==>CureKeyShit
 
 Func TargetKeyShit()
-
-
-
-
 	$TargetStatus = Not $TargetStatus
 	GUICtrlSetData($TargetLabel, "Target: " & ($TargetStatus ? "On" : "Off"))
 	Sleep(300)
-
 EndFunc   ;==>TargetKeyShit
 
 Func KilledWithFire()
@@ -949,8 +934,7 @@ EndFunc   ;==>GetSicknessDescription
 
 Func LoadLocations()
     Local Const $iMaxLocations = 200
-    Local $aLocationX[$iMaxLocations]
-    Local $aLocationY[$iMaxLocations]
+    Local $aLocations[$iMaxLocations][2]  ; Array of arrays each holding 2 elements (X, Y)
 
     If Not FileExists($locationFile) Then
         ConsoleWrite("Location file not found: " & $locationFile & @CRLF)
@@ -967,22 +951,16 @@ Func LoadLocations()
     For $i = 0 To UBound($aLines) - 1
         Local $aMatches = StringRegExp($aLines[$i], "X:(\d+);Y:(\d+)", 3)
         If Not @error And UBound($aMatches) = 2 Then
-            $aLocationX[$iLocationCount] = Int($aMatches[0])
-            $aLocationY[$iLocationCount] = Int($aMatches[1])
-            ConsoleWrite("Loaded location " & $iLocationCount + 1 & ": X = " & $aLocationX[$iLocationCount] & ", Y = " & $aLocationY[$iLocationCount] & @CRLF)
+            $aLocations[$iLocationCount][0] = Int($aMatches[0])
+            $aLocations[$iLocationCount][1] = Int($aMatches[1])
             $iLocationCount += 1
         EndIf
         If $iLocationCount >= $iMaxLocations Then ExitLoop
     Next
 
-    ReDim $aLocationX[$iLocationCount]
-    ReDim $aLocationY[$iLocationCount]
-
-    Local $aLocations[2] = [$aLocationX, $aLocationY]
-    ConsoleWrite("Locations loaded, count: " & $iLocationCount & @CRLF)
+    ReDim $aLocations[$iLocationCount][2]  ; Resize to the actual number of locations loaded
     Return $aLocations
 EndFunc
-
 
 Func SaveLocation()
     Local $x = _ReadMemory($hProcess, $PosXAddress)
@@ -1041,32 +1019,87 @@ Func EraseLocations()
 
 EndFunc
 
+
 Func MoveToLocations($aLocations)
-
-    If Not IsArray($aLocations) Or Not IsArray($aLocations[0]) Or Not IsArray($aLocations[1]) Then
-        ConsoleWrite("Incorrect array structure." & @CRLF)
-        Return SetError(1, 0, "Array structure error.")
-
+    ; Ensure that $aLocations is an array and has at least one entry
+    If Not IsArray($aLocations) Then
+        ConsoleWrite("Error: $aLocations is not an array." & @CRLF)
+        Return SetError(1, 0, "Not an array")
     EndIf
 
-    ConsoleWrite("Moving to locations, count: " & UBound($aLocations[0]) & @CRLF)
-    For $i = 0 To UBound($aLocations[0]) - 1
-        If $i > UBound($aLocations[1]) - 1 Then
-            ConsoleWrite("Y coordinate index " & $i & " out of bounds." & @CRLF)
+    ConsoleWrite("Moving to locations, total count: " & UBound($aLocations) & @CRLF)
 
+    ; Initialize current coordinates at the start of the function
+    Local $currentX = _ReadMemory($hProcess, $PosXAddress)
+    Local $currentY = _ReadMemory($hProcess, $PosYAddress)
+    Local $MoverDelay = 500  ; Delay between movements in milliseconds
+    Local $TimeToMove = TimerInit()  ; Initialize the timer
+
+    ; Iterate over each location
+    For $i = 0 To UBound($aLocations) - 1
+        Local $targetX = $aLocations[$i][0]
+        Local $targetY = $aLocations[$i][1]
+
+        ; Check if the coordinates are numbers to prevent errors
+        If Not IsNumber($targetX) Or Not IsNumber($targetY) Then
+            ConsoleWrite("Invalid data at index " & $i & ": X = " & $targetX & ", Y = " & $targetY & @CRLF)
             ContinueLoop
         EndIf
 
-        ; Directly print values before access to check integrity
-        ConsoleWrite("Debug: Index " & $i & ", X = " & $aLocations[0][$i] & ", Y = " & $aLocations[1][$i] & @CRLF)
+        ConsoleWrite("Moving to Location " & ($i + 1) & ": X = " & $targetX & ", Y = " & $targetY & @CRLF)
 
-        ; Proceed only if data types are correct
-        If Not IsNumber($aLocations[0][$i]) Or Not IsNumber($aLocations[1][$i]) Then
-            ConsoleWrite("Invalid data at index " & $i & @CRLF)
+        ; Calculate the difference needed to move
+        Local $moveX = $targetX - $currentX
+        Local $moveY = $targetY - $currentY
 
-            ContinueLoop
+        ; Control movement horizontally
+        If $moveX > 0 Then
+            While TimerDiff($TimeToMove) < $MoverDelay
+                ControlSend("Project Rogue", "", "", "{d}") ; Move right
+				ConsoleWrite ("ASDASDASDSADASD")
+            $TimeToMove = TimerInit()  ; Reset the timery after action
+
+				Sleep(100)  ; Small sleep to prevent high CPU usage
+            WEnd
+
+        ElseIf $moveX < 0 Then
+            While TimerDiff($TimeToMove) < $MoverDelay
+                ControlSend("Project Rogue", "", "", "{a}") ; Move left
+            $TimeToMove = TimerInit()
+
+				Sleep(100)
+            WEnd
+
         EndIf
+
+        ; Control movement vertically
+        If $moveY > 0 Then
+            While TimerDiff($TimeToMove) < $MoverDelay
+                ControlSend("Project Rogue", "", "", "{s}")) ; Move down
+            $TimeToMove = TimerInit()
+
+				Sleep(100)
+            WEnd
+
+        ElseIf $moveY < 0 Then
+            While TimerDiff($TimeToMove) < $MoverDelay
+                ControlSend("Project Rogue", "", "", "{w}") ; Move up
+            $TimeToMove = TimerInit()
+
+				Sleep(100)
+            WEnd
+
+        EndIf
+
+        ; Update current coordinates
+        $currentX = $targetX
+        $currentY = $targetY
+
+        ; Delay to allow movements to complete
+        Sleep(1000)  ; Adjust timing as necessary for your application's response time
     Next
+
+    ConsoleWrite("Finished moving to all locations." & @CRLF)
 EndFunc
 
 
