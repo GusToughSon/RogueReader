@@ -37,8 +37,9 @@ Global $CureHotkey 				= ""		; Default Cure Hotkey
 Global $TargetHotkey		 	= "" 	; Default Target Hotkey
 Global $ExitHotkey 				= ""  	; Default Exit Hotkey
 Global $SaveLocationHotkey 		= "" 	; Default Waypoint path location hotkey
-Global $EraseLocationsHotkey	= ""
-Global $MoveToLocationsHotkey	= ""; Default Location Clear
+Global $EraseLocationsHotkey	= ""		; Default Location Clear
+Global $TogglePauseHotkey		= "" 	;default pause hotkey
+
 
 ; Ensure Config File Exists and Load Config Settings
 
@@ -58,8 +59,7 @@ HotKeySet($TargetHotkey			, "TargetKeyShit")
 HotKeySet($ExitHotkey			, "KilledWithFire")
 HotKeySet($SaveLocationHotkey	, "SaveLocation")
 HotKeySet($EraseLocationsHotkey	, "EraseLocations")
-HotKeySet($MoveToLocationsHotkey, "MoveToLocations")
-
+HotKeySet($TogglePauseHotkey	, "TogglePause")  ;waypoint walk pause;
 Global $Debug = False
 
 ; Define the game process and memory offsets
@@ -90,8 +90,8 @@ Global $iPrevValue 		= 95
 Global $MPrevValue		= " "
 Global $hProcess 		= 0            ; Our WinAPI handle to the process
 Global $BaseAddress 	= 0            ; Base address of the module
-Global $PosXOld = -1
-Global $PosYOld = -1
+Global $PosXOld         = -1
+Global $PosYOld         = -1
 Global $TypeAddress, $AttackModeAddress, $PosXAddress, $PosYAddress
 Global $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress
 Global $Type, $Chat, $Sickness, $AttackMode
@@ -236,40 +236,17 @@ Exit
 ;                                LOAD CONFIG
 ; ------------------------------------------------------------------------------
 Func LoadButtonConfig()
-    Local $sButtonConfigFile = @ScriptDir & "\NewButtonConfig.ini"
-
-    ; Remove TogglePauseHotkey and PlayLocationsHotkey entries
-    IniDelete($sButtonConfigFile, "Hotkeys", "TogglePauseHotkey")
-    IniDelete($sButtonConfigFile, "Hotkeys", "PlayLocationsHotkey")
-
-    ; Define the hotkeys and default values
-    Local $aKeys[7][2] = [["HealHotkey", "{" & Chr(96) & "}"], ["CureHotkey", "{-}"], ["TargetHotkey", "{=}"], ["ExitHotkey", "{#}"], ["SaveLocationHotkey", "{F7}"], ["EraseLocationsHotkey", "{F8}"], ["MoveToLocationsHotkey", "{!}"]]
-
-    ; Flag to track if any missing keys are found
-    Local $bMissingKeys = False
-
+    Local $aKeys[8][2] = [["HealHotkey", "{f7}"], ["CureHotkey", "{f8}"], ["TargetHotkey", "{f9}"], ["ExitHotkey", "{f10}"], ["SaveLocationHotkey", "{f11}"], ["EraseLocationsHotkey", "{f12}"], ["PlayLocationsHotkey", "{*}"], ["TogglePauseHotkey", "{f7}"]]
     For $i = 0 To UBound($aKeys) - 1
         ; Read each key from the INI file, default to predefined hotkeys if not found
-        Local $sKey = IniRead($sButtonConfigFile, "Hotkeys", $aKeys[$i][0], "")
-
-        ; Check if key is missing
-        If $sKey = "" Then
-            ConsoleWrite("[Warning] Missing key: " & $aKeys[$i][0] & ". Will create default config." & @CRLF)
-            $bMissingKeys = True
-            ExitLoop
-        EndIf
-    Next
-
-    ; If any key was missing, recreate the default configuration
-    If $bMissingKeys Then
-        CreateButtonDefaultConfig()
-    EndIf
-
-    ; Re-read the keys after ensuring defaults exist
-    For $i = 0 To UBound($aKeys) - 1
         Local $sKey = IniRead($sButtonConfigFile, "Hotkeys", $aKeys[$i][0], $aKeys[$i][1])
+        If $sKey = "" Then
+            ; If INI read fails or returns an empty string, log the error and use the default
+            ConsoleWrite("Failed to read " & $aKeys[$i][0] & " from INI. Using default: " & $aKeys[$i][1] & @CRLF)
+            $sKey = $aKeys[$i][1]
+        EndIf
 
-        ; Set the hotkey to the corresponding function
+        ; Set the hotkey to the corresponding function based on what is read or defaulted
         Switch $aKeys[$i][0]
             Case "HealHotkey"
                 HotKeySet($sKey, "Hotkeyshit")
@@ -283,21 +260,47 @@ Func LoadButtonConfig()
                 HotKeySet($sKey, "SaveLocation")
             Case "EraseLocationsHotkey"
                 HotKeySet($sKey, "EraseLocations")
-            Case "MoveToLocationsHotkey"
-                HotKeySet($sKey, "MoveToLocations")
+            Case "PlayLocationsHotkey"
+                ; Ensure you have a corresponding function for this hotkey
+                HotKeySet($sKey, "PlayLocationsFunc") ; Make sure the function 'PlayLocationsFunc' exists
+			Case "TogglePauseHotkey"
+                HotKeySet($sKey, "TogglePause")
         EndSwitch
 
-        ConsoleWrite("[Info] Hotkey for " & $aKeys[$i][0] & " set to " & $sKey & @CRLF)
+        ConsoleWrite("Hotkey for " & $aKeys[$i][0] & " set to " & $sKey & @CRLF)
     Next
 EndFunc
 
 Func CreateButtonDefaultConfig()
-    Local $sButtonConfigFile = @ScriptDir & "\NewButtonConfig.ini"
+    ; Declare the array with dimensions
+    Local $aKeys[8][2]
 
-    ; Declare and initialize the hotkey array
-    Local $aKeys[7][2] = [["HealHotkey", "{" & Chr(96) & "}"], ["CureHotkey", "{-}"], ["TargetHotkey", "{=}"], ["ExitHotkey", "{#}"], ["SaveLocationHotkey", "{F7}"], ["EraseLocationsHotkey", "{F8}"], ["MoveToLocationsHotkey", "{!}"]]
-
-    ; Write each default key to the INI file
+    ; Initialize the array with hotkeys and default values
+    ;-----------------------------------------------------
+	$aKeys[0][0] = "HealHotkey"
+    $aKeys[0][1] = "{`}"
+	;-----------------------------------------------------
+    $aKeys[1][0] = "CureHotkey"
+    $aKeys[1][1] = "{-}"
+	;-----------------------------------------------------
+    $aKeys[2][0] = "TargetHotkey"
+    $aKeys[2][1] = "{]}"
+	;-----------------------------------------------------
+    $aKeys[3][0] = "ExitHotkey"
+    $aKeys[3][1] = "{/}"
+	;-----------------------------------------------------
+    $aKeys[4][0] = "SaveLocationHotkey"
+    $aKeys[4][1] = "{,}"
+	;-----------------------------------------------------
+    $aKeys[5][0] = "EraseLocationsHotkey"
+    $aKeys[5][1] = "{.}"
+	;-----------------------------------------------------
+    $aKeys[6][0] = "PlayLocationsHotkey"
+    $aKeys[6][1] = "{*}"
+	;-----------------------------------------------------
+    $aKeys[7][0] = "TogglePauseHotkey"
+    $aKeys[7][1] = "{f7}"
+	;-----------------------------------------------------
     For $i = 0 To UBound($aKeys) - 1
         IniWrite($sButtonConfigFile, "Hotkeys", $aKeys[$i][0], $aKeys[$i][1])
     Next
@@ -402,13 +405,11 @@ Func CureMe()
     $SickVal = _ReadMemory($hProcess, $SicknessAddress)
     $HealThreshold = GUICtrlRead($healSlider) / 100
 
-
 	If _ArraySearch($sicknessArray, $Sickness) <> -1 Then
     $CurrentX = Number(StringRegExpReplace(GUICtrlRead($PosXLabel), "[^\d]", ""))
     $CurrentY = Number(StringRegExpReplace(GUICtrlRead($PosYLabel), "[^\d]", ""))
     Static $LastX = $CurrentX
     Static $LastY = $CurrentY
-
 
     $elapsedTimeSinceHeal = TimerDiff($LastHealTime)  ; Update the elapsed time since last heal
 
@@ -418,48 +419,42 @@ Func CureMe()
     ConsoleWrite("Current Position: X=" & $CurrentX & " Y=" & $CurrentY & " Last Position: X=" & $LastX & " Y=" & $LastY & @CRLF)
     ConsoleWrite("Time since last heal: " & $elapsedTimeSinceHeal & " ms" & @CRLF)
 
-    If $CurrentX <> $LastX Or $CurrentY <> $LastY Then
+		If $CurrentX <> $LastX Or $CurrentY <> $LastY Then
+			If GUICtrlRead($Checkbox) = $GUI_CHECKED Then
+				;Movment ignored;
+			Else
+			ConsoleWrite("Movement detected, resetting movement timer." & @CRLF)
+			$LastX = $CurrentX
+			$LastY = $CurrentY
+			$MovementTime = TimerInit()  ; Reset timer if position changed
+			EndIf
+		EndIf
+
 		If GUICtrlRead($Checkbox) = $GUI_CHECKED Then
-			;Movment ignored;
-		Else
-        ConsoleWrite("Movement detected, resetting movement timer." & @CRLF)
-        $LastX = $CurrentX
-        $LastY = $CurrentY
-        $MovementTime = TimerInit()  ; Reset timer if position changed
-		EndIf
-    EndIf
+			If $elapsedTimeSinceHeal >= $HealDelay Then
 
-	If GUICtrlRead($Checkbox) = $GUI_CHECKED Then
-		If $elapsedTimeSinceHeal >= $HealDelay Then
-
-
-			ControlSend("Project Rogue", "", "", "{3}")
-			ConsoleWrite("Cure Triggered" & @CRLF)
-			$LastHealTime = TimerInit()  ; Reset main timer after healing
-		Else
-			ConsoleWrite("Cure blocked , insufficient time elapsed since last attempt." & @CRLF)
-		EndIf
-
-	Else
-		If $elapsedTimeSinceHeal >= $HealDelay Then
-
-				If TimerDiff($MovementTime) > $Healwait Then
-					ControlSend("Project Rogue", "", "", "{3}")
-					ConsoleWrite("Curing triggered and no movement for " & $Healwait & " ms." & @CRLF)
-					$LastHealTime = TimerInit()  ; Reset main timer after healing
-				Else
-					ConsoleWrite("No Cure  Waiting for no movement duration to pass. " & (TimerDiff($MovementTime)) & " ms passed." & @CRLF)
-				EndIf
+				ControlSend("Project Rogue", "", "", "{3}")
+				ConsoleWrite("Cure Triggered" & @CRLF)
+				$LastHealTime = TimerInit()  ; Reset main timer after healing
+			Else
+				ConsoleWrite("Cure blocked , insufficient time elapsed since last attempt." & @CRLF)
+			EndIf
 
 		Else
-			ConsoleWrite("Curing blocked: Chat open or under sickness effect, or insufficient time elapsed since last attempt." & @CRLF)
-		EndIf
-	endif
+			If $elapsedTimeSinceHeal >= $HealDelay Then
 
+					If TimerDiff($MovementTime) > $Healwait Then
+						ControlSend("Project Rogue", "", "", "{3}")
+						ConsoleWrite("Curing triggered and no movement for " & $Healwait & " ms." & @CRLF)
+						$LastHealTime = TimerInit()  ; Reset main timer after healing
+					Else
+						ConsoleWrite("No Cure  Waiting for no movement duration to pass. " & (TimerDiff($MovementTime)) & " ms passed." & @CRLF)
+					EndIf
 
-
-
-
+			Else
+				ConsoleWrite("Curing blocked: Chat open or under sickness effect, or insufficient time elapsed since last attempt." & @CRLF)
+			EndIf
+		endif
 
     EndIf
 EndFunc   ;==>CureMe
@@ -1013,6 +1008,7 @@ Func EraseLocations()
 
 EndFunc
 
+
 Func MoveToLocations($aLocations)
     ; Ensure that $aLocations is an array and has at least one entry
     If Not IsArray($aLocations) Then
@@ -1094,6 +1090,27 @@ Func MoveToLocations($aLocations)
 
     ConsoleWrite("Finished moving to all locations." & @CRLF)
 EndFunc
+
+
+
+
+
+
+Func TogglePause()
+    $bPaused = Not $bPaused
+    If $bPaused Then
+        ConsoleWrite("Pausing at Location: " & $iCurrentLocationIndex & @CRLF)
+    Else
+        ConsoleWrite("Resuming from Location: " & $iCurrentLocationIndex & @CRLF)
+
+
+
+        MoveToLocations($aLocations)  ; Resume movement
+		  ;addCommentToChangeChecksum
+    EndIf
+EndFunc   ;==>TogglePause
+
+
 
 
 Func TrashHeap()
