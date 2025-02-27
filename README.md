@@ -1,7 +1,5 @@
 # Rogue Reader - Project Rogue Trainer
 
-![RogueReader Icon](path/to/icon.png)
-
 ## Overview
 **Rogue Reader** is an advanced training utility for the game Project Rogue, designed to enhance player capabilities through strategic automation and real-time game memory manipulation. Built with AutoIt, Rogue Reader offers a dynamic GUI that provides real-time game status updates and custom automation features, making it a must-have tool for both casual and hardcore players.
 
