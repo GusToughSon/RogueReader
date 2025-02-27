@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=Include\RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=4.0.0.6
+#AutoIt3Wrapper_Res_Fileversion=4.0.0.7
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
