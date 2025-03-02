@@ -2,257 +2,273 @@
 #AutoIt3Wrapper_Icon=Include\RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=4.0.0.7
+#AutoIt3Wrapper_Res_Fileversion=4.0.0.14
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
 #AutoIt3Wrapper_Res_CompanyName=Training Trainers.LLC
-#AutoIt3Wrapper_Res_LegalCopyright=Use only for authorized security testing. Unauthorized use is illegal. No liability for misuse. ©TrainingTrainers.LLc 2024
+#AutoIt3Wrapper_Res_LegalCopyright=Use only for authorized security testing.
 #AutoIt3Wrapper_Res_LegalTradeMarks=TrainingTrainersLLC
 #AutoIt3Wrapper_Res_Language=1033
 #AutoIt3Wrapper_Run_AU3Check=n
 #AutoIt3Wrapper_Tidy_Stop_OnError=n
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
-;Comment to change Checksum;;
+HotKeySet ("{,}", "TrashHeap")
 #include <GUIConstantsEx.au3>
 #include <File.au3>
-#include <Misc.au3>
 #include <WindowsConstants.au3>
 #include <WinAPI.au3>
 #include <Process.au3>
+#include <Array.au3>       ; for _ArraySearch
+
+; ---------------------------------------------------------------------------------
+; 1) Define fallback constants for Lock/Unlock if your AutoIt version doesn't have them
+; ---------------------------------------------------------------------------------
+If Not IsDeclared("SW_LOCKDRAW") Then
+    Global Const $SW_LOCKDRAW = 133   ; numeric values introduced in v3.3.17
+EndIf
+
+If Not IsDeclared("SW_UNLOCKDRAW") Then
+    Global Const $SW_UNLOCKDRAW = 134
+EndIf
 
 Opt("MouseCoordMode", 2)
 
-Global $version = FileGetVersion(@ScriptFullPath)
-Global Const $locationFile 	= @ScriptDir & "\Locations.ini"
-Global $currentLocations = 1
-Global $maxLocations = 200
+Global $version               = FileGetVersion(@ScriptFullPath)
+Global Const $locationFile    = @ScriptDir & "\Locations.ini"
+Global $currentLocations      = 1
+Global $maxLocations          = 200
 Global Const $sButtonConfigFile = @ScriptDir & "\NewButtonConfig.ini"
 
 ConsoleWrite("Script Version: " & $version & @CRLF)
 
 ; --- Load Config Settings ---
-Global $HealHotkey 				= "" 	; Default Heal Hotkey
-Global $CureHotkey 				= ""		; Default Cure Hotkey
-Global $TargetHotkey		 	= "" 	; Default Target Hotkey
-Global $ExitHotkey 				= ""  	; Default Exit Hotkey
-Global $SaveLocationHotkey 		= "" 	; Default Waypoint path location hotkey
-Global $EraseLocationsHotkey	= ""
-Global $MoveToLocationsHotkey	= ""; Default Location Clear
-
-; Ensure Config File Exists and Load Config Settings
+Global $HealHotkey             = ""
+Global $CureHotkey             = ""
+Global $TargetHotkey           = ""
+Global $ExitHotkey             = ""
+Global $SaveLocationHotkey     = ""
+Global $EraseLocationsHotkey   = ""
+Global $MoveToLocationsHotkey  = ""
 
 If Not FileExists($sButtonConfigFile) Then CreateButtonDefaultConfig()
-LoadButtonConfig() ; Load or reload configuration settings
+LoadButtonConfig()
 
-
-Global $iCurrentLocationIndex = 0
-Global $bPaused = True
-Global $aLocations = LoadLocations()
-
-
-; --- Set Hotkeys from Config ---
-HotKeySet($HealHotkey			, "Hotkeyshit")
-HotKeySet($CureHotkey			, "CureKeyShit")
-HotKeySet($TargetHotkey			, "TargetKeyShit")
-HotKeySet($ExitHotkey			, "KilledWithFire")
-HotKeySet($SaveLocationHotkey	, "SaveLocation")
-HotKeySet($EraseLocationsHotkey	, "EraseLocations")
-HotKeySet($MoveToLocationsHotkey, "MoveToLocations")
-
-Global $Debug = False
+Global $iCurrentLocationIndex    = 0
+Global $iCurrentIndex            = 0
+Global $bPaused                  = True
+Global $aLocations               = LoadLocations()  ; This may show error if the file is missing
+Global $Debug                    = False
 
 ; Define the game process and memory offsets
-Global $ProcessName 		= "Project Rogue Client.exe"
-Global $WindowName 			= "Project Rogue"
-Global $TypeOffset			= 0xBE7944   	;0 = player, 1 =monster, 2 = npc, 65535 = no target
-Global $AttackModeOffset	= 0xB5BBD0      ;x
-Global $PosYOffset 			= 0xBF9DD8  	;x
-Global $PosXOffset 			= 0xBF9DE0 		;x
-Global $HPOffset 			= 0x7C3D0 		;x
-Global $MaxHPOffset 		= 0x7C3D4 		;x
-Global $ChattOpenOffset 	= 0xB678A8 		;x
-Global $SicknessOffset 		= 0x7C5B4 		;x
+Global $ProcessName       = "Project Rogue Client.exe"
+Global $WindowName        = "Project Rogue"
+Global $TypeOffset        = 0xBE7944 ; 0=Player, 1=Monster, etc
+Global $AttackModeOffset  = 0xB5BBD0
+Global $PosYOffset        = 0xBF9DD8
+Global $PosXOffset        = 0xBF9DE0
+Global $HPOffset          = 0x7C3D0
+Global $MaxHPOffset       = 0x7C3D4
+Global $ChattOpenOffset   = 0xB678A8
+Global $SicknessOffset    = 0x7C5B4
 
-
-Global $currentTime 	= TimerInit()
-Global $elapsedTime 	= TimerDiff($currentTime)
-
-Global $LastHealTime    = TimerInit()
-Global $elapsedTimeSinceHeal = TimerDiff($LastHealTime)
-Global $MovementTime 	= TimerInit()
-
-Global $Running 		= True             ;Does it loop;
-Global $HealerStatus 	= 0
-Global $CureStatus 		= 0
-Global $TargetStatus 	= 0
-Global $iPrevValue 		= 95
-Global $MPrevValue		= " "
-Global $hProcess 		= 0            ; Our WinAPI handle to the process
-Global $BaseAddress 	= 0            ; Base address of the module
-Global $PosXOld = -1
-Global $PosYOld = -1
+Global $currentTime         = TimerInit()
+Global $elapsedTime         = TimerDiff($currentTime)
+Global $LastHealTime        = TimerInit()
+Global $elapsedTimeSinceHeal= TimerDiff($LastHealTime)
+Global $MovementTime        = TimerInit()
+Global $lastX               = 0
+Global $lastY               = 0
+Global $timer               = TimerInit()
+Global $Running             = True
+Global $HealerStatus        = 0
+Global $CureStatus          = 0
+Global $TargetStatus        = 0
+Global $MoveToLocationsStatus= 0
+Global $iPrevValue          = 95
+Global $MPrevValue          = " "
+Global $hProcess            = 0
+Global $BaseAddress         = 0
+Global $PosXOld             = -1
+Global $PosYOld             = -1
 Global $TypeAddress, $AttackModeAddress, $PosXAddress, $PosYAddress
 Global $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress
 Global $Type, $Chat, $Sickness, $AttackMode
-Global $SicknessDescription = GetSicknessDescription(0)
 
-; This array is used in CureMe and TimeToHeal checks (it will cure on the sickness numbers listed only)
-Global $sicknessArray = [1, 2, 65, 66, 67, 68, 69, 72, 73, 81, 97, 98, 99, 513, 514, 515, 577, 8193, 8194, 8195, 8257, 8258, 8705, 8706, 8707, 8708, 8709, 8712, 8713, 8721, 8737, 8769, 8770, 16385, 16386, 16449, 16450, 16451, 16452, 16897, 16898, 24577, 24578, 24579, 24581, 24582, 24583, 24585, 24609, 24641, 24642, 24643, 24645, 24646, 24647, 24649, 25089, 25090, 25091, 25093, 25094, 25095, 25097, 25121, 33283, 33284, 33285, 33286, 33287, 33288, 33289, 33291, 33293, 33294, 33295, 33793, 41985, 41986, 41987, 41988, 41989, 41990, 41991, 41993, 41995]
+Global $sicknessArray = [ _
+    1, 2, 65, 66, 67, 68, 69, 72, 73, 81, 97, 98, 99, 513, 514, 515, 577, _
+    8193, 8194, 8195, 8257, 8258, 8705, 8706, 8707, 8708, 8709, 8712, 8713, _
+    8721, 8737, 8769, 8770, 16385, 16386, 16449, 16450, 16451, 16452, 16897, _
+    16898, 24577, 24578, 24579, 24581, 24582, 24583, 24585, 24609, 24641, _
+    24642, 24643, 24645, 24646, 24647, 24649, 25089, 25090, 25091, 25093, _
+    25094, 25095, 25097, 25121, 33283, 33284, 33285, 33286, 33287, 33288, _
+    33289, 33291, 33293, 33294, 33295, 33793, 41985, 41986, 41987, 41988, _
+    41989, 41990, 41991, 41993, 41995]
 
 Global $TargetDelay = 400, $HealDelay = 1700
-Global $aMousePos = MouseGetPos()
 
+; -------------------
 ; Create the GUI
-Global $Gui = GUICreate("RougeReader " & "Version - " & $version, 400, 400, 15, 15)
-Global $TypeLabel = GUICtrlCreateLabel("Type: N/A", 20, 30, 250, 20)
+; -------------------
+Global $Gui             = GUICreate("RougeReader Version - " & $version, 400, 400, 15, 15)
+Global $TypeLabel       = GUICtrlCreateLabel("Type: N/A", 20, 30, 250, 20)
 Global $AttackModeLabel = GUICtrlCreateLabel("Attack Mode: N/A", 20, 60, 250, 20)
-Global $PosXLabel = GUICtrlCreateLabel("Pos X: N/A", 20, 90, 250, 20)
-Global $PosYLabel = GUICtrlCreateLabel("Pos Y: N/A", 20, 120, 250, 20)
-Global $HPLabel = GUICtrlCreateLabel("HP: N/A", 20, 150, 250, 20)
-Global $ChatLabel = GUICtrlCreateLabel("Chat: N/A", 120, 150, 250, 20)
-Global $HP2Label = GUICtrlCreateLabel("RealHp: N/A", 20, 180, 250, 20)
-Global $SicknessLabel = GUICtrlCreateLabel("Sickness: N/A", 120, 180, 250, 20)
-Global $MaxHPLabel = GUICtrlCreateLabel("MaxHP: N/A", 20, 210, 250, 20)
-Global $TargetLabel = GUICtrlCreateLabel("Target: Off", 120, 210, 250, 20)
-Global $HealerLabel = GUICtrlCreateLabel("Healer: Off", 20, 240, 250, 20)
-Global $CureLabel = GUICtrlCreateLabel("Cure: Off", 120, 240, 250, 20)
-Global $HotkeyLabel = GUICtrlCreateLabel("Set hotkeys in the config file", 20, 270, 350, 20)
-Global $KillButton = GUICtrlCreateButton("Kill Rogue", 20, 300, 100, 30)
-Global $ExitButton = GUICtrlCreateButton("Exit", 150, 300, 100, 30)
-Global $healSlider = GUICtrlCreateSlider(20, 350, 200, 20)
-Global $healsliderlimit = GUICtrlSetLimit($healSlider, 95, 45) ; Set range from 45 to 95
-Global $setsliderdata = GUICtrlSetData($healSlider, 75) ; Set initial position to 45
-Global $healLabel = GUICtrlCreateLabel("Heal at: " & $healSlider&"%", 230, 350, 100, 20)
-Global $MovmentSlider = GUICtrlCreateSlider(20, 370, 180, 20)
-Global $Movmentsliderlimit = GUICtrlSetLimit($MovmentSlider, 750, 50)
-Global $setsliderdata = GUICtrlSetData($MovmentSlider, 150)
-Global $MoveLabel = GUICtrlCreateLabel("Heal After  "&$MovmentSlider, 185, 370, 100, 20)
-Global $MoveLabell = GUICtrlCreateLabel("ms of no movment.", 280, 370, 100, 20)
-Global $Checkbox = GUICtrlCreateCheckbox("Old Style Pothack", 240, 250, 200, 20)
-Global $CheckboxLabel = GUICtrlCreateLabel("(Ignore Heal After)", 240, 270, 200, 20)
+Global $PosXLabel       = GUICtrlCreateLabel("Pos X: N/A", 20, 90, 250, 20)
+Global $PosYLabel       = GUICtrlCreateLabel("Pos Y: N/A", 20, 120, 250, 20)
+Global $HPLabel         = GUICtrlCreateLabel("HP: N/A", 20, 150, 250, 20)
+Global $ChatLabel       = GUICtrlCreateLabel("Chat: N/A", 120, 150, 250, 20)
+Global $HP2Label        = GUICtrlCreateLabel("RealHp: N/A", 20, 180, 250, 20)
+Global $SicknessLabel   = GUICtrlCreateLabel("Sickness: N/A", 120, 180, 250, 20)
+Global $MaxHPLabel      = GUICtrlCreateLabel("MaxHP: N/A", 20, 210, 250, 20)
+Global $TargetLabel     = GUICtrlCreateLabel("Target: Off", 120, 210, 250, 20)
+Global $HealerLabel     = GUICtrlCreateLabel("Healer: Off", 20, 240, 250, 20)
+Global $WalkerLabel     = GUICtrlCreateLabel("Walker: Off", 120, 150, 250, 20)
+Global $CureLabel       = GUICtrlCreateLabel("Cure: Off", 120, 240, 250, 20)
+Global $HotkeyLabel     = GUICtrlCreateLabel("Set hotkeys in the config file", 20, 270, 350, 20)
+Global $KillButton      = GUICtrlCreateButton("Kill Rogue", 20, 300, 100, 30)
+Global $ExitButton      = GUICtrlCreateButton("Exit", 150, 300, 100, 30)
 
-Global $NEW = GUICtrlCreateLabel("*This now functions*", 240, 230, 200, 20)
+Global $healSlider = GUICtrlCreateSlider(20, 350, 200, 20)
+GUICtrlSetLimit($healSlider, 95, 45) ; range from 45 to 95
+GUICtrlSetData($healSlider, 75)      ; initial position to 75
+Global $healLabel = GUICtrlCreateLabel("Heal at: 75%", 230, 350, 100, 20)
+
+Global $MovmentSlider = GUICtrlCreateSlider(20, 370, 180, 20)
+GUICtrlSetLimit($MovmentSlider, 750, 50)
+GUICtrlSetData($MovmentSlider, 150)
+Global $MoveLabel   = GUICtrlCreateLabel("Heal After 150", 185, 370, 100, 20)
+Global $MoveLabell  = GUICtrlCreateLabel("ms of no movement.", 280, 370, 100, 20)
+
+Global $Checkbox      = GUICtrlCreateCheckbox("Old Style Pothack", 240, 250, 200, 20)
+Global $CheckboxLabel = GUICtrlCreateLabel("(Ignore Heal After)", 240, 270, 200, 20)
+Global $NEW           = GUICtrlCreateLabel("*This now functions*", 240, 230, 200, 20)
 
 GUISetState(@SW_SHOW)
-; ------------------------------------------------------------------------------
-;                                   MAIN LOOP
-; ------------------------------------------------------------------------------
-While 1
-	Global $ProcessID = ProcessExists($ProcessName)
-	If $ProcessID Then
-		ConnectToBaseAddress()
-		If $BaseAddress = 0 Or $hProcess = 0 Then
-			Sleep(300)
-		Else
-			ChangeAddressToBase()
-			While $Running And ProcessExists($ProcessID) ; Keep running while process exists
-				Local $elapsedTime = TimerDiff($currentTime)
-				Local $msg = GUIGetMsg()
 
-				If $msg = $ExitButton Or $msg = $GUI_EVENT_CLOSE Then
-					_WinAPI_CloseHandle($hProcess)
-					GUIDelete($Gui)
-					ConsoleWrite("[Debug] Trainer closed, 3" & @CRLF)
-					Exit
-				EndIf
+; --------------------------------------------------------------------------
+;                         STREAMLINED MAIN LOOP
+; --------------------------------------------------------------------------
+While $Running
+    Local $msg = GUIGetMsg()
 
-				If $msg = $KillButton Then
-					ProcessClose($ProcessID)
-					ExitLoop
-				EndIf
+    Switch $msg
+        Case $ExitButton, $GUI_EVENT_CLOSE
+            _WinAPI_CloseHandle($hProcess)
+            GUIDelete($Gui)
+            ConsoleWrite("[Debug] Trainer closed" & @CRLF)
+            Exit
 
-				If $Chat = 0 Then ;make sure chat is closed to send heals/target
-					If $CureStatus = 1 Then
-						CureMe()
-					EndIf
-					If $TargetStatus = 1 Then
-						AttackModeReader()
-					EndIf
-					If $HealerStatus = 1 Then
-						TimeToHeal()
-					EndIf
-				EndIf
-				GUIReadMemory()
-				Sleep(100)
-				; Check if game is still running, if not, exit the inner loop to reconnect
-				If Not ProcessExists($ProcessID) Then
-					ConsoleWrite("[Info] Game closed, waiting to reconnect..." & @CRLF)
-					ExitLoop
-				EndIf
-			WEnd
-			Local $msg = GUIGetMsg()
-			If $msg = $ExitButton Or $msg = $GUI_EVENT_CLOSE Then
-				_WinAPI_CloseHandle($hProcess)
-				GUIDelete($Gui)
-				ConsoleWrite("[Debug] Trainer closed, 1" & @CRLF)
-				Exit
-			EndIf
+        Case $KillButton
+            Local $pidCheck = ProcessExists($ProcessName)
+            If $pidCheck Then ProcessClose($pidCheck)
+    EndSwitch
 
-			If $msg = $KillButton Then
-				ProcessClose($ProcessID)
-				ExitLoop
-			EndIf
-		EndIf
-	Else
-		ConsoleWrite("[Info] Game not found, waiting..." & @CRLF)
-		; Keep checking every 2 seconds until game is reopened
-		While Not ProcessExists($ProcessName)
-			Local $msg = GUIGetMsg()
-			Sleep(50)
-			If $msg = $ExitButton Or $msg = $GUI_EVENT_CLOSE Then
-				_WinAPI_CloseHandle($hProcess)
-				GUIDelete($Gui)
-				ConsoleWrite("[Debug] Trainer closed, 2" & @CRLF)
-				Exit
-			EndIf
-			If $msg = $KillButton Then
-				ProcessClose($ProcessID)
-				ExitLoop
-			EndIf
-			$MValue = GUICtrlRead($MovmentSlider)
-			$iValue = GUICtrlRead($healSlider)
-			; Update label only if the value has changed
-			If $iValue <> $iPrevValue Then ;healing percent Lable in Gui Updater when game is not loaded;
-				GUICtrlSetData($healLabel, "Heal at: " & $iValue & "%")
-				$iPrevValue = $iValue ; Store new value for comparison
-			EndIf
-			If $MValue <> $MPrevValue Then ;Movement timer Lable in Gui Updater when game is not loaded;
-				GUICtrlSetData($MoveLabel, "Heal After  "& $MValue)
-				$MPrevValue = $MValue ; Store new value for comparison
-			EndIf
-		WEnd
-		ConsoleWrite("[Info] Game detected, reconnecting..." & @CRLF)
-	EndIf
+    ; 1) Lock the GUI drawing (won't crash if your AutoIt doesn't truly support it)
+    GUISetState($SW_LOCKDRAW)
 
+    ; Update any slider label changes
+    Local $MValue = GUICtrlRead($MovmentSlider)
+    If $MValue <> $MPrevValue Then
+        GUICtrlSetData($MoveLabel, "Heal After " & $MValue)
+        $MPrevValue = $MValue
+    EndIf
+
+    Local $iValue = GUICtrlRead($healSlider)
+    If $iValue <> $iPrevValue Then
+        GUICtrlSetData($healLabel, "Heal at: " & $iValue & "%")
+        $iPrevValue = $iValue
+    EndIf
+
+    ; Check if game is running
+    Local $ProcessID = ProcessExists($ProcessName)
+    If Not $ProcessID Then
+        ; If previously open, game must have closed
+        If $hProcess <> 0 Then
+            ConsoleWrite("[Info] Game closed, handle reset..." & @CRLF)
+            _WinAPI_CloseHandle($hProcess)
+        EndIf
+        $hProcess = 0
+        $BaseAddress = 0
+        ConsoleWrite("[Info] Game not found, waiting..." & @CRLF)
+        GUISetState($SW_UNLOCKDRAW)
+        Sleep(200)
+        ContinueLoop
+    EndIf
+
+    ; If game is found but handle is not open
+    If $hProcess = 0 Then
+        ConnectToBaseAddress()
+        If $BaseAddress = 0 Or $hProcess = 0 Then
+            GUISetState($SW_UNLOCKDRAW)
+            Sleep(200)
+            ContinueLoop
+        Else
+            ChangeAddressToBase()
+            ConsoleWrite("[Info] Connected to game process." & @CRLF)
+        EndIf
+    EndIf
+
+    ; Game is open and handle is valid, read memory and update labels
+    GUIReadMemory()
+
+    ; Unlock drawing
+    GUISetState($SW_UNLOCKDRAW)
+
+    ; If chat is closed, do Cure/Target/Healer/Walker logic
+    If $Chat = 0 Then
+        If $CureStatus = 1 Then CureMe()
+        If $TargetStatus = 1 Then AttackModeReader()
+        If $HealerStatus = 1 Then TimeToHeal()
+
+        If $MoveToLocationsStatus = 1 Then
+            Local $result = MoveToLocationsStep($aLocations, $iCurrentIndex)
+            If @error Then
+                ConsoleWrite("Error or end of locations: " & @error & @CRLF)
+                $MoveToLocationsStatus = 0
+            EndIf
+        EndIf
+    EndIf
+
+    ; Check if process is still alive
+    If Not ProcessExists($ProcessID) Then
+        ConsoleWrite("[Info] Game closed unexpectedly, handle reset..." & @CRLF)
+        _WinAPI_CloseHandle($hProcess)
+        $hProcess    = 0
+        $BaseAddress = 0
+    EndIf
+
+    Sleep(100)
 WEnd
-; Cleanup
+
 GUIDelete($Gui)
 _WinAPI_CloseHandle($hProcess)
-ConsoleWrite("[Debug] Trainer closed, 0" & @CRLF)
+ConsoleWrite("[Debug] Trainer closed by script end" & @CRLF)
 Exit
 
 ; ------------------------------------------------------------------------------
-;                                LOAD CONFIG
+;                               LOAD CONFIG
 ; ------------------------------------------------------------------------------
 Func LoadButtonConfig()
     Local $sButtonConfigFile = @ScriptDir & "\NewButtonConfig.ini"
 
-    ; Remove TogglePauseHotkey and PlayLocationsHotkey entries
+    ; Remove old/unused entries
     IniDelete($sButtonConfigFile, "Hotkeys", "TogglePauseHotkey")
     IniDelete($sButtonConfigFile, "Hotkeys", "PlayLocationsHotkey")
 
     ; Define the hotkeys and default values
-    Local $aKeys[7][2] = [["HealHotkey", "{" & Chr(96) & "}"], ["CureHotkey", "{-}"], ["TargetHotkey", "{=}"], ["ExitHotkey", "{#}"], ["SaveLocationHotkey", "{F7}"], ["EraseLocationsHotkey", "{F8}"], ["MoveToLocationsHotkey", "{!}"]]
+    Local $aKeys[7][2] = [ _
+        ["HealHotkey", "{" & Chr(96) & "}"], _
+        ["CureHotkey", "{-}"], _
+        ["TargetHotkey", "{=}"], _
+        ["ExitHotkey", "{#}"], _
+        ["SaveLocationHotkey", "{F7}"], _
+        ["EraseLocationsHotkey", "{F8}"], _
+        ["MoveToLocationsHotkey", "{!}"] _
+    ]
 
-    ; Flag to track if any missing keys are found
     Local $bMissingKeys = False
-
     For $i = 0 To UBound($aKeys) - 1
-        ; Read each key from the INI file, default to predefined hotkeys if not found
         Local $sKey = IniRead($sButtonConfigFile, "Hotkeys", $aKeys[$i][0], "")
-
-        ; Check if key is missing
         If $sKey = "" Then
             ConsoleWrite("[Warning] Missing key: " & $aKeys[$i][0] & ". Will create default config." & @CRLF)
             $bMissingKeys = True
@@ -265,11 +281,10 @@ Func LoadButtonConfig()
         CreateButtonDefaultConfig()
     EndIf
 
-    ; Re-read the keys after ensuring defaults exist
+    ; Re-read keys
     For $i = 0 To UBound($aKeys) - 1
         Local $sKey = IniRead($sButtonConfigFile, "Hotkeys", $aKeys[$i][0], $aKeys[$i][1])
 
-        ; Set the hotkey to the corresponding function
         Switch $aKeys[$i][0]
             Case "HealHotkey"
                 HotKeySet($sKey, "Hotkeyshit")
@@ -293,687 +308,272 @@ EndFunc
 
 Func CreateButtonDefaultConfig()
     Local $sButtonConfigFile = @ScriptDir & "\NewButtonConfig.ini"
-
-    ; Declare and initialize the hotkey array
-    Local $aKeys[7][2] = [["HealHotkey", "{" & Chr(96) & "}"], ["CureHotkey", "{-}"], ["TargetHotkey", "{=}"], ["ExitHotkey", "{#}"], ["SaveLocationHotkey", "{F7}"], ["EraseLocationsHotkey", "{F8}"], ["MoveToLocationsHotkey", "{!}"]]
-
-    ; Write each default key to the INI file
+    Local $aKeys[7][2] = [ _
+        ["HealHotkey", "{" & Chr(96) & "}"], _
+        ["CureHotkey", "{-}"], _
+        ["TargetHotkey", "{=}"], _
+        ["ExitHotkey", "{#}"], _
+        ["SaveLocationHotkey", "{F7}"], _
+        ["EraseLocationsHotkey", "{F8}"], _
+        ["MoveToLocationsHotkey", "{!}"] _
+    ]
     For $i = 0 To UBound($aKeys) - 1
         IniWrite($sButtonConfigFile, "Hotkeys", $aKeys[$i][0], $aKeys[$i][1])
     Next
-
     ConsoleWrite("[Info] Default ButtonConfig.ini created with hotkeys." & @CRLF)
+EndFunc
+
+; ------------------------------------------------------------------------------
+;   Function to Open Process & Retrieve Base Address
+; ------------------------------------------------------------------------------
+Func ConnectToBaseAddress()
+    Global $hProcess
+    Global $ProcessID
+    Global $BaseAddress
+
+    $hProcess = _WinAPI_OpenProcess(0x1F0FFF, False, $ProcessID)
+    If $hProcess = 0 Then
+        ConsoleWrite("[Error] Failed to open process! Try running as administrator." & @CRLF)
+        Return
+    EndIf
+
+    $BaseAddress = _GetModuleBase_EnumModules($hProcess)
+    If $BaseAddress = 0 Then
+        ConsoleWrite("[Error] Failed to obtain a valid base address!" & @CRLF)
+    EndIf
+EndFunc
+
+Func ChangeAddressToBase()
+    Global $BaseAddress
+    Global $TypeOffset, $AttackModeOffset, $PosXOffset, $PosYOffset
+    Global $HPOffset, $MaxHPOffset, $ChattOpenOffset, $SicknessOffset
+    Global $TypeAddress, $AttackModeAddress, $PosXAddress, $PosYAddress
+    Global $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress
+
+    $TypeAddress       = $BaseAddress + $TypeOffset
+    $AttackModeAddress = $BaseAddress + $AttackModeOffset
+    $PosXAddress       = $BaseAddress + $PosXOffset
+    $PosYAddress       = $BaseAddress + $PosYOffset
+    $HPAddress         = $BaseAddress + $HPOffset
+    $MaxHPAddress      = $BaseAddress + $MaxHPOffset
+    $ChattOpenAddress  = $BaseAddress + $ChattOpenOffset
+    $SicknessAddress   = $BaseAddress + $SicknessOffset
+EndFunc
+
+Func _GetModuleBase_EnumModules($hProc)
+    Local $hPsapi = DllOpen("psapi.dll")
+    If $hPsapi = 0 Then Return 0
+
+    Local $tModules     = DllStructCreate("ptr[1024]")
+    Local $tBytesNeeded = DllStructCreate("dword")
+    Local $aCall        = DllCall("psapi.dll", "bool", "EnumProcessModules", _
+                                   "handle", $hProc, _
+                                   "ptr", DllStructGetPtr($tModules), _
+                                   "dword", DllStructGetSize($tModules), _
+                                   "ptr", DllStructGetPtr($tBytesNeeded))
+    If @error Or Not $aCall[0] Then
+        DllClose($hPsapi)
+        Return 0
+    EndIf
+
+    ; The first module in the list is usually the main EXE
+    Local $pBaseAddress = DllStructGetData($tModules, 1, 1)
+    DllClose($hPsapi)
+    Return $pBaseAddress
 EndFunc
 
 ; ------------------------------------------------------------------------------
 ;                       READ AND UPDATE GUI FROM MEMORY
 ; ------------------------------------------------------------------------------
 Func GUIReadMemory()
+    Global $hProcess
+    Global $Type, $TypeAddress
+    Global $WalkerLabel, $MoveToLocationsStatus
+    Global $AttackMode, $AttackModeAddress
+    Global $PosXAddress, $PosYAddress
+    Global $HPAddress, $MaxHPAddress
+    Global $ChattOpenAddress, $Chat
+    Global $SicknessAddress, $Sickness
 
-	If $hProcess = 0 Then Return
-	; Read Type
-	$PrevType = " "
-	$Type = _ReadMemory($hProcess, $TypeAddress)
-	If $Type <> $PrevType Then
-		If $Type = 0 Then
-			GUICtrlSetData($TypeLabel, "Type: Player") ;0 = player, 1 =monster, 2 = npc, 65535 = no target
-			$PrevType = $Type
-		ElseIf $Type = 1 Then
-			GUICtrlSetData($TypeLabel, "Type: Monster")
-			$PrevType = $Type
-		ElseIf $Type = 2 Then
-			GUICtrlSetData($TypeLabel, "Type: NPC")
-			$PrevType = $Type
-		ElseIf $Type = 65535 Then
-			GUICtrlSetData($TypeLabel, "Type: No Target")
-			$PrevType = $Type
-		Else
-			GUICtrlSetData($TypeLabel, "Type: Unknown (" & $Type & ")")
-			$PrevType = $Type
-		EndIf
-	EndIf
-	; Attack Mode
+    If $hProcess = 0 Then Return
 
-	$AttackMode = _ReadMemory($hProcess, $AttackModeAddress)
-	If $AttackMode = 0 Then
-		GUICtrlSetData($AttackModeLabel, "Attack Mode: Safe")
-	ElseIf $AttackMode = 1 Then
-		GUICtrlSetData($AttackModeLabel, "Attack Mode: Attack")
-	Else
-		GUICtrlSetData($AttackModeLabel, "Attack Mode: No Target")
-	EndIf
-	$iValue = GUICtrlRead($healSlider)
-	; Update label only if the value has changed
-	If $iValue <> $iPrevValue Then
-		GUICtrlSetData($healLabel, "Heal at: " & $iValue & "%")
-		$iPrevValue = $iValue ; Store new value for comparison
-	EndIf
-	$MValue = GUICtrlRead($MovmentSlider)
-	If $MValue <> $MPrevValue Then ;Movement timer Lable in Gui Updater when game is loaded;
-		GUICtrlSetData($MoveLabel, "Heal After  "& $MValue)
-		$MPrevValue = $MValue ; Store new value for comparison
-	EndIf
-	; Position
-	Local $PosXOld = " "
-	Local $PosYOld = " "
-	Local $PosX = _ReadMemory($hProcess, $PosXAddress)
-	Local $PosY = _ReadMemory($hProcess, $PosYAddress)
-	If $PosX <> $PosXOld Then
-		GUICtrlSetData($PosXLabel, "Pos X: " & $PosX)
-		$PosXOld = $PosX
-	EndIf
-	If $PosY <> $PosYOld Then
-		GUICtrlSetData($PosYLabel, "Pos Y: " & $PosY)
-		$PosYOld = $PosY
-	EndIf
-	; HP
-	Local $HP = _ReadMemory($hProcess, $HPAddress)
-	GUICtrlSetData($HPLabel, "HP: " & $HP)
-	GUICtrlSetData($HP2Label, "RealHp: " & $HP / 65536)
-	; MaxHP
-	Local $MaxHP = _ReadMemory($hProcess, $MaxHPAddress)
-	GUICtrlSetData($MaxHPLabel, "MaxHP: " & $MaxHP)
-	; Chat
-	Local $ChatVal = _ReadMemory($hProcess, $ChattOpenAddress)
-	$Chat = $ChatVal
-	GUICtrlSetData($ChatLabel, "Chat: " & $ChatVal)
-	; Sickness
-	Local $SickVal = _ReadMemory($hProcess, $SicknessAddress)
-	$Sickness = $SickVal
-	$SicknessDescription = GetSicknessDescription($SickVal)
-	GUICtrlSetData($SicknessLabel, "Sickness: " & $SicknessDescription)
-	Sleep(50)
-EndFunc   ;==>GUIReadMemory
-
-; ------------------------------------------------------------------------------
-;                                  CURE FUNCTION
-; ------------------------------------------------------------------------------
-Func CureMe()
-    If $Chat <> 0 Then
-        Sleep(50)
-        Return ; Optionally add a return message if needed
-    EndIf
-	$Sickness = _ReadMemory($hProcess, $SicknessAddress)
-    $Healwait = GUICtrlRead($MovmentSlider)  ; Read movement slider value for delay
-    $HP = _ReadMemory($hProcess, $HPAddress)
-    $RealHP = $HP / 65536
-    $MaxHP = _ReadMemory($hProcess, $MaxHPAddress)
-    $ChatVal = _ReadMemory($hProcess, $ChattOpenAddress)
-    $SickVal = _ReadMemory($hProcess, $SicknessAddress)
-    $HealThreshold = GUICtrlRead($healSlider) / 100
-
-
-	If _ArraySearch($sicknessArray, $Sickness) <> -1 Then
-    $CurrentX = Number(StringRegExpReplace(GUICtrlRead($PosXLabel), "[^\d]", ""))
-    $CurrentY = Number(StringRegExpReplace(GUICtrlRead($PosYLabel), "[^\d]", ""))
-    Static $LastX = $CurrentX
-    Static $LastY = $CurrentY
-
-
-    $elapsedTimeSinceHeal = TimerDiff($LastHealTime)  ; Update the elapsed time since last heal
-
-    ConsoleWrite("Healing check initiated..." & @CRLF)
-    ConsoleWrite("Current HP: " & $RealHP & " / " & $MaxHP & " Threshold: " & $HealThreshold & @CRLF)
-    ConsoleWrite("Heal Delay: " & $HealDelay & " ms, Heal wait (no movement): " & $Healwait & " ms" & @CRLF)
-    ConsoleWrite("Current Position: X=" & $CurrentX & " Y=" & $CurrentY & " Last Position: X=" & $LastX & " Y=" & $LastY & @CRLF)
-    ConsoleWrite("Time since last heal: " & $elapsedTimeSinceHeal & " ms" & @CRLF)
-
-    If $CurrentX <> $LastX Or $CurrentY <> $LastY Then
-		If GUICtrlRead($Checkbox) = $GUI_CHECKED Then
-			;Movment ignored;
-		Else
-        ConsoleWrite("Movement detected, resetting movement timer." & @CRLF)
-        $LastX = $CurrentX
-        $LastY = $CurrentY
-        $MovementTime = TimerInit()  ; Reset timer if position changed
-		EndIf
+    ; Read Type
+    $Type = _ReadMemory($hProcess, $TypeAddress)
+    If $Type = 0 Then
+        GUICtrlSetData($TypeLabel, "Type: Player")
+    ElseIf $Type = 1 Then
+        GUICtrlSetData($TypeLabel, "Type: Monster")
+    ElseIf $Type = 2 Then
+        GUICtrlSetData($TypeLabel, "Type: NPC")
+    ElseIf $Type = 65535 Then
+        GUICtrlSetData($TypeLabel, "Type: No Target")
+    Else
+        GUICtrlSetData($TypeLabel, "Type: Unknown (" & $Type & ")")
     EndIf
 
-	If GUICtrlRead($Checkbox) = $GUI_CHECKED Then
-		If $elapsedTimeSinceHeal >= $HealDelay Then
-
-
-			ControlSend("Project Rogue", "", "", "{3}")
-			ConsoleWrite("Cure Triggered" & @CRLF)
-			$LastHealTime = TimerInit()  ; Reset main timer after healing
-		Else
-			ConsoleWrite("Cure blocked , insufficient time elapsed since last attempt." & @CRLF)
-		EndIf
-
-	Else
-		If $elapsedTimeSinceHeal >= $HealDelay Then
-
-				If TimerDiff($MovementTime) > $Healwait Then
-					ControlSend("Project Rogue", "", "", "{3}")
-					ConsoleWrite("Curing triggered and no movement for " & $Healwait & " ms." & @CRLF)
-					$LastHealTime = TimerInit()  ; Reset main timer after healing
-				Else
-					ConsoleWrite("No Cure  Waiting for no movement duration to pass. " & (TimerDiff($MovementTime)) & " ms passed." & @CRLF)
-				EndIf
-
-		Else
-			ConsoleWrite("Curing blocked: Chat open or under sickness effect, or insufficient time elapsed since last attempt." & @CRLF)
-		EndIf
-	endif
-
-
-
-
-
-
-    EndIf
-EndFunc   ;==>CureMe
-
-; ------------------------------------------------------------------------------
-;                                   HEALER
-; ------------------------------------------------------------------------------
-; Update function to read slider value
-; Initialize this at the start of your script
-
-Func TimeToHeal()
-    $Healwait = GUICtrlRead($MovmentSlider)  ; Read movement slider value for delay
-    $HP = _ReadMemory($hProcess, $HPAddress)
-    $RealHP = $HP / 65536
-    $MaxHP = _ReadMemory($hProcess, $MaxHPAddress)
-    $ChatVal = _ReadMemory($hProcess, $ChattOpenAddress)
-    $SickVal = _ReadMemory($hProcess, $SicknessAddress)
-    $HealThreshold = GUICtrlRead($healSlider) / 100
-
-    $CurrentX = Number(StringRegExpReplace(GUICtrlRead($PosXLabel), "[^\d]", ""))
-    $CurrentY = Number(StringRegExpReplace(GUICtrlRead($PosYLabel), "[^\d]", ""))
-    Static $LastX = $CurrentX
-    Static $LastY = $CurrentY
-
-    $elapsedTimeSinceHeal = TimerDiff($LastHealTime)  ; Update the elapsed time since last heal
-
-    ConsoleWrite("Healing check initiated..." & @CRLF)
-    ConsoleWrite("Current HP: " & $RealHP & " / " & $MaxHP & " Threshold: " & $HealThreshold & @CRLF)
-    ConsoleWrite("Heal Delay: " & $HealDelay & " ms, Heal wait (no movement): " & $Healwait & " ms" & @CRLF)
-    ConsoleWrite("Current Position: X=" & $CurrentX & " Y=" & $CurrentY & " Last Position: X=" & $LastX & " Y=" & $LastY & @CRLF)
-    ConsoleWrite("Time since last heal: " & $elapsedTimeSinceHeal & " ms" & @CRLF)
-
-    If $CurrentX <> $LastX Or $CurrentY <> $LastY Then
-        If GUICtrlRead($Checkbox) = $GUI_CHECKED Then
-			;Movment ignored;
-		Else
-		ConsoleWrite("Movement detected, resetting movement timer." & @CRLF)
-        $LastX = $CurrentX
-        $LastY = $CurrentY
-        $MovementTime = TimerInit()  ; Reset timer if position changed
-		EndIf
+    ; Walker On/Off
+    If $MoveToLocationsStatus = 0 Then
+        GUICtrlSetData($WalkerLabel, "Walker: Off")
+    ElseIf $MoveToLocationsStatus = 1 Then
+        GUICtrlSetData($WalkerLabel, "Walker: On")
+    Else
+        GUICtrlSetData($WalkerLabel, "Error: Broken")
     EndIf
 
+    ; Attack Mode
+    $AttackMode = _ReadMemory($hProcess, $AttackModeAddress)
+    If $AttackMode = 0 Then
+        GUICtrlSetData($AttackModeLabel, "Attack Mode: Safe")
+    ElseIf $AttackMode = 1 Then
+        GUICtrlSetData($AttackModeLabel, "Attack Mode: Attack")
+    Else
+        GUICtrlSetData($AttackModeLabel, "Attack Mode: No Target")
+    EndIf
 
-	If GUICtrlRead($Checkbox) = $GUI_CHECKED Then
-		If $ChatVal = 0 And _ArraySearch($sicknessArray, $Sickness) = -1 Then
+    ; Position
+    Local $PosX = _ReadMemory($hProcess, $PosXAddress)
+    Local $PosY = _ReadMemory($hProcess, $PosYAddress)
+    GUICtrlSetData($PosXLabel, "Pos X: " & $PosX)
+    GUICtrlSetData($PosYLabel, "Pos Y: " & $PosY)
 
-			If $RealHP < ($MaxHP * $HealThreshold) Then
-				If TimerDiff($LastHealTime) > $HealDelay Then
-					ControlSend("Project Rogue", "", "", "{2}")
-					ConsoleWrite("Healing triggered: HP below threshold****"& @CRLF)
-					$LastHealTime = TimerInit()  ; Reset main timer after healing
-				Else
-					ConsoleWrite("No healing:**" & @CRLF)
-				EndIf
-			Else
-				ConsoleWrite("No healing needed: HP above threshold.**" & @CRLF)
-			EndIf
-		Else
-			ConsoleWrite("Healing blocked: Chat open or under sickness effect, or insufficient time elapsed since last heal.*" & @CRLF)
-		EndIf
-	Else
+    ; HP
+    Local $HP = _ReadMemory($hProcess, $HPAddress)
+    GUICtrlSetData($HPLabel, "HP: " & $HP)
+    GUICtrlSetData($HP2Label, "RealHp: " & ($HP / 65536))
 
+    ; MaxHP
+    Local $MaxHP = _ReadMemory($hProcess, $MaxHPAddress)
+    GUICtrlSetData($MaxHPLabel, "MaxHP: " & $MaxHP)
 
-		If $ChatVal = 0 And _ArraySearch($sicknessArray, $Sickness) = -1 And $elapsedTimeSinceHeal >= $HealDelay Then
+    ; Chat
+    Local $ChatVal = _ReadMemory($hProcess, $ChattOpenAddress)
+    $Chat = $ChatVal
+    GUICtrlSetData($ChatLabel, "Chat: " & $ChatVal)
 
-			If $RealHP < ($MaxHP * $HealThreshold) Then
-				If TimerDiff($MovementTime) > $Healwait Then
-					ControlSend("Project Rogue", "", "", "{2}")
-					ConsoleWrite("Healing triggered: HP below threshold and no movement for " & $Healwait & " ms." & @CRLF)
-					$LastHealTime = TimerInit()  ; Reset main timer after healing
-				Else
-					ConsoleWrite("No healing: Waiting for no movement duration to pass. " & (TimerDiff($MovementTime)) & " ms passed." & @CRLF)
-				EndIf
-			Else
-				ConsoleWrite("No healing needed: HP above threshold." & @CRLF)
-			EndIf
-		Else
-			ConsoleWrite("Healing blocked: Chat open or under sickness effect, or insufficient time elapsed since last heal." & @CRLF)
-		EndIf
+    ; Sickness
+    Local $SickVal = _ReadMemory($hProcess, $SicknessAddress)
+    $Sickness = $SickVal
+    Local $SicknessDescription = GetSicknessDescription($SickVal)
+    GUICtrlSetData($SicknessLabel, "Sickness: " & $SicknessDescription)
+EndFunc
 
-	EndIf
+Func _ReadMemory($hProc, $pAddress)
+    If $hProc = 0 Or $pAddress = 0 Then Return 0
 
-EndFunc   ;==>TimeToHeal
+    Local $tBuffer = DllStructCreate("dword")
+    Local $aRead = DllCall("kernel32.dll", "bool", "ReadProcessMemory", _
+                           "handle", $hProc, _
+                           "ptr", $pAddress, _
+                           "ptr", DllStructGetPtr($tBuffer), _
+                           "dword", DllStructGetSize($tBuffer), _
+                           "ptr", 0)
+    If @error Or Not $aRead[0] Then Return 0
+    Return DllStructGetData($tBuffer, 1)
+EndFunc
 
-; ------------------------------------------------------------------------------
-;                                  TARGETING
-; ------------------------------------------------------------------------------
-Func AttackModeReader()
-	$ChatVal = _ReadMemory($hProcess, $ChattOpenAddress)
-	$Chat = $ChatVal
-	$AttackMode = _ReadMemory($hProcess, $AttackModeAddress)
-	If $AttackMode = 0 Then
-		GUICtrlSetData($AttackModeLabel, "Attack Mode: Safe")
-	ElseIf $AttackMode = 1 Then
-		GUICtrlSetData($AttackModeLabel, "Attack Mode: Attack")
-		If $Type = 0 Then
-			ConsoleWrite("Type: Player" & @CRLF)
-		ElseIf $Type = 65535 Then
-			Local $elapsedTime = TimerDiff($currentTime)
-			If $Chat = 0 Then
-				If $elapsedTime >= $TargetDelay Then
-					If $chat = 0 Then
-					ControlSend("Project Rogue", "", "", "{TAB}") ;target next mob
-					$currentTime = TimerInit()
-					EndIf
-
-				EndIf
-			Else
-				If $elapsedTime >= $TargetDelay Then
-					ConsoleWrite("[Debug] chat open" & @CRLF) ;chat is open it shouldnt do anything
-					$currentTime = TimerInit()
-				EndIf
-			EndIf
-		ElseIf $Type = 1 Then
-			; "Monster targeted"
-
-		ElseIf $Type = 2 Then
-			; "Type: NPC"
-
-		Else
-			ConsoleWrite("Type: " & $Type & @CRLF)
-
-		EndIf
-	Else
-		GUICtrlSetData($AttackModeLabel, "Attack Mode: No Target")
-	EndIf
-EndFunc   ;==>AttackModeReader
-
-Func ConnectToBaseAddress()
-	$hProcess = _WinAPI_OpenProcess(0x1F0FFF, False, $ProcessID)
-	If $hProcess = 0 Then
-		ConsoleWrite("[Error] Failed to open process! Try running as administrator." & @CRLF)
-		Return
-	EndIf
-	$BaseAddress = _GetModuleBase_EnumModules($hProcess)
-	If $BaseAddress = 0 Then
-		ConsoleWrite("[Error] Failed to obtain a valid base address!" & @CRLF)
-	EndIf
-EndFunc   ;==>ConnectToBaseAddress
-
-Func ChangeAddressToBase()
-	$TypeAddress = $BaseAddress + $TypeOffset
-	$AttackModeAddress = $BaseAddress + $AttackModeOffset
-	$PosXAddress = $BaseAddress + $PosXOffset
-	$PosYAddress = $BaseAddress + $PosYOffset
-	$HPAddress = $BaseAddress + $HPOffset
-	$MaxHPAddress = $BaseAddress + $MaxHPOffset
-	$ChattOpenAddress = $BaseAddress + $ChattOpenOffset
-	$SicknessAddress = $BaseAddress + $SicknessOffset
-EndFunc   ;==>ChangeAddressToBase
-
-Func _GetModuleBase_EnumModules($hProcess)
-	Local $hPsapi = DllOpen("psapi.dll")
-	If $hPsapi = 0 Then Return 0
-	Local $tModules = DllStructCreate("ptr[1024]")
-	Local $tBytesNeeded = DllStructCreate("dword")
-	Local $aCall = DllCall("psapi.dll", "bool", "EnumProcessModules", _
-			"handle", $hProcess, _
-			"ptr", DllStructGetPtr($tModules), _
-			"dword", DllStructGetSize($tModules), _
-			"ptr", DllStructGetPtr($tBytesNeeded))
-	If @error Or Not $aCall[0] Then
-		DllClose($hPsapi)
-		Return 0
-	EndIf
-	Local $pBaseAddress = DllStructGetData($tModules, 1, 1)
-	DllClose($hPsapi)
-	Return $pBaseAddress
-EndFunc   ;==>_GetModuleBase_EnumModules
-
-Func _ReadMemory($hProcess, $pAddress)
-	If $hProcess = 0 Or $pAddress = 0 Then Return 0
-	Local $tBuffer = DllStructCreate("dword")
-	Local $aRead = DllCall("kernel32.dll", "bool", "ReadProcessMemory", _
-			"handle", $hProcess, _
-			"ptr", $pAddress, _
-			"ptr", DllStructGetPtr($tBuffer), _
-			"dword", DllStructGetSize($tBuffer), _
-			"ptr", 0)
-	If @error Or Not $aRead[0] Then
-		Return 0
-	EndIf
-	Return DllStructGetData($tBuffer, 1)
-EndFunc   ;==>_ReadMemory
-
+; --------------------------------------------------------------------------
+;                           Hotkey Toggle Functions
+; --------------------------------------------------------------------------
 Func Hotkeyshit()
-	$HealerStatus = Not $HealerStatus
-	GUICtrlSetData($HealerLabel, "Healer: " & ($HealerStatus ? "On" : "Off"))
-	Sleep(300)
-EndFunc   ;==>Hotkeyshit
+    Global $HealerStatus
+    $HealerStatus = Not $HealerStatus
+    GUICtrlSetData($HealerLabel, "Healer: " & ($HealerStatus ? "On" : "Off"))
+    Sleep(300)
+EndFunc
 
 Func CureKeyShit()
-	$CureStatus = Not $CureStatus
-	GUICtrlSetData($CureLabel, "Cure: " & ($CureStatus ? "On" : "Off"))
-	Sleep(300)
-EndFunc   ;==>CureKeyShit
+    Global $CureStatus
+    $CureStatus = Not $CureStatus
+    GUICtrlSetData($CureLabel, "Cure: " & ($CureStatus ? "On" : "Off"))
+    Sleep(300)
+EndFunc
 
 Func TargetKeyShit()
-	$TargetStatus = Not $TargetStatus
-	GUICtrlSetData($TargetLabel, "Target: " & ($TargetStatus ? "On" : "Off"))
-	Sleep(300)
-EndFunc   ;==>TargetKeyShit
+    Global $TargetStatus
+    $TargetStatus = Not $TargetStatus
+    GUICtrlSetData($TargetLabel, "Target: " & ($TargetStatus ? "On" : "Off"))
+    Sleep(300)
+EndFunc
 
 Func KilledWithFire()
+    Global $Debug
+    If $Debug Then ConsoleWrite("Killed with fire" & @CRLF)
+    Exit
+EndFunc
 
-	If $Debug Then ConsoleWrite("Killed with fire" & @CRLF)
-	Exit
-EndFunc   ;==>KilledWithFire
-
+; ------------------------------------------------------------------------------
+; Optional: Return a more human label for some “Sick” codes
+; ------------------------------------------------------------------------------
 Func GetSicknessDescription($Sick)
-	Global $SicknessDescription = "Unknown"
-	Switch $Sick
-		Case 1
-			$SicknessDescription = "Poison1"& $Sickness
-		Case 2
-			$SicknessDescription = "Disease1"& $Sickness
-		Case 4
-			$SicknessDescription = "Poison4"& $Sickness
-		Case 8
-			$SicknessDescription = "Disease5"& $Sickness
-		Case 16
-			$SicknessDescription = "New Affliction 16"& $Sickness
-		Case 32
-			$SicknessDescription = "New Affliction 32"& $Sickness
-		Case 64
-			$SicknessDescription = "Vampirism"& $Sickness
-		Case 65
-			$SicknessDescription = "Vampirism + Poison1"& $Sickness
-		Case 66
-			$SicknessDescription = "Vampirism + Disease1"& $Sickness
-		Case 67
-			$SicknessDescription = "Vampirism + Poison1 + Disease1"
-		Case 68
-			$SicknessDescription = "Vampirism + Poison4"& $Sickness
-		Case 69
-			$SicknessDescription = "Vampirism + Poison1 + Poison4"& $Sickness
-		Case 72
-			$SicknessDescription = "Vampirism + Disease5"& $Sickness
-		Case 73
-			$SicknessDescription = "Vampirism + Poison1 + Disease5"& $Sickness
-		Case 80
-			$SicknessDescription = "Vampirism + New Affliction 16"& $Sickness
-		Case 81
-			$SicknessDescription = "Vampirism + Poison1 + New Affliction 16"& $Sickness
-		Case 96
-			$SicknessDescription = "Vampirism + New Affliction 32"& $Sickness
-		Case 97
-			$SicknessDescription = "Vampirism + Poison1 + New Affliction 32"& $Sickness
-		Case 98
-			$SicknessDescription = "Poison3"& $Sickness
-		Case 99
-			$SicknessDescription = "Disease23"& $Sickness
-		Case 320
-			$SicknessDescription = "Vampirism"& $Sickness
-		Case 512
-			$SicknessDescription = "Swiftness"& $Sickness
-		Case 576
-			$SicknessDescription = "Swiftness + Vampirism"& $Sickness
-		Case 577
-			$SicknessDescription = "Swiftness + Vampirism + Poison1"& $Sickness
-		Case 8192
-			$SicknessDescription = "BloodLust"& $Sickness
-		Case 8193
-			$SicknessDescription = "BloodLust + Poison1"& $Sickness
-		Case 8194
-			$SicknessDescription = "BloodLust + Disease1"& $Sickness
-		Case 8195
-			$SicknessDescription = "BloodLust + Poison1 + Disease1"& $Sickness
-		Case 8256
-			$SicknessDescription = "BloodLust + Vampirism"& $Sickness
-		Case 8257
-			$SicknessDescription = "BloodLust + Vampirism + Poison1"& $Sickness
-		Case 8258
-			$SicknessDescription = "BloodLust + Vampirism + Poison1 + Disease1"& $Sickness
-		Case 8704
-			$SicknessDescription = "BloodLust + Swiftness"& $Sickness
-		Case 8705
-			$SicknessDescription = "BloodLust + Swiftness + Poison1"& $Sickness
-		Case 8706
-			$SicknessDescription = "BloodLust + Swiftness + Disease1"& $Sickness
-		Case 8707
-			$SicknessDescription = "BloodLust + Swiftness + Poison1 + Disease1"& $Sickness
-		Case 8708
-			$SicknessDescription = "BloodLust + Swiftness + Poison4"& $Sickness
-		Case 8709
-			$SicknessDescription = "BloodLust + Swiftness + Poison1 + Poison4"& $Sickness
-		Case 8712
-			$SicknessDescription = "BloodLust + Swiftness + Disease5"& $Sickness
-		Case 8713
-			$SicknessDescription = "BloodLust + Swiftness + Poison1 + Disease5"& $Sickness
-		Case 8720
-			$SicknessDescription = "BloodLust + Swiftness + New Affliction 16"& $Sickness
-		Case 8721
-			$SicknessDescription = "BloodLust + Swiftness + Poison1 + New Affliction 16"& $Sickness
-		Case 8736
-			$SicknessDescription = "BloodLust + Swiftness + New Affliction 32"& $Sickness
-		Case 8737
-			$SicknessDescription = "BloodLust + Swiftness + Poison1 + New Affliction 32"& $Sickness
-		Case 8768
-			$SicknessDescription = "BloodLust + Swiftness + Vampirism"& $Sickness
-		Case 8769
-			$SicknessDescription = "BloodLust + Swiftness + Vampirism + Poison1"& $Sickness
-		Case 8770
-			$SicknessDescription = "BloodLust + Swiftness + Vampirism + Disease1"& $Sickness
-		Case 16384
-			$SicknessDescription = "Exhausted"& $Sickness
-		Case 16385
-			$SicknessDescription = "Exhausted + Poison1"& $Sickness
-		Case 16386
-			$SicknessDescription = "Exhausted + Disease1"& $Sickness
-		Case 16448
-			$SicknessDescription = "Exhausted + Vampirism"& $Sickness
-		Case 16449
-			$SicknessDescription = "Exhausted + Vampirism + Poison1"& $Sickness
-		Case 16450
-			$SicknessDescription = "Exhausted + Disease1"& $Sickness
-		Case 16451
-			$SicknessDescription = "Exhausted + Poison1 + Disease1"& $Sickness
-		Case 16452
-			$SicknessDescription = "Exhausted + Poison4 + Disease1 + Vampirism"& $Sickness
-		Case 16896
-			$SicknessDescription = "Swiftness + Exhausted"& $Sickness
-		Case 16897
-			$SicknessDescription = "Swiftness + Exhausted + Poison1"& $Sickness
-		Case 16898
-			$SicknessDescription = "Swiftness + Exhausted + Disease1"& $Sickness
-		Case 16929
-			$SicknessDescription = "Swiftness + Exhausted + Vampirism + Poison1"& $Sickness
-		Case 24576
-			$SicknessDescription = "BloodLust + Exhausted"& $Sickness
-		Case 24577
-			$SicknessDescription = "BloodLust + Exhausted + Poison1"& $Sickness
-		Case 24578
-			$SicknessDescription = "BloodLust + Exhausted + Disease1"& $Sickness
-		Case 24579
-			$SicknessDescription = "BloodLust + Exhausted + Poison1 + Disease1"& $Sickness
-		Case 24580
-			$SicknessDescription = "BloodLust + Exhausted + Poison4"& $Sickness
-		Case 24581
-			$SicknessDescription = "BloodLust + Exhausted + Poison1 + Poison4"& $Sickness
-		Case 24582
-			$SicknessDescription = "BloodLust + Exhausted + Disease5"& $Sickness
-		Case 24583
-			$SicknessDescription = "BloodLust + Exhausted + Poison1 + Disease5"& $Sickness
-		Case 24584
-			$SicknessDescription = "BloodLust + Exhausted + New Affliction 16"& $Sickness
-		Case 24585
-			$SicknessDescription = "BloodLust + Exhausted + Poison1 + New Affliction 16"& $Sickness
-		Case 24608
-			$SicknessDescription = "BloodLust + Exhausted + New Affliction 32"& $Sickness
-		Case 24609
-			$SicknessDescription = "BloodLust + Exhausted + Poison1 + New Affliction 32"& $Sickness
-		Case 24640
-			$SicknessDescription = "BloodLust + Exhausted + Vampirism"& $Sickness
-		Case 24641
-			$SicknessDescription = "BloodLust + Exhausted + Vampirism + Poison1"& $Sickness
-		Case 24642
-			$SicknessDescription = "BloodLust + Exhausted + Vampirism + Disease1"& $Sickness
-		Case 24643
-			$SicknessDescription = "BloodLust + Exhausted + Vampirism + Poison1 + Disease1"& $Sickness
-		Case 24644
-			$SicknessDescription = "BloodLust + Exhausted + Vampirism + Poison4"& $Sickness
-		Case 24645
-			$SicknessDescription = "BloodLust + Exhausted + Vampirism + Poison1 + Poison4"& $Sickness
-		Case 24646
-			$SicknessDescription = "BloodLust + Exhausted + Vampirism + Disease5"& $Sickness
-		Case 24647
-			$SicknessDescription = "BloodLust + Exhausted + Vampirism + Poison1 + Disease5"& $Sickness
-		Case 24648
-			$SicknessDescription = "BloodLust + Exhausted + Vampirism + New Affliction 16"& $Sickness
-		Case 24649
-			$SicknessDescription = "BloodLust + Exhausted + Vampirism + Poison1 + New Affliction 16"& $Sickness
-		Case 24672
-			$SicknessDescription = "BloodLust + Exhausted + Vampirism + New Affliction 32"& $Sickness
-		Case 24673
-			$SicknessDescription = "BloodLust + Exhausted + Vampirism + Poison1 + New Affliction 32"& $Sickness
-		Case 25088
-			$SicknessDescription = "BloodLust + Exhausted + Swiftness"& $Sickness
-		Case 25089
-			$SicknessDescription = "BloodLust + Exhausted + Swiftness + Poison1"& $Sickness
-		Case 25090
-			$SicknessDescription = "BloodLust + Exhausted + Swiftness + Disease1"& $Sickness
-		Case 25091
-			$SicknessDescription = "BloodLust + Exhausted + Swiftness + Poison1 + Disease1"& $Sickness
-		Case 25092
-			$SicknessDescription = "BloodLust + Exhausted + Swiftness + Poison4"& $Sickness
-		Case 25093
-			$SicknessDescription = "BloodLust + Exhausted + Swiftness + Poison1 + Poison4"& $Sickness
-		Case 25094
-			$SicknessDescription = "BloodLust + Exhausted + Swiftness + Disease5"& $Sickness
-		Case 25095
-			$SicknessDescription = "BloodLust + Exhausted + Swiftness + Poison1 + Disease5"& $Sickness
-		Case 25096
-			$SicknessDescription = "BloodLust + Exhausted + Swiftness + New Affliction 16"& $Sickness
-		Case 25097
-			$SicknessDescription = "BloodLust + Exhausted + Swiftness + Poison1 + New Affliction 16"& $Sickness
-		Case 25120
-			$SicknessDescription = "BloodLust + Exhausted + Swiftness + New Affliction 32"& $Sickness
-		Case 25121
-			$SicknessDescription = "BloodLust + Exhausted + Swiftness + Poison1 + New Affliction 32"& $Sickness
-		Case 33280
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism"& $Sickness
-		Case 33283
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Poison1"& $Sickness
-		Case 33284
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Disease1"& $Sickness
-		Case 33285
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Poison1 + Disease1"& $Sickness
-		Case 33286
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Poison4"& $Sickness
-		Case 33287
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Poison1 + Poison4"& $Sickness
-		Case 33288
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Disease5"& $Sickness
-		Case 33289
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Poison1 + Disease5"& $Sickness
-		Case 33290
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + New Affliction 16"& $Sickness
-		Case 33291
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Poison1 + New Affliction 16"& $Sickness
-		Case 33292
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + New Affliction 32"& $Sickness
-		Case 33293
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Poison1 + New Affliction 32"& $Sickness
-		Case 33294
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Poison3"& $Sickness
-		Case 33295
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Disease23"& $Sickness
-		Case 33792
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Swiftness"& $Sickness
-		Case 33793
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Swiftness + Poison1"& $Sickness
-		Case 41984
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Desperation"& $Sickness
-		Case 41985
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Desperation + Poison1"& $Sickness
-		Case 41986
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Desperation + Disease1"& $Sickness
-		Case 41987
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Desperation + Poison1 + Disease1"& $Sickness
-		Case 41988
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Desperation + Poison4"& $Sickness
-		Case 41989
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Desperation + Poison1 + Poison4"& $Sickness
-		Case 41990
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Desperation + Disease5"& $Sickness
-		Case 41991
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Desperation + Poison1 + Disease5"& $Sickness
-		Case 41992
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Desperation + New Affliction 16"& $Sickness
-		Case 41993
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Desperation + Poison1 + New Affliction 16"& $Sickness
-		Case 41994
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Desperation + New Affliction 32"& $Sickness
-		Case 41995
-			$SicknessDescription = "Swiftness + Exhausted + Desperation + Vampirism + Desperation + Poison1 + New Affliction 32"& $Sickness
-		Case Else
-			$SicknessDescription = $Sickness
-	EndSwitch
-	Return $SicknessDescription
+    Local $SicknessDescription = "Unknown"
+    Switch $Sick
+        Case 1
+            $SicknessDescription = "Poison1 (" & $Sick & ")"
+        Case 2
+            $SicknessDescription = "Disease1 (" & $Sick & ")"
+        ; ...
+        Case Else
+            $SicknessDescription = $Sick
+    EndSwitch
+    Return $SicknessDescription
+EndFunc
 
-	;addCommentToChangeChecksum
-EndFunc   ;==>GetSicknessDescription
-
-
+; ------------------------------------------------------------------------------
+;                                LOCATION LOADING
+; ------------------------------------------------------------------------------
 Func LoadLocations()
-    Local Const $iMaxLocations = 200
-    Local $aLocations[$iMaxLocations][2]  ; Array of arrays each holding 2 elements (X, Y)
-
     If Not FileExists($locationFile) Then
-        ConsoleWrite("Location file not found: " & $locationFile & @CRLF)
-        Return SetError(1, 0, "No file")
+        ConsoleWrite("[Error] Location file not found: " & $locationFile & @CRLF)
+        Return SetError(1, 0, 0)
     EndIf
 
     Local $aLines = FileReadToArray($locationFile)
     If @error Then
-        ConsoleWrite("Failed to read file: " & $locationFile & @CRLF)
-        Return SetError(2, 0, "File read error")
+        ConsoleWrite("[Error] Failed to read file: " & $locationFile & @CRLF)
+        Return SetError(2, 0, 0)
     EndIf
 
     Local $iLocationCount = 0
+    Dim $aTempLocations[UBound($aLines)][2]
+
     For $i = 0 To UBound($aLines) - 1
         Local $aMatches = StringRegExp($aLines[$i], "X:(\d+);Y:(\d+)", 3)
         If Not @error And UBound($aMatches) = 2 Then
-            $aLocations[$iLocationCount][0] = Int($aMatches[0])
-            $aLocations[$iLocationCount][1] = Int($aMatches[1])
+            $aTempLocations[$iLocationCount][0] = Int($aMatches[0])
+            $aTempLocations[$iLocationCount][1] = Int($aMatches[1])
             $iLocationCount += 1
+        Else
+            ConsoleWrite("[Warning] Failed to parse line " & $i & ": " & $aLines[$i] & @CRLF)
         EndIf
-        If $iLocationCount >= $iMaxLocations Then ExitLoop
     Next
 
-    ReDim $aLocations[$iLocationCount][2]  ; Resize to the actual number of locations loaded
-    Return $aLocations
+    If $iLocationCount = 0 Then
+        ConsoleWrite("[Warning] No valid locations found in " & $locationFile & @CRLF)
+        Return SetError(3, 0, 0)
+    EndIf
+
+    ReDim $aTempLocations[$iLocationCount][2]
+    ConsoleWrite("[Success] Loaded " & $iLocationCount & " locations." & @CRLF)
+    Return $aTempLocations
 EndFunc
 
 Func SaveLocation()
+    Global $hProcess, $PosXAddress, $PosYAddress
+    Global $currentLocations, $maxLocations
+
     Local $x = _ReadMemory($hProcess, $PosXAddress)
     Local $y = _ReadMemory($hProcess, $PosYAddress)
-
-
     ConsoleWrite("Attempting to read X: " & $x & " Y: " & $y & @CRLF)
 
     If @error Then
         ConsoleWrite("[Error] Failed to read memory. Error code: " & @error & @CRLF)
         Return
     EndIf
-
     If $x == 0 And $y == 0 Then
-        ConsoleWrite("[Warning] Read zero for both coordinates. Possible bad read." & @CRLF)
+        ConsoleWrite("[Warning] Read zero for both coordinates. Possibly a bad read." & @CRLF)
         Return
     EndIf
 
-    ; Ensure the location file exists or create it
     If Not FileExists($locationFile) Then
         Local $file = FileOpen($locationFile, $FO_CREATEPATH + $FO_OVERWRITE)
         If $file == -1 Then
@@ -984,125 +584,303 @@ Func SaveLocation()
         ConsoleWrite("[Info] File created: " & $locationFile & @CRLF)
     EndIf
 
-    ; Format data to append
     Local $data = " : Location" & $currentLocations & "=X:" & $x & ";Y:" & $y & @CRLF
-
-    ; Append location data to the file
     If $currentLocations < $maxLocations Then
-
         _FileWriteLog($locationFile, $data)
-
-            If @error Then
-				ConsoleWrite("[Error] Failed to write to file: " & $locationFile & @CRLF)
-			Else
+        If @error Then
+            ConsoleWrite("[Error] Failed to write to file: " & $locationFile & @CRLF)
+        Else
             ConsoleWrite("[Info] Data written: " & $data)
-				$currentLocations += 1
-			EndIf
+            $currentLocations += 1
+        EndIf
     Else
-        ConsoleWrite("[Info] Maximum locations reached. Stop pushing the fucking button" & @CRLF)
-        ;$currentLocations = 1 ; Reset to start new if max is reached
+        ConsoleWrite("[Info] Maximum locations reached. Stop pressing the button!" & @CRLF)
     EndIf
 EndFunc
 
 Func EraseLocations()
     FileDelete($locationFile)
-	;addCommentToChangeChecksum
-	$currentLocations  = 1
-	;addCommentToChangeChecksum
-    ConsoleWrite ("Success" & @CRLF & "All locations erased." & @CRLF)
-
+    $currentLocations = 1
+    ConsoleWrite("Success - All locations erased." & @CRLF)
 EndFunc
 
-Func MoveToLocations($aLocations)
-    ; Ensure that $aLocations is an array and has at least one entry
+; ------------------------------------------------------------------------------
+;                           LOCATION WALKING
+; ------------------------------------------------------------------------------
+Func MoveToLocations()
+    Global $MoveToLocationsStatus, $hProcess, $PosXAddress, $PosYAddress, $iCurrentIndex, $aLocations
+
+    If $MoveToLocationsStatus = 0 Then
+        Local $currentX = _ReadMemory($hProcess, $PosXAddress)
+        Local $currentY = _ReadMemory($hProcess, $PosYAddress)
+        $iCurrentIndex  = FindClosestLocationIndex($currentX, $currentY, $aLocations)
+
+        If $iCurrentIndex = -1 Then
+            ConsoleWrite("[Error] Could not find a closest location index (no valid data?)." & @CRLF)
+            Return
+        EndIf
+        $MoveToLocationsStatus = 1
+        ConsoleWrite("move on" & @CRLF)
+
+    ElseIf $MoveToLocationsStatus = 1 Then
+        $MoveToLocationsStatus = 0
+        ConsoleWrite("move off" & @CRLF)
+
+    Else
+        MsgBox(0, "Error", "You shouldn't have gotten this error", 5)
+    EndIf
+EndFunc
+
+Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
+    Global $hProcess, $PosXAddress, $PosYAddress, $TypeAddress
+
     If Not IsArray($aLocations) Then
         ConsoleWrite("Error: $aLocations is not an array." & @CRLF)
-        Return SetError(1, 0, "Not an array")
+        Return SetError(1, 0, "Invalid input")
+    EndIf
+    If $iCurrentIndex < 0 Or $iCurrentIndex >= UBound($aLocations) Then
+        ConsoleWrite("Error: Invalid or out-of-range index: " & $iCurrentIndex & @CRLF)
+        Return SetError(2, 0, "Index out of range")
     EndIf
 
-    ConsoleWrite("Moving to locations, total count: " & UBound($aLocations) & @CRLF)
+    ConsoleWrite("Processing step for location index: " & $iCurrentIndex & @CRLF)
 
-    ; Initialize current coordinates at the start of the function
+    Local $targetX  = $aLocations[$iCurrentIndex][0]
+    Local $targetY  = $aLocations[$iCurrentIndex][1]
     Local $currentX = _ReadMemory($hProcess, $PosXAddress)
     Local $currentY = _ReadMemory($hProcess, $PosYAddress)
-    Local $MoverDelay = 500  ; Delay between movements in milliseconds
-    Local $TimeToMove = TimerInit()  ; Initialize the timer
+    Local $Type     = _ReadMemory($hProcess, $TypeAddress)
 
-    ; Iterate over each location
+    ConsoleWrite("Current: X=" & $currentX & ", Y=" & $currentY & _
+                 " | Target: X=" & $targetX & ", Y=" & $targetY & @CRLF)
+
+    ; If we have a target, move only if Type=65535 (No Target)
+    If $Type <> 65535 Then
+        ConsoleWrite("Movement paused. Type is " & $Type & " (Need 65535 = No Target)" & @CRLF)
+        Return False
+    EndIf
+
+    ; Check if arrived
+    If $currentX = $targetX And $currentY = $targetY Then
+        ConsoleWrite("Arrived at location " & ($iCurrentIndex + 1) & _
+                     " => (X=" & $targetX & ", Y=" & $targetY & ")." & @CRLF)
+        $iCurrentIndex += 1
+        If $iCurrentIndex >= UBound($aLocations) Then
+            $iCurrentIndex = 0
+        EndIf
+        Return True
+    EndIf
+
+    ; Move horizontally
+    Local $movingHorizontally = False
+    If $currentX <> $targetX Then
+        If $currentX < $targetX Then
+            ConsoleWrite("Moving right." & @CRLF)
+            ControlSend($WindowName, "", "", "{d down}")
+            Sleep(50)
+            ControlSend($WindowName, "", "", "{d up}")
+        Else
+            ConsoleWrite("Moving left." & @CRLF)
+            ControlSend($WindowName, "", "", "{a down}")
+            Sleep(50)
+            ControlSend($WindowName, "", "", "{a up}")
+        EndIf
+        $movingHorizontally = True
+    EndIf
+
+    ; Move vertically
+    Local $movingVertically = False
+    If $currentY <> $targetY Then
+        If $currentY < $targetY Then
+            ConsoleWrite("Moving down." & @CRLF)
+            ControlSend($WindowName, "", "", "{s down}")
+            Sleep(50)
+            ControlSend($WindowName, "", "", "{s up}")
+        Else
+            ConsoleWrite("Moving up." & @CRLF)
+            ControlSend($WindowName, "", "", "{w down}")
+            Sleep(50)
+            ControlSend($WindowName, "", "", "{w up}")
+        EndIf
+        $movingVertically = True
+    EndIf
+
+    If $movingHorizontally Or $movingVertically Then
+        ConsoleWrite("Moving towards target..." & @CRLF)
+        Return True
+    EndIf
+
+    Return False
+EndFunc
+
+Func FindClosestLocationIndex($currentX, $currentY, $aLocations)
+    If Not IsArray($aLocations) Or UBound($aLocations, 0) = 0 Then
+        ConsoleWrite("FindClosestLocationIndex => no valid array." & @CRLF)
+        Return -1
+    EndIf
+
+    Local $minDist  = 999999
+    Local $minIndex = -1
     For $i = 0 To UBound($aLocations) - 1
-        Local $targetX = $aLocations[$i][0]
-        Local $targetY = $aLocations[$i][1]
-
-        ; Check if the coordinates are numbers to prevent errors
-        If Not IsNumber($targetX) Or Not IsNumber($targetY) Then
-            ConsoleWrite("Invalid data at index " & $i & ": X = " & $targetX & ", Y = " & $targetY & @CRLF)
-            ContinueLoop
+        Local $dx   = $currentX - $aLocations[$i][0]
+        Local $dy   = $currentY - $aLocations[$i][1]
+        Local $dist = $dx * $dx + $dy * $dy
+        If $dist < $minDist Then
+            $minDist  = $dist
+            $minIndex = $i
         EndIf
-
-        ConsoleWrite("Moving to Location " & ($i + 1) & ": X = " & $targetX & ", Y = " & $targetY & @CRLF)
-
-        ; Calculate the difference needed to move
-        Local $moveX = $targetX - $currentX
-        Local $moveY = $targetY - $currentY
-
-        ; Control movement horizontally
-        If $moveX > 0 Then
-            While TimerDiff($TimeToMove) < $MoverDelay
-                ControlSend("Project Rogue", "", "", "{d}") ; Move right
-				ConsoleWrite ("ASDASDASDSADASD")
-            $TimeToMove = TimerInit()  ; Reset the timery after action
-
-				Sleep(100)  ; Small sleep to prevent high CPU usage
-            WEnd
-
-        ElseIf $moveX < 0 Then
-            While TimerDiff($TimeToMove) < $MoverDelay
-                ControlSend("Project Rogue", "", "", "{a}") ; Move left
-            $TimeToMove = TimerInit()
-
-				Sleep(100)
-            WEnd
-
-        EndIf
-
-        ; Control movement vertically
-        If $moveY > 0 Then
-            While TimerDiff($TimeToMove) < $MoverDelay
-                ControlSend("Project Rogue", "", "", "{s}")) ; Move down
-            $TimeToMove = TimerInit()
-
-				Sleep(100)
-            WEnd
-
-        ElseIf $moveY < 0 Then
-            While TimerDiff($TimeToMove) < $MoverDelay
-                ControlSend("Project Rogue", "", "", "{w}") ; Move up
-            $TimeToMove = TimerInit()
-
-				Sleep(100)
-            WEnd
-
-        EndIf
-
-        ; Update current coordinates
-        $currentX = $targetX
-        $currentY = $targetY
-
-        ; Delay to allow movements to complete
-        Sleep(1000)  ; Adjust timing as necessary for your application's response time
     Next
 
-    ConsoleWrite("Finished moving to all locations." & @CRLF)
+    If $minIndex = -1 Then
+        ConsoleWrite("FindClosestLocationIndex => No valid locations found." & @CRLF)
+    Else
+        ConsoleWrite("FindClosestLocationIndex => Found index: " & $minIndex & " Dist=" & $minDist & @CRLF)
+    EndIf
+    Return $minIndex
+EndFunc
+
+; ------------------------------------------------------------------------------
+;                                  CURE FUNCTION
+; ------------------------------------------------------------------------------
+Func CureMe()
+    Global $Chat, $Checkbox, $Sickness, $sicknessArray
+    Global $HealDelay, $LastHealTime, $elapsedTimeSinceHeal
+    Global $MovmentSlider, $PosXLabel, $PosYLabel, $MovementTime
+
+    If $Chat <> 0 Then
+        Sleep(50)
+        Return
+    EndIf
+
+    ; Check if we have a sickness that is in the array
+    If _ArraySearch($sicknessArray, $Sickness) = -1 Then
+        Return
+    EndIf
+
+    Local $Healwait      = GUICtrlRead($MovmentSlider)
+    $elapsedTimeSinceHeal = TimerDiff($LastHealTime)
+
+    Local $CurrentX = Number(StringRegExpReplace(GUICtrlRead($PosXLabel), "[^\d]", ""))
+    Local $CurrentY = Number(StringRegExpReplace(GUICtrlRead($PosYLabel), "[^\d]", ""))
+    Static $LastX   = $CurrentX, $LastY = $CurrentY
+
+    ; Movement detection
+    If $CurrentX <> $LastX Or $CurrentY <> $LastY Then
+        If GUICtrlRead($Checkbox) <> $GUI_CHECKED Then
+            $LastX = $CurrentX
+            $LastY = $CurrentY
+            $MovementTime = TimerInit()
+        EndIf
+    EndIf
+
+    If GUICtrlRead($Checkbox) = $GUI_CHECKED Then
+        ; Old style: just time check
+        If $elapsedTimeSinceHeal >= $HealDelay Then
+            ControlSend("Project Rogue", "", "", "{3}")
+            ConsoleWrite("Cure triggered (old style)" & @CRLF)
+            $LastHealTime = TimerInit()
+        EndIf
+    Else
+        ; Must have no movement for $Healwait ms
+        If $elapsedTimeSinceHeal >= $HealDelay Then
+            If TimerDiff($MovementTime) > $Healwait Then
+                ControlSend("Project Rogue", "", "", "{3}")
+                ConsoleWrite("Cure triggered: no movement for " & $Healwait & " ms." & @CRLF)
+                $LastHealTime = TimerInit()
+            EndIf
+        EndIf
+    EndIf
+EndFunc
+
+; ------------------------------------------------------------------------------
+;                                   HEALER
+; ------------------------------------------------------------------------------
+Func TimeToHeal()
+    Global $MovmentSlider, $PosXLabel, $PosYLabel, $Checkbox, $HPAddress, $MaxHPAddress
+    Global $HealerLabel, $HealDelay, $LastHealTime, $elapsedTimeSinceHeal, $sicknessArray, $Sickness
+    Global $Chat, $ChattOpenAddress, $healSlider, $MovementTime
+    Global $hProcess
+
+    Local $Healwait      = GUICtrlRead($MovmentSlider)
+    Local $HP            = _ReadMemory($hProcess, $HPAddress)
+    Local $RealHP        = $HP / 65536
+    Local $MaxHP         = _ReadMemory($hProcess, $MaxHPAddress)
+    Local $ChatVal       = _ReadMemory($hProcess, $ChattOpenAddress)
+    Local $HealThreshold = GUICtrlRead($healSlider) / 100
+
+    Local $CurrentX = Number(StringRegExpReplace(GUICtrlRead($PosXLabel), "[^\d]", ""))
+    Local $CurrentY = Number(StringRegExpReplace(GUICtrlRead($PosYLabel), "[^\d]", ""))
+    Static $LastX   = $CurrentX, $LastY = $CurrentY
+
+    $elapsedTimeSinceHeal = TimerDiff($LastHealTime)
+
+    ; Movement detection
+    If $CurrentX <> $LastX Or $CurrentY <> $LastY Then
+        ; only reset movement if we are NOT in old style
+        If GUICtrlRead($Checkbox) <> $GUI_CHECKED Then
+            $LastX = $CurrentX
+            $LastY = $CurrentY
+            $MovementTime = TimerInit()
+        EndIf
+    EndIf
+
+    If GUICtrlRead($Checkbox) = $GUI_CHECKED Then
+        ; Old style: time + HP check
+        If $ChatVal = 0 And _ArraySearch($sicknessArray, $Sickness) = -1 Then
+            If $RealHP < ($MaxHP * $HealThreshold) Then
+                If $elapsedTimeSinceHeal > $HealDelay Then
+                    ControlSend("Project Rogue", "", "", "{2}")
+                    ConsoleWrite("Heal triggered (old style): HP < threshold" & @CRLF)
+                    $LastHealTime = TimerInit()
+                EndIf
+            EndIf
+        EndIf
+    Else
+        ; Normal: require no movement
+        If $ChatVal = 0 And _ArraySearch($sicknessArray, $Sickness) = -1 _
+           And $elapsedTimeSinceHeal >= $HealDelay Then
+
+            If $RealHP < ($MaxHP * $HealThreshold) Then
+                If TimerDiff($MovementTime) > $Healwait Then
+                    ControlSend("Project Rogue", "", "", "{2}")
+                    ConsoleWrite("Healed: HP < threshold + no movement." & @CRLF)
+                    $LastHealTime = TimerInit()
+                Else
+                    ConsoleWrite("No heal: waiting for no movement window." & @CRLF)
+                EndIf
+            EndIf
+        EndIf
+    EndIf
+EndFunc
+
+; ------------------------------------------------------------------------------
+;                                  TARGETING
+; ------------------------------------------------------------------------------
+Func AttackModeReader()
+    Global $ChattOpenAddress, $Chat, $AttackModeAddress, $AttackMode, $Type
+    Global $currentTime, $TargetDelay, $WindowName, $TypeAddress, $hProcess
+
+    $Chat       = _ReadMemory($hProcess, $ChattOpenAddress)
+    $AttackMode = _ReadMemory($hProcess, $AttackModeAddress)
+    $Type       = _ReadMemory($hProcess, $TypeAddress)
+
+    If $AttackMode = 0 Then
+        GUICtrlSetData($AttackModeLabel, "Attack Mode: Safe")
+    ElseIf $AttackMode = 1 Then
+        GUICtrlSetData($AttackModeLabel, "Attack Mode: Attack")
+
+        ; If there's no target (65535) & chat closed, press TAB occasionally
+        If $Type = 65535 And $Chat = 0 Then
+            Local $elapsed = TimerDiff($currentTime)
+            If $elapsed >= $TargetDelay Then
+                ControlSend("Project Rogue", "", "", "{TAB}")
+                $currentTime = TimerInit()
+            EndIf
+        EndIf
+    Else
+        GUICtrlSetData($AttackModeLabel, "Attack Mode: No Target")
+    EndIf
 EndFunc
 
 
-Func TrashHeap()
 
-	; Remove Function;
-
-EndFunc   ;==>TrashHeap
-
-
-
-
-;addCommentToChangeChecksum
