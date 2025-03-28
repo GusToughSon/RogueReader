@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=Include\RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=4.0.0.14
+#AutoIt3Wrapper_Res_Fileversion=4.0.0.15
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -63,14 +63,14 @@ Global $Debug                    = False
 ; Define the game process and memory offsets
 Global $ProcessName       = "Project Rogue Client.exe"
 Global $WindowName        = "Project Rogue"
-Global $TypeOffset        = 0xBE7944 ; 0=Player, 1=Monster, etc
-Global $AttackModeOffset  = 0xB5BBD0
-Global $PosYOffset        = 0xBF9DD8
-Global $PosXOffset        = 0xBF9DE0
-Global $HPOffset          = 0x7C3D0
-Global $MaxHPOffset       = 0x7C3D4
-Global $ChattOpenOffset   = 0xB678A8
-Global $SicknessOffset    = 0x7C5B4
+Global $TypeOffset        = 0xBE7974 ; ; 0=Player, 1=Monster, etc
+Global $AttackModeOffset  = 0xB5BC00 ;
+Global $PosYOffset        = 0xBF9E08 ;
+Global $PosXOffset        = 0xBF9E10 ;
+Global $HPOffset          = 0x7C400 ;
+Global $MaxHPOffset       = 0x7C404 ;
+Global $ChattOpenOffset   = 0xB678D8 ;
+Global $SicknessOffset    = 0x7C5E4 ;
 
 Global $currentTime         = TimerInit()
 Global $elapsedTime         = TimerDiff($currentTime)
