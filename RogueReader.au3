@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=Include\RogueReader.ico
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=4.0.0.15
+#AutoIt3Wrapper_Res_Fileversion=4.0.0.16
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -135,8 +135,8 @@ Global $healLabel = GUICtrlCreateLabel("Heal at: 75%", 230, 350, 100, 20)
 
 Global $MovmentSlider = GUICtrlCreateSlider(20, 370, 180, 20)
 GUICtrlSetLimit($MovmentSlider, 750, 50)
-GUICtrlSetData($MovmentSlider, 150)
-Global $MoveLabel   = GUICtrlCreateLabel("Heal After 150", 185, 370, 100, 20)
+GUICtrlSetData($MovmentSlider, 200)
+Global $MoveLabel   = GUICtrlCreateLabel("Heal After 200", 185, 370, 100, 20)
 Global $MoveLabell  = GUICtrlCreateLabel("ms of no movement.", 280, 370, 100, 20)
 
 Global $Checkbox      = GUICtrlCreateCheckbox("Old Style Pothack", 240, 250, 200, 20)
@@ -745,48 +745,46 @@ EndFunc
 Func CureMe()
     Global $Chat, $Checkbox, $Sickness, $sicknessArray
     Global $HealDelay, $LastHealTime, $elapsedTimeSinceHeal
-    Global $MovmentSlider, $PosXLabel, $PosYLabel, $MovementTime
+    Global $MovmentSlider, $PosXLabel, $PosYLabel
 
-    If $Chat <> 0 Then
-        Sleep(50)
-        Return
-    EndIf
+    If $Chat <> 0 Then Return
 
     ; Check if we have a sickness that is in the array
-    If _ArraySearch($sicknessArray, $Sickness) = -1 Then
-        Return
-    EndIf
+    If _ArraySearch($sicknessArray, $Sickness) = -1 Then Return
 
-    Local $Healwait      = GUICtrlRead($MovmentSlider)
-    $elapsedTimeSinceHeal = TimerDiff($LastHealTime)
+    Local $Healwait = GUICtrlRead($MovmentSlider)
 
     Local $CurrentX = Number(StringRegExpReplace(GUICtrlRead($PosXLabel), "[^\d]", ""))
     Local $CurrentY = Number(StringRegExpReplace(GUICtrlRead($PosYLabel), "[^\d]", ""))
-    Static $LastX   = $CurrentX, $LastY = $CurrentY
+    Static $LastX = $CurrentX, $LastY = $CurrentY
+    Static $LastMovementTime = TimerInit()
 
-    ; Movement detection
+    $elapsedTimeSinceHeal = TimerDiff($LastHealTime)
+
+    ; Detect movement
     If $CurrentX <> $LastX Or $CurrentY <> $LastY Then
-        If GUICtrlRead($Checkbox) <> $GUI_CHECKED Then
-            $LastX = $CurrentX
-            $LastY = $CurrentY
-            $MovementTime = TimerInit()
-        EndIf
+        $LastX = $CurrentX
+        $LastY = $CurrentY
+        $LastMovementTime = TimerInit()
     EndIf
 
+    Local $TimeSinceLastMove = TimerDiff($LastMovementTime)
+
+    ; Old style
     If GUICtrlRead($Checkbox) = $GUI_CHECKED Then
-        ; Old style: just time check
         If $elapsedTimeSinceHeal >= $HealDelay Then
             ControlSend("Project Rogue", "", "", "{3}")
             ConsoleWrite("Cure triggered (old style)" & @CRLF)
             $LastHealTime = TimerInit()
         EndIf
     Else
-        ; Must have no movement for $Healwait ms
         If $elapsedTimeSinceHeal >= $HealDelay Then
-            If TimerDiff($MovementTime) > $Healwait Then
+            If $TimeSinceLastMove >= $Healwait Then
                 ControlSend("Project Rogue", "", "", "{3}")
-                ConsoleWrite("Cure triggered: no movement for " & $Healwait & " ms." & @CRLF)
+                ConsoleWrite("Cure triggered: Stationary for " & $TimeSinceLastMove & "ms." & @CRLF)
                 $LastHealTime = TimerInit()
+            Else
+                ConsoleWrite("No cure: Only stationary for " & $TimeSinceLastMove & "ms." & @CRLF)
             EndIf
         EndIf
     EndIf
@@ -798,7 +796,7 @@ EndFunc
 Func TimeToHeal()
     Global $MovmentSlider, $PosXLabel, $PosYLabel, $Checkbox, $HPAddress, $MaxHPAddress
     Global $HealerLabel, $HealDelay, $LastHealTime, $elapsedTimeSinceHeal, $sicknessArray, $Sickness
-    Global $Chat, $ChattOpenAddress, $healSlider, $MovementTime
+    Global $Chat, $ChattOpenAddress, $healSlider
     Global $hProcess
 
     Local $Healwait      = GUICtrlRead($MovmentSlider)
@@ -810,43 +808,39 @@ Func TimeToHeal()
 
     Local $CurrentX = Number(StringRegExpReplace(GUICtrlRead($PosXLabel), "[^\d]", ""))
     Local $CurrentY = Number(StringRegExpReplace(GUICtrlRead($PosYLabel), "[^\d]", ""))
-    Static $LastX   = $CurrentX, $LastY = $CurrentY
+    Static $LastX = $CurrentX, $LastY = $CurrentY
+    Static $LastMovementTime = TimerInit()
 
     $elapsedTimeSinceHeal = TimerDiff($LastHealTime)
 
-    ; Movement detection
+    ; --- Detect movement ---
     If $CurrentX <> $LastX Or $CurrentY <> $LastY Then
-        ; only reset movement if we are NOT in old style
-        If GUICtrlRead($Checkbox) <> $GUI_CHECKED Then
-            $LastX = $CurrentX
-            $LastY = $CurrentY
-            $MovementTime = TimerInit()
-        EndIf
+        $LastX = $CurrentX
+        $LastY = $CurrentY
+        $LastMovementTime = TimerInit()
     EndIf
 
+    Local $TimeSinceLastMove = TimerDiff($LastMovementTime)
+
+    ; --- Old style (checkbox) ---
     If GUICtrlRead($Checkbox) = $GUI_CHECKED Then
-        ; Old style: time + HP check
         If $ChatVal = 0 And _ArraySearch($sicknessArray, $Sickness) = -1 Then
-            If $RealHP < ($MaxHP * $HealThreshold) Then
-                If $elapsedTimeSinceHeal > $HealDelay Then
-                    ControlSend("Project Rogue", "", "", "{2}")
-                    ConsoleWrite("Heal triggered (old style): HP < threshold" & @CRLF)
-                    $LastHealTime = TimerInit()
-                EndIf
+            If $RealHP < ($MaxHP * $HealThreshold) And $elapsedTimeSinceHeal > $HealDelay Then
+                ControlSend("Project Rogue", "", "", "{2}")
+                ConsoleWrite("Heal triggered (old style): HP < threshold" & @CRLF)
+                $LastHealTime = TimerInit()
             EndIf
         EndIf
     Else
-        ; Normal: require no movement
-        If $ChatVal = 0 And _ArraySearch($sicknessArray, $Sickness) = -1 _
-           And $elapsedTimeSinceHeal >= $HealDelay Then
-
-            If $RealHP < ($MaxHP * $HealThreshold) Then
-                If TimerDiff($MovementTime) > $Healwait Then
+        ; --- Normal logic (requires stationary) ---
+        If $ChatVal = 0 And _ArraySearch($sicknessArray, $Sickness) = -1 Then
+            If $RealHP < ($MaxHP * $HealThreshold) And $elapsedTimeSinceHeal > $HealDelay Then
+                If $TimeSinceLastMove >= $Healwait Then
                     ControlSend("Project Rogue", "", "", "{2}")
-                    ConsoleWrite("Healed: HP < threshold + no movement." & @CRLF)
+                    ConsoleWrite("Healed: Stationary for " & $TimeSinceLastMove & "ms | HP < threshold." & @CRLF)
                     $LastHealTime = TimerInit()
                 Else
-                    ConsoleWrite("No heal: waiting for no movement window." & @CRLF)
+                    ConsoleWrite("No heal: Only stationary for " & $TimeSinceLastMove & "ms." & @CRLF)
                 EndIf
             EndIf
         EndIf
