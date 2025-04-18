@@ -1,8 +1,9 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=Include\RogueReader.ico
 #AutoIt3Wrapper_Compression=4
-#AutoIt3Wrapper_Res_Description=Trainer for Project Rogue
-#AutoIt3Wrapper_Res_Fileversion=4.0.0.16
+#AutoIt3Wrapper_UseX64=y
+#AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.1
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -37,7 +38,7 @@ Opt("MouseCoordMode", 2)
 Global $version               = FileGetVersion(@ScriptFullPath)
 Global Const $locationFile    = @ScriptDir & "\Locations.ini"
 Global $currentLocations      = 1
-Global $maxLocations          = 200
+Global $maxLocations          = 20000
 Global Const $sButtonConfigFile = @ScriptDir & "\NewButtonConfig.ini"
 
 ConsoleWrite("Script Version: " & $version & @CRLF)
@@ -96,7 +97,7 @@ Global $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress
 Global $Type, $Chat, $Sickness, $AttackMode
 
 Global $sicknessArray = [ _
-    1, 2, 65, 66, 67, 68, 69, 72, 73, 81, 97, 98, 99, 513, 514, 515, 577, _
+    1, 2, 65, 66, 67, 68, 69, 72, 73, 81, 97, 98, 99, 257, 258, 513, 514, 515, 577, _
     8193, 8194, 8195, 8257, 8258, 8705, 8706, 8707, 8708, 8709, 8712, 8713, _
     8721, 8737, 8769, 8770, 16385, 16386, 16449, 16450, 16451, 16452, 16897, _
     16898, 24577, 24578, 24579, 24581, 24582, 24583, 24585, 24609, 24641, _
@@ -110,6 +111,7 @@ Global $TargetDelay = 400, $HealDelay = 1700
 ; -------------------
 ; Create the GUI
 ; -------------------
+;...;
 Global $Gui             = GUICreate("RougeReader Version - " & $version, 400, 400, 15, 15)
 Global $TypeLabel       = GUICtrlCreateLabel("Type: N/A", 20, 30, 250, 20)
 Global $AttackModeLabel = GUICtrlCreateLabel("Attack Mode: N/A", 20, 60, 250, 20)
@@ -146,7 +148,7 @@ Global $NEW           = GUICtrlCreateLabel("*This now functions*", 240, 230, 200
 GUISetState(@SW_SHOW)
 
 ; --------------------------------------------------------------------------
-;                         STREAMLINED MAIN LOOP
+;   :                      STREAMLINED MAIN LOOP
 ; --------------------------------------------------------------------------
 While $Running
     Local $msg = GUIGetMsg()
@@ -210,7 +212,7 @@ While $Running
 
     ; Game is open and handle is valid, read memory and update labels
     GUIReadMemory()
-
+;......................................;
     ; Unlock drawing
     GUISetState($SW_UNLOCKDRAW)
 
