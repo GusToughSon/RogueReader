@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.1
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.2
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -132,8 +132,8 @@ Global $ExitButton      = GUICtrlCreateButton("Exit", 150, 300, 100, 30)
 
 Global $healSlider = GUICtrlCreateSlider(20, 350, 200, 20)
 GUICtrlSetLimit($healSlider, 95, 45) ; range from 45 to 95
-GUICtrlSetData($healSlider, 75)      ; initial position to 75
-Global $healLabel = GUICtrlCreateLabel("Heal at: 75%", 230, 350, 100, 20)
+GUICtrlSetData($healSlider, 85)      ; initial position to 85
+Global $healLabel = GUICtrlCreateLabel("Heal at: 85%", 230, 350, 100, 20)
 
 Global $MovmentSlider = GUICtrlCreateSlider(20, 370, 180, 20)
 GUICtrlSetLimit($MovmentSlider, 750, 50)
