@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.2
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.4
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -72,6 +72,9 @@ Global $HPOffset          = 0x7C400 ;
 Global $MaxHPOffset       = 0x7C404 ;
 Global $ChattOpenOffset   = 0xB678D8 ;
 Global $SicknessOffset    = 0x7C5E4 ;
+Global $BackPack		  = 0x731A8 ;
+Global $BackPackMax		  = 0x731AC ;
+
 
 Global $currentTime         = TimerInit()
 Global $elapsedTime         = TimerDiff($currentTime)
@@ -125,6 +128,9 @@ Global $MaxHPLabel      = GUICtrlCreateLabel("MaxHP: N/A", 20, 210, 250, 20)
 Global $TargetLabel     = GUICtrlCreateLabel("Target: Off", 120, 210, 250, 20)
 Global $HealerLabel     = GUICtrlCreateLabel("Healer: Off", 20, 240, 250, 20)
 Global $WalkerLabel     = GUICtrlCreateLabel("Walker: Off", 120, 150, 250, 20)
+Global $BackPackLabel   = GUICtrlCreateLabel("Weight: N/A", 180, 150, 250, 20)
+
+
 Global $CureLabel       = GUICtrlCreateLabel("Cure: Off", 120, 240, 250, 20)
 Global $HotkeyLabel     = GUICtrlCreateLabel("Set hotkeys in the config file", 20, 270, 350, 20)
 Global $KillButton      = GUICtrlCreateButton("Kill Rogue", 20, 300, 100, 30)
@@ -349,18 +355,23 @@ Func ChangeAddressToBase()
     Global $BaseAddress
     Global $TypeOffset, $AttackModeOffset, $PosXOffset, $PosYOffset
     Global $HPOffset, $MaxHPOffset, $ChattOpenOffset, $SicknessOffset
+    Global $BackPack, $BackPackMax
     Global $TypeAddress, $AttackModeAddress, $PosXAddress, $PosYAddress
     Global $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress
+    Global $BackPackAddress, $BackPackMaxAddress
 
-    $TypeAddress       = $BaseAddress + $TypeOffset
-    $AttackModeAddress = $BaseAddress + $AttackModeOffset
-    $PosXAddress       = $BaseAddress + $PosXOffset
-    $PosYAddress       = $BaseAddress + $PosYOffset
-    $HPAddress         = $BaseAddress + $HPOffset
-    $MaxHPAddress      = $BaseAddress + $MaxHPOffset
-    $ChattOpenAddress  = $BaseAddress + $ChattOpenOffset
-    $SicknessAddress   = $BaseAddress + $SicknessOffset
+    $TypeAddress        = $BaseAddress + $TypeOffset
+    $AttackModeAddress  = $BaseAddress + $AttackModeOffset
+    $PosXAddress        = $BaseAddress + $PosXOffset
+    $PosYAddress        = $BaseAddress + $PosYOffset
+    $HPAddress          = $BaseAddress + $HPOffset
+    $MaxHPAddress       = $BaseAddress + $MaxHPOffset
+    $ChattOpenAddress   = $BaseAddress + $ChattOpenOffset
+    $SicknessAddress    = $BaseAddress + $SicknessOffset
+    $BackPackAddress    = $BaseAddress + $BackPack
+    $BackPackMaxAddress = $BaseAddress + $BackPackMax
 EndFunc
+
 
 Func _GetModuleBase_EnumModules($hProc)
     Local $hPsapi = DllOpen("psapi.dll")
@@ -457,6 +468,11 @@ Func GUIReadMemory()
     $Sickness = $SickVal
     Local $SicknessDescription = GetSicknessDescription($SickVal)
     GUICtrlSetData($SicknessLabel, "Sickness: " & $SicknessDescription)
+	; Backpack Weight
+	Local $bpWeight = _ReadMemory($hProcess, $BackPackAddress)
+	Local $bpMax    = _ReadMemory($hProcess, $BackPackMaxAddress)
+	GUICtrlSetData($BackPackLabel, "Weight " & $bpWeight & " / " & $bpMax)
+
 EndFunc
 
 Func _ReadMemory($hProc, $pAddress)
