@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.4
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.7
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -652,31 +652,32 @@ EndFunc   ;==>MoveToLocations
 
 Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 	Global $hProcess, $PosXAddress, $PosYAddress, $TypeAddress
+	Global $WindowName, $lastX, $lastY
 
-	Static $stuckTimer = 0
-	Static $lastX = -1, $lastY = -1
 	Static $lastMoveTime = TimerInit()
 	Static $stuckCount = 0
 	Static $lastTargetX = -1, $lastTargetY = -1
+	Global $aTempBlocked[0][2]
 
 	If Not IsArray($aLocations) Then Return SetError(1, 0, "Invalid input")
 	If $iCurrentIndex < 0 Or $iCurrentIndex >= UBound($aLocations) Then Return SetError(2, 0, "Index out of range")
 
 	Local $targetX = $aLocations[$iCurrentIndex][0]
 	Local $targetY = $aLocations[$iCurrentIndex][1]
-	; Skip if blocked
+
+	; Reset stuck tracking if new target
+	If $lastTargetX <> $targetX Or $lastTargetY <> $targetY Then
+		$stuckCount = 0
+		$lastTargetX = $targetX
+		$lastTargetY = $targetY
+	EndIf
+
+	; Skip blocked
 	If IsBlockedCoord($targetX, $targetY) Then
 		ConsoleWrite("Skipping known blocked coordinate (" & $targetX & ", " & $targetY & ")" & @CRLF)
 		$iCurrentIndex += 1
 		If $iCurrentIndex >= UBound($aLocations) Then $iCurrentIndex = 0
 		Return True
-	EndIf
-
-	; Reset stuckCount when target changes
-	If $lastTargetX <> $targetX Or $lastTargetY <> $targetY Then
-		$stuckCount = 0
-		$lastTargetX = $targetX
-		$lastTargetY = $targetY
 	EndIf
 
 	Local $currentX = _ReadMemory($hProcess, $PosXAddress)
@@ -685,12 +686,11 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 
 	If $Type <> 65535 Then Return False
 
-	; Stuck detection and bypass
+	; Stuck detection
 	If $currentX = $lastX And $currentY = $lastY Then
 		If TimerDiff($lastMoveTime) > 1000 Then
 			ConsoleWrite("Detected stuck, trying bypass." & @CRLF)
-			Local $beforeX = $currentX
-			Local $beforeY = $currentY
+			Local $beforeX = $currentX, $beforeY = $currentY
 
 			TryBypass()
 
@@ -698,7 +698,7 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 			$currentY = _ReadMemory($hProcess, $PosYAddress)
 
 			If $currentX <> $beforeX Or $currentY <> $beforeY Then
-				ConsoleWrite("Bypass moved us. Delay next check." & @CRLF)
+				ConsoleWrite("Bypass moved us. Delaying next check." & @CRLF)
 				$lastMoveTime = TimerInit()
 				$lastX = $currentX
 				$lastY = $currentY
@@ -730,29 +730,36 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 		Return True
 	EndIf
 
-	; Movement toward target
+	; Smooth clean WASD movement
 	If $currentX < $targetX Then
-		ControlSend($WindowName, "", "", "{d}")
-		Sleep(50)
-		ControlSend($WindowName, "", "", "{d}")
+		ControlSend($WindowName, "", "", "{d down}")
+		Sleep(30)
+		ControlSend($WindowName, "", "", "{d up}")
 	ElseIf $currentX > $targetX Then
-		ControlSend($WindowName, "", "", "{a}")
-		Sleep(50)
-		ControlSend($WindowName, "", "", "{a}")
+		ControlSend($WindowName, "", "", "{a down}")
+		Sleep(30)
+		ControlSend($WindowName, "", "", "{a up}")
 	EndIf
 
 	If $currentY < $targetY Then
-		ControlSend($WindowName, "", "", "{s}")
-		Sleep(50)
-		ControlSend($WindowName, "", "", "{s}")
+		ControlSend($WindowName, "", "", "{s down}")
+		Sleep(30)
+		ControlSend($WindowName, "", "", "{s up}")
 	ElseIf $currentY > $targetY Then
-		ControlSend($WindowName, "", "", "{w}")
-		Sleep(50)
-		ControlSend($WindowName, "", "", "{w}")
+		ControlSend($WindowName, "", "", "{w down}")
+		Sleep(30)
+		ControlSend($WindowName, "", "", "{w up}")
 	EndIf
 
 	Return True
-EndFunc   ;==>MoveToLocationsStep
+EndFunc
+
+Func QuickKey($key, $window, $hold)
+	ControlSend($window, "", "", StringReplace($key, "}", " down}"))
+	Sleep($hold)
+	ControlSend($window, "", "", StringReplace($key, "}", " up}"))
+EndFunc
+
 
 Func TryBypass()
 	Global $WindowName, $hProcess, $PosXAddress, $PosYAddress
@@ -766,8 +773,7 @@ Func TryBypass()
 	Local $dx = $tx - $cx
 	Local $dy = $ty - $cy
 
-	Local $main = ""
-	Local $side1 = "", $side2 = ""
+	Local $main = "", $side1 = "", $side2 = ""
 
 	If Abs($dx) >= Abs($dy) Then
 		If $dx < 0 Then
@@ -791,44 +797,29 @@ Func TryBypass()
 		EndIf
 	EndIf
 
-	Local $success = False
-	Local $nx, $ny
+	Local $HoldTime = 75
 
-	; Try side1 twice
-	For $i = 0 To 1
-		ControlSend($WindowName, "", "", StringReplace($side1, "}", " down}"))
-		Sleep(40)
-		ControlSend($WindowName, "", "", StringReplace($side1, "}", " up}"))
-	Next
+	QuickKey($side1, $WindowName, $HoldTime)
+	QuickKey($side1, $WindowName, $HoldTime)
 
-	$nx = _ReadMemory($hProcess, $PosXAddress)
-	$ny = _ReadMemory($hProcess, $PosYAddress)
-
+	Local $nx = _ReadMemory($hProcess, $PosXAddress)
+	Local $ny = _ReadMemory($hProcess, $PosYAddress)
 	If $nx <> $cx Or $ny <> $cy Then
 		ConsoleWrite("Bypass via " & $side1 & " worked. Resuming: " & $main & @CRLF)
-		ControlSend($WindowName, "", "", StringReplace($main, "}", " down}"))
-		Sleep(50)
-		ControlSend($WindowName, "", "", StringReplace($main, "}", " up}"))
+		QuickKey($main, $WindowName, $HoldTime)
 		$lastX = $nx
 		$lastY = $ny
 		Return
 	EndIf
 
-	; Try side2 twice
-	For $i = 0 To 1
-		ControlSend($WindowName, "", "", StringReplace($side2, "}", " down}"))
-		Sleep(40)
-		ControlSend($WindowName, "", "", StringReplace($side2, "}", " up}"))
-	Next
+	QuickKey($side2, $WindowName, $HoldTime)
+	QuickKey($side2, $WindowName, $HoldTime)
 
 	$nx = _ReadMemory($hProcess, $PosXAddress)
 	$ny = _ReadMemory($hProcess, $PosYAddress)
-
 	If $nx <> $cx Or $ny <> $cy Then
 		ConsoleWrite("Bypass via " & $side2 & " worked. Resuming: " & $main & @CRLF)
-		ControlSend($WindowName, "", "", StringReplace($main, "}", " down}"))
-		Sleep(50)
-		ControlSend($WindowName, "", "", StringReplace($main, "}", " up}"))
+		QuickKey($main, $WindowName, $HoldTime)
 		$lastX = $nx
 		$lastY = $ny
 		Return
