@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.7
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.8
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -61,6 +61,11 @@ Global $iCurrentIndex = 0
 Global $bPaused = True
 Global $aLocations = LoadLocations()                ; This may show error if the file is missing
 Global $Debug = False
+Global $LootQueue[8][2]
+Global $LootQueued = False
+Global $LootTriggerTime = 0
+Global $LastTargetTime = TimerInit()
+Global $LootingCheckbox
 
 ; Define the game process and memory offsets
 Global $ProcessName = "Project Rogue Client.exe"
@@ -147,10 +152,10 @@ GUICtrlSetLimit($MovmentSlider, 750, 50)
 GUICtrlSetData($MovmentSlider, 200)
 Global $MoveLabel = GUICtrlCreateLabel("Heal After 200", 185, 370, 100, 20)
 Global $MoveLabell = GUICtrlCreateLabel("ms of no movement.", 280, 370, 100, 20)
-
+Global $LootingCheckbox = GUICtrlCreateCheckbox("Looting", 240, 220, 200, 20)
 Global $Checkbox = GUICtrlCreateCheckbox("Old Style Pothack", 240, 250, 200, 20)
 Global $CheckboxLabel = GUICtrlCreateLabel("(Ignore Heal After)", 240, 270, 200, 20)
-Global $NEW = GUICtrlCreateLabel("*This now functions*", 240, 230, 200, 20)
+
 
 GUISetState(@SW_SHOW)
 
@@ -172,10 +177,10 @@ While $Running
 			If $pidCheck Then ProcessClose($pidCheck)
 	EndSwitch
 
-	; 1) Lock the GUI drawing (won't crash if your AutoIt doesn't truly support it)
+	; Lock GUI drawing
 	GUISetState($SW_LOCKDRAW)
 
-	; Update any slider label changes
+	; Update slider labels
 	Local $MValue = GUICtrlRead($MovmentSlider)
 	If $MValue <> $MPrevValue Then
 		GUICtrlSetData($MoveLabel, "Heal After " & $MValue)
@@ -191,7 +196,6 @@ While $Running
 	; Check if game is running
 	Local $ProcessID = ProcessExists($ProcessName)
 	If Not $ProcessID Then
-		; If previously open, game must have closed
 		If $hProcess <> 0 Then
 			ConsoleWrite("[Info] Game closed, handle reset..." & @CRLF)
 			_WinAPI_CloseHandle($hProcess)
@@ -204,7 +208,7 @@ While $Running
 		ContinueLoop
 	EndIf
 
-	; If game is found but handle is not open
+	; Connect if process is open but handle is not
 	If $hProcess = 0 Then
 		ConnectToBaseAddress()
 		If $BaseAddress = 0 Or $hProcess = 0 Then
@@ -217,13 +221,13 @@ While $Running
 		EndIf
 	EndIf
 
-	; Game is open and handle is valid, read memory and update labels
+	; Update labels from memory
 	GUIReadMemory()
-	;......................................;
-	; Unlock drawing
+
+	; Unlock GUI drawing
 	GUISetState($SW_UNLOCKDRAW)
 
-	; If chat is closed, do Cure/Target/Healer/Walker logic
+	; Run core features when not chatting
 	If $Chat = 0 Then
 		If $CureStatus = 1 Then CureMe()
 		If $TargetStatus = 1 Then AttackModeReader()
@@ -236,9 +240,13 @@ While $Running
 				$MoveToLocationsStatus = 0
 			EndIf
 		EndIf
+
+		If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED And $LootQueued Then
+			HandleLootQueue()
+		EndIf
 	EndIf
 
-	; Check if process is still alive
+	; Recheck if process is still alive
 	If Not ProcessExists($ProcessID) Then
 		ConsoleWrite("[Info] Game closed unexpectedly, handle reset..." & @CRLF)
 		_WinAPI_CloseHandle($hProcess)
@@ -314,6 +322,70 @@ Func LoadButtonConfig()
 		ConsoleWrite("[Info] Hotkey for " & $aKeys[$i][0] & " set to " & $sKey & @CRLF)
 	Next
 EndFunc   ;==>LoadButtonConfig
+
+Func QueueLootPattern()
+	Global $LootQueue, $hProcess, $PosXAddress, $PosYAddress
+
+	Local $startX = _ReadMemory($hProcess, $PosXAddress)
+	Local $startY = _ReadMemory($hProcess, $PosYAddress)
+
+	Local $i = 0
+	For $dx = -1 To 1
+		For $dy = -1 To 1
+			If Not ($dx = 0 And $dy = 0) Then
+				If $i < 8 Then
+					$LootQueue[$i][0] = $startX + $dx
+					$LootQueue[$i][1] = $startY + $dy
+					$i += 1
+				EndIf
+			EndIf
+		Next
+	Next
+EndFunc
+
+Func HandleLootQueue()
+	Global $LootQueue, $LootQueued, $hProcess
+	Global $PosXAddress, $PosYAddress, $LootTriggerTime
+	Global $WindowName, $lastX, $lastY
+
+	If TimerDiff($LootTriggerTime) < 750 Then Return ; wait 750ms
+
+	Local $currentX = _ReadMemory($hProcess, $PosXAddress)
+	Local $currentY = _ReadMemory($hProcess, $PosYAddress)
+
+	; Cancel if moved
+	If $currentX <> $lastX Or $currentY <> $lastY Then
+		ConsoleWrite("Loot canceled — player moved." & @CRLF)
+		$LootQueued = False
+		Return
+	EndIf
+
+	; Perform right-clicks
+	For $i = 0 To 7
+		Local $tx = $LootQueue[$i][0]
+		Local $ty = $LootQueue[$i][1]
+		If $tx <> 0 Or $ty <> 0 Then
+			ClickTile($tx, $ty)
+			Sleep(200)
+		EndIf
+	Next
+
+	ConsoleWrite("Loot complete." & @CRLF)
+	$LootQueued = False
+EndFunc
+
+Func ClickTile($tileX, $tileY)
+	Global $hProcess, $PosXAddress, $PosYAddress
+
+	Local $currentX = _ReadMemory($hProcess, $PosXAddress)
+	Local $currentY = _ReadMemory($hProcess, $PosYAddress)
+
+	Local $screenX = ($tileX - $currentX) * 32 + (@DesktopWidth / 2)
+	Local $screenY = ($tileY - $currentY) * 32 + (@DesktopHeight / 2)
+
+	MouseClick("right", $screenX, $screenY, 1, 0)
+EndFunc
+
 
 Func CreateButtonDefaultConfig()
 	Local $sButtonConfigFile = @ScriptDir & "\NewButtonConfig.ini"
@@ -966,30 +1038,47 @@ EndFunc   ;==>TimeToHeal
 ;                                  TARGETING
 ; ------------------------------------------------------------------------------
 Func AttackModeReader()
-	Global $ChattOpenAddress, $Chat, $AttackModeAddress, $AttackMode, $Type
-	Global $currentTime, $TargetDelay, $WindowName, $TypeAddress, $hProcess
+	Global $ChattOpenAddress, $Chat, $AttackModeAddress, $AttackMode, $TypeAddress, $Type
+	Global $currentTime, $TargetDelay, $WindowName, $hProcess
+	Global $LastTargetTime, $LootQueued, $LootQueue, $LootTriggerTime
+	Global $LootingCheckbox
 
-	$Chat = _ReadMemory($hProcess, $ChattOpenAddress)
+	$Chat       = _ReadMemory($hProcess, $ChattOpenAddress)
 	$AttackMode = _ReadMemory($hProcess, $AttackModeAddress)
-	$Type = _ReadMemory($hProcess, $TypeAddress)
+	$Type       = _ReadMemory($hProcess, $TypeAddress)
 
 	If $AttackMode = 0 Then
 		GUICtrlSetData($AttackModeLabel, "Attack Mode: Safe")
+
 	ElseIf $AttackMode = 1 Then
 		GUICtrlSetData($AttackModeLabel, "Attack Mode: Attack")
 
-		; If there's no target (65535) & chat closed, press TAB occasionally
+		If $Type = 1 Then
+			$LastTargetTime = TimerInit() ; Monster is targeted
+
+		ElseIf $Type = 65535 And TimerDiff($LastTargetTime) >= 2000 Then
+			If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED And Not $LootQueued Then
+				ConsoleWrite("Target vanished — queuing loot." & @CRLF)
+				QueueLootPattern()
+				$LootTriggerTime = TimerInit()
+				$LootQueued = True
+			EndIf
+
+		EndIf
+
+		; If no target and chat closed, press TAB
 		If $Type = 65535 And $Chat = 0 Then
 			Local $elapsed = TimerDiff($currentTime)
 			If $elapsed >= $TargetDelay Then
-				ControlSend("Project Rogue", "", "", "{TAB}")
+				ControlSend($WindowName, "", "", "{TAB}")
 				$currentTime = TimerInit()
 			EndIf
 		EndIf
+
 	Else
 		GUICtrlSetData($AttackModeLabel, "Attack Mode: No Target")
 	EndIf
-EndFunc   ;==>AttackModeReader
+EndFunc
 
 Func IsBlockedCoord($x, $y)
 	For $i = 0 To UBound($aTempBlocked) - 1
