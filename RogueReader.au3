@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.8
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.9
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -725,11 +725,11 @@ EndFunc   ;==>MoveToLocations
 Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 	Global $hProcess, $PosXAddress, $PosYAddress, $TypeAddress
 	Global $WindowName, $lastX, $lastY
+	Global $aTempBlocked[0][2]
 
 	Static $lastMoveTime = TimerInit()
 	Static $stuckCount = 0
 	Static $lastTargetX = -1, $lastTargetY = -1
-	Global $aTempBlocked[0][2]
 
 	If Not IsArray($aLocations) Then Return SetError(1, 0, "Invalid input")
 	If $iCurrentIndex < 0 Or $iCurrentIndex >= UBound($aLocations) Then Return SetError(2, 0, "Index out of range")
@@ -737,14 +737,14 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 	Local $targetX = $aLocations[$iCurrentIndex][0]
 	Local $targetY = $aLocations[$iCurrentIndex][1]
 
-	; Reset stuck tracking if new target
+	; Reset if new target
 	If $lastTargetX <> $targetX Or $lastTargetY <> $targetY Then
 		$stuckCount = 0
 		$lastTargetX = $targetX
 		$lastTargetY = $targetY
 	EndIf
 
-	; Skip blocked
+	; Skip blocked tiles
 	If IsBlockedCoord($targetX, $targetY) Then
 		ConsoleWrite("Skipping known blocked coordinate (" & $targetX & ", " & $targetY & ")" & @CRLF)
 		$iCurrentIndex += 1
@@ -754,7 +754,7 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 
 	Local $currentX = _ReadMemory($hProcess, $PosXAddress)
 	Local $currentY = _ReadMemory($hProcess, $PosYAddress)
-	Local $Type = _ReadMemory($hProcess, $TypeAddress)
+	Local $Type     = _ReadMemory($hProcess, $TypeAddress)
 
 	If $Type <> 65535 Then Return False
 
@@ -762,25 +762,29 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 	If $currentX = $lastX And $currentY = $lastY Then
 		If TimerDiff($lastMoveTime) > 1000 Then
 			ConsoleWrite("Detected stuck, trying bypass." & @CRLF)
-			Local $beforeX = $currentX, $beforeY = $currentY
 
-			TryBypass()
+			Local $beforeX = $currentX
+			Local $beforeY = $currentY
+
+			Local $bypassSuccess = TryBypass()
 
 			$currentX = _ReadMemory($hProcess, $PosXAddress)
 			$currentY = _ReadMemory($hProcess, $PosYAddress)
 
-			If $currentX <> $beforeX Or $currentY <> $beforeY Then
-				ConsoleWrite("Bypass moved us. Delaying next check." & @CRLF)
+			If $bypassSuccess And ($currentX <> $beforeX Or $currentY <> $beforeY) Then
+				ConsoleWrite("Bypass moved us away. Marking previous target blocked and skipping." & @CRLF)
+				MarkCoordAsBlocked($lastTargetX, $lastTargetY)
+				$iCurrentIndex += 1
+				If $iCurrentIndex >= UBound($aLocations) Then $iCurrentIndex = 0
 				$lastMoveTime = TimerInit()
 				$lastX = $currentX
 				$lastY = $currentY
-				$stuckCount = 0
 				Return True
 			Else
 				$stuckCount += 1
 				If $stuckCount >= 3 Then
 					MarkCoordAsBlocked($targetX, $targetY)
-					ConsoleWrite("Skipping stuck target at (" & $targetX & ", " & $targetY & ")" & @CRLF)
+					ConsoleWrite("Skipping stubborn target at (" & $targetX & ", " & $targetY & ")" & @CRLF)
 					$iCurrentIndex += 1
 					If $iCurrentIndex >= UBound($aLocations) Then $iCurrentIndex = 0
 					$stuckCount = 0
@@ -802,7 +806,7 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 		Return True
 	EndIf
 
-	; Smooth clean WASD movement
+	; Movement
 	If $currentX < $targetX Then
 		ControlSend($WindowName, "", "", "{d down}")
 		Sleep(30)
@@ -881,7 +885,7 @@ Func TryBypass()
 		QuickKey($main, $WindowName, $HoldTime)
 		$lastX = $nx
 		$lastY = $ny
-		Return
+		Return True
 	EndIf
 
 	QuickKey($side2, $WindowName, $HoldTime)
@@ -894,10 +898,11 @@ Func TryBypass()
 		QuickKey($main, $WindowName, $HoldTime)
 		$lastX = $nx
 		$lastY = $ny
-		Return
+		Return True
 	EndIf
 
 	ConsoleWrite("Bypass failed: no movement after sidesteps." & @CRLF)
+	Return False
 EndFunc
 
 Func FindClosestLocationIndex($currentX, $currentY, $aLocations)
