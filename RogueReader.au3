@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.9
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.10
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -61,11 +61,13 @@ Global $iCurrentIndex = 0
 Global $bPaused = True
 Global $aLocations = LoadLocations()                ; This may show error if the file is missing
 Global $Debug = False
-Global $LootQueue[8][2]
+Global $LootQueue[8][3]
 Global $LootQueued = False
 Global $LootTriggerTime = 0
 Global $LastTargetTime = TimerInit()
 Global $LootingCheckbox
+Global $LootCheckX = -1
+Global $LootCheckY = -1
 
 ; Define the game process and memory offsets
 Global $ProcessName = "Project Rogue Client.exe"
@@ -232,7 +234,9 @@ While $Running
 		If $CureStatus = 1 Then CureMe()
 		If $TargetStatus = 1 Then AttackModeReader()
 		If $HealerStatus = 1 Then TimeToHeal()
-
+		If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED And $LootQueued Then
+			HandleLootQueue()
+		EndIf
 		If $MoveToLocationsStatus = 1 Then
 			Local $result = MoveToLocationsStep($aLocations, $iCurrentIndex)
 			If @error Then
@@ -241,9 +245,7 @@ While $Running
 			EndIf
 		EndIf
 
-		If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED And $LootQueued Then
-			HandleLootQueue()
-		EndIf
+
 	EndIf
 
 	; Recheck if process is still alive
@@ -346,21 +348,22 @@ EndFunc
 Func HandleLootQueue()
 	Global $LootQueue, $LootQueued, $hProcess
 	Global $PosXAddress, $PosYAddress, $LootTriggerTime
-	Global $WindowName, $lastX, $lastY
+	Global $WindowName, $LootCheckX, $LootCheckY
 
-	If TimerDiff($LootTriggerTime) < 750 Then Return ; wait 750ms
+	; Wait 750ms of no target before looting
+	If TimerDiff($LootTriggerTime) < 750 Then Return
 
 	Local $currentX = _ReadMemory($hProcess, $PosXAddress)
 	Local $currentY = _ReadMemory($hProcess, $PosYAddress)
 
-	; Cancel if moved
-	If $currentX <> $lastX Or $currentY <> $lastY Then
+	; ✅ Cancel loot if player has moved since queuing
+	If $currentX <> $LootCheckX Or $currentY <> $LootCheckY Then
 		ConsoleWrite("Loot canceled — player moved." & @CRLF)
 		$LootQueued = False
 		Return
 	EndIf
 
-	; Perform right-clicks
+	; Do the loot clicks
 	For $i = 0 To 7
 		Local $tx = $LootQueue[$i][0]
 		Local $ty = $LootQueue[$i][1]
@@ -1046,7 +1049,7 @@ Func AttackModeReader()
 	Global $ChattOpenAddress, $Chat, $AttackModeAddress, $AttackMode, $TypeAddress, $Type
 	Global $currentTime, $TargetDelay, $WindowName, $hProcess
 	Global $LastTargetTime, $LootQueued, $LootQueue, $LootTriggerTime
-	Global $LootingCheckbox
+	Global $LootingCheckbox, $LootCheckX, $LootCheckY
 
 	$Chat       = _ReadMemory($hProcess, $ChattOpenAddress)
 	$AttackMode = _ReadMemory($hProcess, $AttackModeAddress)
@@ -1058,20 +1061,30 @@ Func AttackModeReader()
 	ElseIf $AttackMode = 1 Then
 		GUICtrlSetData($AttackModeLabel, "Attack Mode: Attack")
 
+		; If we have a target, start/reset timer
 		If $Type = 1 Then
-			$LastTargetTime = TimerInit() ; Monster is targeted
-
-		ElseIf $Type = 65535 And TimerDiff($LastTargetTime) >= 2000 Then
-			If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED And Not $LootQueued Then
-				ConsoleWrite("Target vanished — queuing loot." & @CRLF)
-				QueueLootPattern()
-				$LootTriggerTime = TimerInit()
-				$LootQueued = True
+			If TimerDiff($LastTargetTime) > 5000 Then ; reset if >5s since last target
+				$LastTargetTime = TimerInit()
 			EndIf
 
+		; If no target, and was targeted for >=2s, queue loot
+		ElseIf $Type = 65535 Then
+			Local $targetDuration = TimerDiff($LastTargetTime)
+			If $targetDuration >= 2000 Then
+				If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED And Not $LootQueued Then
+					ConsoleWrite("Target lost after " & $targetDuration & " ms. Queuing loot." & @CRLF)
+					QueueLootPattern()
+					$LootTriggerTime = TimerInit()
+					$LootQueued = True
+
+					; ✅ Save current pos for movement check
+					$LootCheckX = _ReadMemory($hProcess, $PosXAddress)
+					$LootCheckY = _ReadMemory($hProcess, $PosYAddress)
+				EndIf
+			EndIf
 		EndIf
 
-		; If no target and chat closed, press TAB
+		; If no target & chat closed, press TAB
 		If $Type = 65535 And $Chat = 0 Then
 			Local $elapsed = TimerDiff($currentTime)
 			If $elapsed >= $TargetDelay Then
