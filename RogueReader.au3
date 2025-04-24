@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.11
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.14
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -149,7 +149,7 @@ Global $healSlider = GUICtrlCreateSlider(20, 350, 200, 20)
 GUICtrlSetLimit($healSlider, 95, 45) ; range from 45 to 95
 GUICtrlSetData($healSlider, 85)      ; initial position to 85
 Global $healLabel = GUICtrlCreateLabel("Heal at: 85%", 230, 350, 100, 20)
-
+Global $ReverseLoopCheckbox = GUICtrlCreateCheckbox("ReverseLoop", 240, 170, 200, 20)
 Global $MovmentSlider = GUICtrlCreateSlider(20, 370, 180, 20)
 GUICtrlSetLimit($MovmentSlider, 750, 50)
 GUICtrlSetData($MovmentSlider, 200)
@@ -326,71 +326,85 @@ Func LoadButtonConfig()
 	Next
 EndFunc   ;==>LoadButtonConfig
 
-Func QueueLootPattern()
-	Global $LootQueue[8][2]
+Func Min($a, $b)
+	If $a < $b Then
+		Return $a
+	Else
+		Return $b
+	EndIf
+EndFunc   ;==>Min
 
-	; Your fixed 8 positions (client-space)
+Func QueueLootPattern()
+	Global $LootQueue
+
 	Local $rawX[8] = [320, 350, 385, 325, 385, 325, 350, 385]
 	Local $rawY[8] = [325, 320, 325, 355, 355, 385, 390, 385]
 
-	; Generate a random index order
 	Local $used[8] = [False, False, False, False, False, False, False, False]
-	Local $i = 0
-	While $i < 8
-		Local $rand = Int(Random(0, 8))
-		If Not $used[$rand] Then
-			$LootQueue[$i][0] = $rawX[$rand]
-			$LootQueue[$i][1] = $rawY[$rand]
-			$used[$rand] = True
-			$i += 1
-		EndIf
-	WEnd
-EndFunc
+	For $i = 0 To 7
+		Do
+			Local $rand = Random(0, 7, 1)
+		Until Not $used[$rand]
+		$LootQueue[$i][0] = $rawX[$rand]
+		$LootQueue[$i][1] = $rawY[$rand]
+		$used[$rand] = True
+	Next
+	ConsoleWrite("New loot pattern queued." & @CRLF)
+EndFunc   ;==>QueueLootPattern
 
 Func HandleLootQueue()
 	Global $LootQueue, $LootQueued, $hProcess
 	Global $PosXAddress, $PosYAddress, $LootTriggerTime
 	Global $WindowName, $LootCheckX, $LootCheckY, $LootCount
-	Global $MoveToLocationsStatus
+	Global $MoveToLocationsStatus, $PausedWalkerForLoot
 
 	If Not $LootQueued Then Return
-	If TimerDiff($LootTriggerTime) < 750 Then
-		ConsoleWrite("Loot delay not met: " & TimerDiff($LootTriggerTime) & " ms." & @CRLF)
-		Return
-	EndIf
+	If TimerDiff($LootTriggerTime) < 750 Then Return
 
 	Local $currentX = _ReadMemory($hProcess, $PosXAddress)
 	Local $currentY = _ReadMemory($hProcess, $PosYAddress)
 
 	If $currentX <> $LootCheckX Or $currentY <> $LootCheckY Then
-		ConsoleWrite("Loot canceled — player moved. X: " & $currentX & " Y: " & $currentY & @CRLF)
+		ConsoleWrite("Loot canceled — player moved." & @CRLF)
 		$LootQueued = False
 		$LootCount = 0
 		Return
 	EndIf
 
-	ConsoleWrite("Loot starting with " & $LootCount & " kill(s) = " & $LootCount * 4 & " clicks." & @CRLF)
+	; Temporarily pause walker if needed
+	If $MoveToLocationsStatus = 1 Then
+		$MoveToLocationsStatus = 0
+		$PausedWalkerForLoot = True
+		ConsoleWrite("Pausing walker for loot." & @CRLF)
+	EndIf
+
+	Local $clicksPerTile = Min($LootCount * 4, 32)
+	ConsoleWrite("Executing loot: " & $clicksPerTile & " clicks per tile (for " & $LootCount & " kills)" & @CRLF)
 
 	For $i = 0 To 7
 		Local $x = $LootQueue[$i][0]
 		Local $y = $LootQueue[$i][1]
 		If $x <> 0 Or $y <> 0 Then
-			MouseClick("right", $x, $y, $LootCount * 4, 1)
-			Sleep(200)
+			MouseClick("right", $x, $y, $clicksPerTile, 1)
+			;Sleep(200)
 		EndIf
 	Next
 
-	ConsoleWrite("Loot complete." & @CRLF)
+	ConsoleWrite("Loot complete. Resetting state." & @CRLF)
 	$LootQueued = False
 	$LootCount = 0
 
-	If $MoveToLocationsStatus = 0 Then Return
-	ConsoleWrite("Resuming walker..." & @CRLF)
-EndFunc
+	; Resume walker if we paused it
+	If $PausedWalkerForLoot Then
+		$PausedWalkerForLoot = False
+		$MoveToLocationsStatus = 1
+		ConsoleWrite("Resuming walker after loot." & @CRLF)
+	EndIf
+EndFunc   ;==>HandleLootQueue
 
 Func ClickTile($x, $y)
 	MouseClick("right", $x, $y, 1, 0)
-EndFunc
+EndFunc   ;==>ClickTile
 
 
 Func CreateButtonDefaultConfig()
@@ -731,7 +745,7 @@ EndFunc   ;==>MoveToLocations
 Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 	Global $hProcess, $PosXAddress, $PosYAddress, $TypeAddress
 	Global $WindowName, $lastX, $lastY
-	Global $aTempBlocked[0][2]
+	Global $aTempBlocked[0][2], $ReverseLoopCheckbox
 
 	Static $lastMoveTime = TimerInit()
 	Static $stuckCount = 0
@@ -740,35 +754,31 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 	If Not IsArray($aLocations) Then Return SetError(1, 0, "Invalid input")
 	If $iCurrentIndex < 0 Or $iCurrentIndex >= UBound($aLocations) Then Return SetError(2, 0, "Index out of range")
 
+	Local $reverse = (GUICtrlRead($ReverseLoopCheckbox) = $GUI_CHECKED)
 	Local $targetX = $aLocations[$iCurrentIndex][0]
 	Local $targetY = $aLocations[$iCurrentIndex][1]
 
-	; Reset if new target
 	If $lastTargetX <> $targetX Or $lastTargetY <> $targetY Then
 		$stuckCount = 0
 		$lastTargetX = $targetX
 		$lastTargetY = $targetY
 	EndIf
 
-	; Skip blocked tiles
 	If IsBlockedCoord($targetX, $targetY) Then
 		ConsoleWrite("Skipping known blocked coordinate (" & $targetX & ", " & $targetY & ")" & @CRLF)
-		$iCurrentIndex += 1
-		If $iCurrentIndex >= UBound($aLocations) Then $iCurrentIndex = 0
+		$iCurrentIndex = NextIndex($iCurrentIndex, UBound($aLocations), $reverse)
 		Return True
 	EndIf
 
 	Local $currentX = _ReadMemory($hProcess, $PosXAddress)
 	Local $currentY = _ReadMemory($hProcess, $PosYAddress)
-	Local $Type     = _ReadMemory($hProcess, $TypeAddress)
+	Local $Type = _ReadMemory($hProcess, $TypeAddress)
 
 	If $Type <> 65535 Then Return False
 
-	; Stuck detection
 	If $currentX = $lastX And $currentY = $lastY Then
 		If TimerDiff($lastMoveTime) > 1000 Then
 			ConsoleWrite("Detected stuck, trying bypass." & @CRLF)
-
 			Local $beforeX = $currentX
 			Local $beforeY = $currentY
 
@@ -780,8 +790,7 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 			If $bypassSuccess And ($currentX <> $beforeX Or $currentY <> $beforeY) Then
 				ConsoleWrite("Bypass moved us away. Marking previous target blocked and skipping." & @CRLF)
 				MarkCoordAsBlocked($lastTargetX, $lastTargetY)
-				$iCurrentIndex += 1
-				If $iCurrentIndex >= UBound($aLocations) Then $iCurrentIndex = 0
+				$iCurrentIndex = NextIndex($iCurrentIndex, UBound($aLocations), $reverse)
 				$lastMoveTime = TimerInit()
 				$lastX = $currentX
 				$lastY = $currentY
@@ -791,8 +800,7 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 				If $stuckCount >= 3 Then
 					MarkCoordAsBlocked($targetX, $targetY)
 					ConsoleWrite("Skipping stubborn target at (" & $targetX & ", " & $targetY & ")" & @CRLF)
-					$iCurrentIndex += 1
-					If $iCurrentIndex >= UBound($aLocations) Then $iCurrentIndex = 0
+					$iCurrentIndex = NextIndex($iCurrentIndex, UBound($aLocations), $reverse)
 					$stuckCount = 0
 					Return True
 				EndIf
@@ -807,12 +815,10 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 
 	If $currentX = $targetX And $currentY = $targetY Then
 		ConsoleWrite("Arrived at target index: " & $iCurrentIndex & @CRLF)
-		$iCurrentIndex += 1
-		If $iCurrentIndex >= UBound($aLocations) Then $iCurrentIndex = 0
+		$iCurrentIndex = NextIndex($iCurrentIndex, UBound($aLocations), $reverse)
 		Return True
 	EndIf
 
-	; Movement
 	If $currentX < $targetX Then
 		ControlSend($WindowName, "", "", "{d down}")
 		Sleep(30)
@@ -834,13 +840,24 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 	EndIf
 
 	Return True
-EndFunc
+EndFunc   ;==>MoveToLocationsStep
+
+Func NextIndex($iCurrent, $iBound, $reverse)
+	If $reverse Then
+		$iCurrent -= 1
+		If $iCurrent < 0 Then $iCurrent = $iBound - 1
+	Else
+		$iCurrent += 1
+		If $iCurrent >= $iBound Then $iCurrent = 0
+	EndIf
+	Return $iCurrent
+EndFunc   ;==>NextIndex
 
 Func QuickKey($key, $window, $hold)
 	ControlSend($window, "", "", StringReplace($key, "}", " down}"))
 	Sleep($hold)
 	ControlSend($window, "", "", StringReplace($key, "}", " up}"))
-EndFunc
+EndFunc   ;==>QuickKey
 
 
 Func TryBypass()
@@ -909,7 +926,7 @@ Func TryBypass()
 
 	ConsoleWrite("Bypass failed: no movement after sidesteps." & @CRLF)
 	Return False
-EndFunc
+EndFunc   ;==>TryBypass
 
 Func FindClosestLocationIndex($currentX, $currentY, $aLocations)
 	If Not IsArray($aLocations) Or UBound($aLocations, 0) = 0 Then
@@ -1052,64 +1069,69 @@ Func AttackModeReader()
 	Global $ChattOpenAddress, $Chat, $AttackModeAddress, $AttackMode
 	Global $TypeAddress, $Type, $hProcess, $WindowName
 	Global $currentTime, $TargetDelay
-	Global $LastTargetTime, $LootQueued, $LootQueue, $LootTriggerTime
-	Global $LootingCheckbox, $LootCheckX, $LootCheckY, $LootCount
+	Global $LastTargetTime, $LootQueued, $LootTriggerTime
+	Global $LootingCheckbox, $LootCheckX, $LootCheckY
 	Global $HadTargetRecently, $PosXAddress, $PosYAddress
-	Global $MoveToLocationsStatus
+	Global $LootCount, $MoveToLocationsStatus
 
-	$Chat       = _ReadMemory($hProcess, $ChattOpenAddress)
+	$Chat = _ReadMemory($hProcess, $ChattOpenAddress)
 	$AttackMode = _ReadMemory($hProcess, $AttackModeAddress)
-	$Type       = _ReadMemory($hProcess, $TypeAddress)
+	$Type = _ReadMemory($hProcess, $TypeAddress)
 
-	If $AttackMode = 0 Then
-		GUICtrlSetData($AttackModeLabel, "Attack Mode: Safe")
-	ElseIf $AttackMode = 1 Then
-		GUICtrlSetData($AttackModeLabel, "Attack Mode: Attack")
-	Else
-		GUICtrlSetData($AttackModeLabel, "Attack Mode: No Target")
-	EndIf
+	Switch $AttackMode
+		Case 0
+			GUICtrlSetData($AttackModeLabel, "Attack Mode: Safe")
+		Case 1
+			GUICtrlSetData($AttackModeLabel, "Attack Mode: Attack")
+		Case Else
+			GUICtrlSetData($AttackModeLabel, "Attack Mode: No Target")
+	EndSwitch
 
-	If $Type = 1 Then ; Monster Targeted
+	; === Monster targeted ===
+	If $Type = 1 Then
 		If Not $HadTargetRecently Then
 			$HadTargetRecently = True
 			$LastTargetTime = TimerInit()
 			ConsoleWrite("New target acquired. Timer started." & @CRLF)
 		EndIf
 
+		; Cancel queued loot if monster appears before loot fired
 		If $LootQueued Then
 			ConsoleWrite("Loot canceled — new target acquired." & @CRLF)
 			$LootQueued = False
 		EndIf
 
-	ElseIf $Type = 65535 Then ; No Target
+		; === No target (65535) ===
+	ElseIf $Type = 65535 Then
 		If $HadTargetRecently Then
 			$HadTargetRecently = False
-			Local $targetDuration = TimerDiff($LastTargetTime)
-			If $targetDuration >= 2000 And Not $LootQueued Then
-				If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED Then
-					$LootCheckX = _ReadMemory($hProcess, $PosXAddress)
-					$LootCheckY = _ReadMemory($hProcess, $PosYAddress)
+			Local $targetHeldFor = TimerDiff($LastTargetTime)
 
-					If $LootCheckX <> 0 And $LootCheckY <> 0 Then
-						$LootCount = Min($LootCount + 1, 8)
-						ConsoleWrite("Target lost after " & $targetDuration & " ms. Queuing loot x" & $LootCount & @CRLF)
-						QueueLootPattern()
-						$LootTriggerTime = TimerInit()
-						$LootQueued = True
-					EndIf
+			If $targetHeldFor >= 2000 And GUICtrlRead($LootingCheckbox) = $GUI_CHECKED Then
+				$LootCount = Min($LootCount + 1, 8)
+				ConsoleWrite("Target lost after " & $targetHeldFor & "ms. LootCount=" & $LootCount & @CRLF)
+
+				$LootCheckX = _ReadMemory($hProcess, $PosXAddress)
+				$LootCheckY = _ReadMemory($hProcess, $PosYAddress)
+
+				If $LootCheckX <> 0 And $LootCheckY <> 0 Then
+					QueueLootPattern()
+					$LootTriggerTime = TimerInit()
+					$LootQueued = True
 				EndIf
 			EndIf
 		EndIf
 	EndIf
 
+	; Auto-retarget if idle
 	If $Type = 65535 And $Chat = 0 Then
 		If TimerDiff($currentTime) >= $TargetDelay Then
 			ControlSend($WindowName, "", "", "{TAB}")
-			$currentTime = TimerInit()
 			ConsoleWrite("No target — retargeting..." & @CRLF)
+			$currentTime = TimerInit()
 		EndIf
 	EndIf
-EndFunc
+EndFunc   ;==>AttackModeReader
 
 Func IsBlockedCoord($x, $y)
 	For $i = 0 To UBound($aTempBlocked) - 1
