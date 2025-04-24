@@ -109,37 +109,36 @@ Global $TargetDelay = 400, $HealDelay = 1700
 ; Create the GUI
 ; -------------------
 ;...;
-Global $Gui = GUICreate("RougeReader Version - " & $version, 400, 400, 15, 15)
-Global $TypeLabel = GUICtrlCreateLabel("Type: N/A", 20, 30, 250, 20)
-Global $AttackModeLabel = GUICtrlCreateLabel("Attack Mode: N/A", 20, 60, 250, 20)
-Global $PosXLabel = GUICtrlCreateLabel("Pos X: N/A", 20, 90, 250, 20)
-Global $PosYLabel = GUICtrlCreateLabel("Pos Y: N/A", 20, 120, 250, 20)
-Global $HPLabel = GUICtrlCreateLabel("HP: N/A", 20, 150, 250, 20)
-Global $ChatLabel = GUICtrlCreateLabel("Chat: N/A", 120, 150, 250, 20)
-Global $HP2Label = GUICtrlCreateLabel("RealHp: N/A", 20, 180, 250, 20)
-Global $SicknessLabel = GUICtrlCreateLabel("Sickness: N/A", 120, 180, 250, 20)
-Global $MaxHPLabel = GUICtrlCreateLabel("MaxHP: N/A", 20, 210, 250, 20)
-Global $TargetLabel = GUICtrlCreateLabel("Target: Off", 120, 210, 250, 20)
-Global $HealerLabel = GUICtrlCreateLabel("Healer: Off", 20, 240, 250, 20)
-Global $WalkerLabel = GUICtrlCreateLabel("Walker: Off", 120, 150, 250, 20)
-Global $BackPackLabel = GUICtrlCreateLabel("Weight: N/A", 180, 150, 250, 20)
+Global $Gui = GUICreate("RougeReader Version - " & $version, 400, 429, 15, 15)
 
 
-Global $CureLabel = GUICtrlCreateLabel("Cure: Off", 120, 240, 250, 20)
-Global $KillButton = GUICtrlCreateButton("Kill Rogue", 20, 300, 100, 30)
-Global $ExitButton = GUICtrlCreateButton("Exit", 150, 300, 100, 30)
-
-Global $healSlider = GUICtrlCreateSlider(20, 350, 200, 20)
+Global $TypeLabel = GUICtrlCreateLabel("Type: N/A", 20, 30, 85, 20)
+Global $AttackModeLabel = GUICtrlCreateLabel("Attack Mode: N/A", 110, 30, 120, 20)
+Global $PosXLabel = GUICtrlCreateLabel("Pos X: N/A", 20, 55, 85, 20)
+Global $PosYLabel = GUICtrlCreateLabel("Pos Y: N/A", 110, 55, 80, 20)
+Global $HPLabel = GUICtrlCreateLabel("HP: N/A", 20, 130, 95, 20)
+Global $ChatLabel = GUICtrlCreateLabel("Chat: N/A", 255, 55, 90, 20)
+Global $HP2Label = GUICtrlCreateLabel("RealHp: N/A", 20, 105, 125, 20)
+Global $SicknessLabel = GUICtrlCreateLabel("Sickness: N/A", 255, 30, 135, 20)
+Global $MaxHPLabel = GUICtrlCreateLabel("MaxHP: N/A", 20, 160, 100, 20)
+Global $TargetLabel = GUICtrlCreateLabel("Target: Off", 20, 245, 70, 20)
+Global $HealerLabel = GUICtrlCreateLabel("Healer: Off", 20, 195, 70, 20)
+Global $WalkerLabel = GUICtrlCreateLabel("Walker: Off", 20, 270, 70, 20)
+Global $BackPackLabel = GUICtrlCreateLabel("Weight: N/A", 20, 80, 125, 20)
+Global $CureLabel = GUICtrlCreateLabel("Cure: Off", 20, 220, 70, 20)
+Global $KillButton = GUICtrlCreateButton("Kill Rogue", 15, 300, 135, 30)
+Global $ExitButton = GUICtrlCreateButton("Exit", 230, 300, 140, 30)
+Global $healLabel = GUICtrlCreateLabel("Heal at: 85%", 5, 370, 65, 15)
+Global $ReverseLoopCheckbox = GUICtrlCreateCheckbox("ReverseLoop", 160, 160, 90, 20)
+Global $MoveLabel = GUICtrlCreateLabel("Heal After 200", 325, 370, 70, 15)
+Global $LootingCheckbox = GUICtrlCreateCheckbox("Looting", 160, 140, 60, 20)
+Global $Checkbox = GUICtrlCreateCheckbox("Old Style Pothack", 160, 195, 105, 20)
+Global $healSlider = GUICtrlCreateSlider(5, 330, 386, 36)
 GUICtrlSetLimit($healSlider, 95, 45) ; range from 45 to 95
-GUICtrlSetData($healSlider, 85)      ; initial position to 85
-Global $healLabel = GUICtrlCreateLabel("Heal at: 85%", 230, 350, 100, 20)
-Global $ReverseLoopCheckbox = GUICtrlCreateCheckbox("ReverseLoop", 240, 170, 200, 20)
-Global $MovmentSlider = GUICtrlCreateSlider(20, 370, 180, 20)
+GUICtrlSetData($healSlider, 85)
+Global $MovmentSlider = GUICtrlCreateSlider(5, 385, 386, 36)
 GUICtrlSetLimit($MovmentSlider, 750, 50)
 GUICtrlSetData($MovmentSlider, 200)
-Global $MoveLabel = GUICtrlCreateLabel("Heal After 200", 185, 370, 100, 20)
-Global $LootingCheckbox = GUICtrlCreateCheckbox("Looting", 240, 220, 200, 20)
-Global $Checkbox = GUICtrlCreateCheckbox("Old Style Pothack", 240, 250, 200, 20)
 
 
 GUISetState(@SW_SHOW)
@@ -336,57 +335,70 @@ Func QueueLootPattern()
 EndFunc   ;==>QueueLootPattern
 
 Func HandleLootQueue()
-    Global $LootQueue, $LootQueued, $hProcess
-    Global $PosXAddress, $PosYAddress, $LootTriggerTime
-    Global $WindowName, $LootCheckX, $LootCheckY, $LootCount
-    Global $MoveToLocationsStatus, $PausedWalkerForLoot
-    Global $MouseXAddress, $MouseYAddress
+	Global $LootQueue, $LootQueued, $hProcess
+	Global $LootTriggerTime, $LootCount
+	Global $MoveToLocationsStatus, $PausedWalkerForLoot
+	Global $BaseAddress, $WindowName
+	Global $MouseXAddress = $BaseAddress + 0xA669F0
+	Global $MouseYAddress = $BaseAddress + 0xB5BC0C
 
-    If Not $LootQueued Then Return
-    If TimerDiff($LootTriggerTime) < 750 Then Return
+	If Not $LootQueued Then Return
+	If TimerDiff($LootTriggerTime) < 750 Then Return
 
-    Local $currentX = _ReadMemory($hProcess, $PosXAddress)
-    Local $currentY = _ReadMemory($hProcess, $PosYAddress)
+	Local $clicksPerTile = Min($LootCount * 4, 32)
+	ConsoleWrite("LOOT: Executing " & $clicksPerTile & " clicks per tile (for " & $LootCount & " kills)" & @CRLF)
 
-    If $currentX <> $LootCheckX Or $currentY <> $LootCheckY Then
-        ConsoleWrite("Loot canceled — player moved." & @CRLF)
-        $LootQueued = False
-        $LootCount = 0
-        Return
-    EndIf
+	; Matching memory X/Y values to loot positions
+	Local $memX[8] = [192, 175, 160, 162, 162, 175, 192, 192]
+	Local $memY[8] = [161, 159, 161, 176, 191, 194, 191, 176]
 
-    Local $clicksPerTile = Min($LootCount * 4, 32)
-    ConsoleWrite("Executing loot routine with Move+SendC for " & $LootCount & " kills..." & @CRLF)
+	; Matching screen click coords (client-relative)
+	Local $clickX[8] = [385, 350, 320, 325, 325, 350, 385, 385]
+	Local $clickY[8] = [325, 320, 325, 355, 385, 390, 385, 355]
 
-    ; Pause walker
-    If $MoveToLocationsStatus = 1 Then
-        ConsoleWrite("Pausing walker for loot." & @CRLF)
-        $MoveToLocationsStatus = 0
-        $PausedWalkerForLoot = True
-    EndIf
+	If $MoveToLocationsStatus = 1 Then
+		$MoveToLocationsStatus = 0
+		$PausedWalkerForLoot = True
+		ConsoleWrite("LOOT: Pausing walker for loot." & @CRLF)
+	EndIf
 
-    For $i = 0 To 7
-        Local $x = $LootQueue[$i][0]
-        Local $y = $LootQueue[$i][1]
-        If $x <> 0 Or $y <> 0 Then
-            MouseMove($x, $y, 0)
-			ControlSend($WindowName, "", "", "c")
-            Sleep(50)
+	; Process 8 randomized locations from $LootQueue (created by QueueLootPattern)
+	For $i = 0 To 7
+		Local $screenX = $LootQueue[$i][0]
+		Local $screenY = $LootQueue[$i][1]
 
+		; Match index to memory array
+		Local $matchIndex = -1
+		For $j = 0 To 7
+			If $screenX = $clickX[$j] And $screenY = $clickY[$j] Then
+				$matchIndex = $j
+				ExitLoop
+			EndIf
+		Next
 
-        EndIf
-    Next
+		If $matchIndex <> -1 Then
+			Local $memXVal = $memX[$matchIndex]
+			Local $memYVal = $memY[$matchIndex]
 
-    ConsoleWrite("Loot complete. Resetting state." & @CRLF)
-    $LootQueued = False
-    $LootCount = 0
+			_WriteMemory($hProcess, $MouseXAddress, $memXVal)
+			_WriteMemory($hProcess, $MouseYAddress, $memYVal)
 
-    ; Resume walker
-    If $PausedWalkerForLoot Then
-        ConsoleWrite("Resuming walker after loot." & @CRLF)
-        $MoveToLocationsStatus = 1
-        $PausedWalkerForLoot = False
-    EndIf
+			ControlClick($WindowName, "", "", "right", $clicksPerTile, $screenX, $screenY)
+			ConsoleWrite("LOOT: Set mouse mem (" & $memXVal & "," & $memYVal & ") and clicked at (" & $screenX & "," & $screenY & ")" & @CRLF)
+		Else
+			ConsoleWrite("LOOT: Skipped unmatched screen coordinate: (" & $screenX & ", " & $screenY & ")" & @CRLF)
+		EndIf
+	Next
+
+	ConsoleWrite("LOOT: Loot complete. Resetting state." & @CRLF)
+	$LootQueued = False
+	$LootCount = 0
+
+	If $PausedWalkerForLoot Then
+		$MoveToLocationsStatus = 1
+		$PausedWalkerForLoot = False
+		ConsoleWrite("LOOT: Resumed walker after loot." & @CRLF)
+	EndIf
 EndFunc
 
 Func ClickTile($x, $y)
@@ -1138,36 +1150,13 @@ Func MarkCoordAsBlocked($x, $y)
 	ConsoleWrite("Marked (" & $x & ", " & $y & ") as blocked." & @CRLF)
 EndFunc   ;==>MarkCoordAsBlocked
 
-
-192 161
-175 159
-162 176
-162 191
-175 194
-192 191
-192 176
-160 161
-
-<?xml version="1.0" encoding="utf-8"?>
-<CheatTable>
-  <CheatEntries>
-    <CheatEntry>
-      <ID>0</ID>
-      <Description>"No description"</Description>
-      <VariableType>4 Bytes</VariableType>
-      <Address>"Project Rogue Client.exe"+A669F0</Address>
-    </CheatEntry>
-  </CheatEntries>
-</CheatTable>
-is one and
-<?xml version="1.0" encoding="utf-8"?>
-<CheatTable>
-  <CheatEntries>
-    <CheatEntry>
-      <ID>1</ID>
-      <Description>"No description"</Description>
-      <VariableType>4 Bytes</VariableType>
-      <Address>"Project Rogue Client.exe"+B5BC0C</Address>
-    </CheatEntry>
-  </CheatEntries>
-</CheatTable>
+Func _WriteMemory($hProc, $pAddress, $value)
+	Local $tBuffer = DllStructCreate("dword")
+	DllStructSetData($tBuffer, 1, $value)
+	DllCall("kernel32.dll", "bool", "WriteProcessMemory", _
+		"handle", $hProc, _
+		"ptr", $pAddress, _
+		"ptr", DllStructGetPtr($tBuffer), _
+		"dword", DllStructGetSize($tBuffer), _
+		"ptr", 0)
+EndFunc
