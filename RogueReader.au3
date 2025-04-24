@@ -3,7 +3,24 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.15
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.18
+#AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
+#AutoIt3Wrapper_Res_ProductName=Rogue Reader
+#AutoIt3Wrapper_Res_ProductVersion=4
+#AutoIt3Wrapper_Res_CompanyName=Training Trainers.LLC
+#AutoIt3Wrapper_Res_LegalCopyright=Use only for authorized security testing.
+#AutoIt3Wrapper_Res_LegalTradeMarks=TrainingTrainersLLC
+#AutoIt3Wrapper_Res_Language=1033
+#AutoIt3Wrapper_Run_AU3Check=n
+#AutoIt3Wrapper_Run_Tidy=y
+#AutoIt3Wrapper_Tidy_Stop_OnError=n
+#EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
+#Region ;**** Directives created by AutoIt3Wrapper_GUI ****
+#AutoIt3Wrapper_Icon=Include\RogueReader.ico
+#AutoIt3Wrapper_Compression=4
+#AutoIt3Wrapper_UseX64=y
+#AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.18
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -217,10 +234,16 @@ While $Running
 		If $TargetStatus = 1 Then AttackModeReader()
 		If $HealerStatus = 1 Then TimeToHeal()
 
-		If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED And $LootQueued Then
+		; ✅ Standalone Looting (no targeting, no walker)
+		If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED _
+				And $TargetStatus = 0 _
+				And $MoveToLocationsStatus = 0 _
+				And $LootQueued Then
+
 			HandleLootQueue()
 		EndIf
 
+		; Walker runs ONLY when loot is not queued
 		If $MoveToLocationsStatus = 1 And Not $LootQueued Then
 			Local $result = MoveToLocationsStep($aLocations, $iCurrentIndex)
 			If @error Then
@@ -229,7 +252,6 @@ While $Running
 			EndIf
 		EndIf
 	EndIf
-
 	; Recheck if process is still alive
 	If Not ProcessExists($ProcessID) Then
 		ConsoleWrite("[Info] Game closed unexpectedly, handle reset..." & @CRLF)
@@ -399,7 +421,7 @@ Func HandleLootQueue()
 		$PausedWalkerForLoot = False
 		ConsoleWrite("LOOT: Resumed walker after loot." & @CRLF)
 	EndIf
-EndFunc
+EndFunc   ;==>HandleLootQueue
 
 Func ClickTile($x, $y)
 	MouseClick("right", $x, $y, 1, 0)
@@ -1132,7 +1154,7 @@ Func AttackModeReader()
 			$currentTime = TimerInit()
 		EndIf
 	EndIf
-EndFunc
+EndFunc   ;==>AttackModeReader
 
 Func IsBlockedCoord($x, $y)
 	For $i = 0 To UBound($aTempBlocked) - 1
@@ -1154,9 +1176,10 @@ Func _WriteMemory($hProc, $pAddress, $value)
 	Local $tBuffer = DllStructCreate("dword")
 	DllStructSetData($tBuffer, 1, $value)
 	DllCall("kernel32.dll", "bool", "WriteProcessMemory", _
-		"handle", $hProc, _
-		"ptr", $pAddress, _
-		"ptr", DllStructGetPtr($tBuffer), _
-		"dword", DllStructGetSize($tBuffer), _
-		"ptr", 0)
-EndFunc
+			"handle", $hProc, _
+			"ptr", $pAddress, _
+			"ptr", DllStructGetPtr($tBuffer), _
+			"dword", DllStructGetSize($tBuffer), _
+			"ptr", 0)
+EndFunc   ;==>_WriteMemory
+
