@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.10
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.11
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -14,7 +14,7 @@
 #AutoIt3Wrapper_Run_AU3Check=n
 #AutoIt3Wrapper_Tidy_Stop_OnError=n
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
-HotKeySet("{,}", "TrashHeap")
+
 #include <GUIConstantsEx.au3>
 #include <File.au3>
 #include <WindowsConstants.au3>
@@ -61,6 +61,7 @@ Global $iCurrentIndex = 0
 Global $bPaused = True
 Global $aLocations = LoadLocations()                ; This may show error if the file is missing
 Global $Debug = False
+Global $LootCount = 0
 Global $LootQueue[8][3]
 Global $LootQueued = False
 Global $LootTriggerTime = 0
@@ -326,67 +327,69 @@ Func LoadButtonConfig()
 EndFunc   ;==>LoadButtonConfig
 
 Func QueueLootPattern()
-	Global $LootQueue, $hProcess, $PosXAddress, $PosYAddress
+	Global $LootQueue[8][2]
 
-	Local $startX = _ReadMemory($hProcess, $PosXAddress)
-	Local $startY = _ReadMemory($hProcess, $PosYAddress)
+	; Your fixed 8 positions (client-space)
+	Local $rawX[8] = [320, 350, 385, 325, 385, 325, 350, 385]
+	Local $rawY[8] = [325, 320, 325, 355, 355, 385, 390, 385]
 
+	; Generate a random index order
+	Local $used[8] = [False, False, False, False, False, False, False, False]
 	Local $i = 0
-	For $dx = -1 To 1
-		For $dy = -1 To 1
-			If Not ($dx = 0 And $dy = 0) Then
-				If $i < 8 Then
-					$LootQueue[$i][0] = $startX + $dx
-					$LootQueue[$i][1] = $startY + $dy
-					$i += 1
-				EndIf
-			EndIf
-		Next
-	Next
+	While $i < 8
+		Local $rand = Int(Random(0, 8))
+		If Not $used[$rand] Then
+			$LootQueue[$i][0] = $rawX[$rand]
+			$LootQueue[$i][1] = $rawY[$rand]
+			$used[$rand] = True
+			$i += 1
+		EndIf
+	WEnd
 EndFunc
 
 Func HandleLootQueue()
 	Global $LootQueue, $LootQueued, $hProcess
 	Global $PosXAddress, $PosYAddress, $LootTriggerTime
-	Global $WindowName, $LootCheckX, $LootCheckY
+	Global $WindowName, $LootCheckX, $LootCheckY, $LootCount
+	Global $MoveToLocationsStatus
 
-	; Wait 750ms of no target before looting
-	If TimerDiff($LootTriggerTime) < 750 Then Return
+	If Not $LootQueued Then Return
+	If TimerDiff($LootTriggerTime) < 750 Then
+		ConsoleWrite("Loot delay not met: " & TimerDiff($LootTriggerTime) & " ms." & @CRLF)
+		Return
+	EndIf
 
 	Local $currentX = _ReadMemory($hProcess, $PosXAddress)
 	Local $currentY = _ReadMemory($hProcess, $PosYAddress)
 
-	; ✅ Cancel loot if player has moved since queuing
 	If $currentX <> $LootCheckX Or $currentY <> $LootCheckY Then
-		ConsoleWrite("Loot canceled — player moved." & @CRLF)
+		ConsoleWrite("Loot canceled — player moved. X: " & $currentX & " Y: " & $currentY & @CRLF)
 		$LootQueued = False
+		$LootCount = 0
 		Return
 	EndIf
 
-	; Do the loot clicks
+	ConsoleWrite("Loot starting with " & $LootCount & " kill(s) = " & $LootCount * 4 & " clicks." & @CRLF)
+
 	For $i = 0 To 7
-		Local $tx = $LootQueue[$i][0]
-		Local $ty = $LootQueue[$i][1]
-		If $tx <> 0 Or $ty <> 0 Then
-			ClickTile($tx, $ty)
+		Local $x = $LootQueue[$i][0]
+		Local $y = $LootQueue[$i][1]
+		If $x <> 0 Or $y <> 0 Then
+			MouseClick("right", $x, $y, $LootCount * 4, 1)
 			Sleep(200)
 		EndIf
 	Next
 
 	ConsoleWrite("Loot complete." & @CRLF)
 	$LootQueued = False
+	$LootCount = 0
+
+	If $MoveToLocationsStatus = 0 Then Return
+	ConsoleWrite("Resuming walker..." & @CRLF)
 EndFunc
 
-Func ClickTile($tileX, $tileY)
-	Global $hProcess, $PosXAddress, $PosYAddress
-
-	Local $currentX = _ReadMemory($hProcess, $PosXAddress)
-	Local $currentY = _ReadMemory($hProcess, $PosYAddress)
-
-	Local $screenX = ($tileX - $currentX) * 32 + (@DesktopWidth / 2)
-	Local $screenY = ($tileY - $currentY) * 32 + (@DesktopHeight / 2)
-
-	MouseClick("right", $screenX, $screenY, 1, 0)
+Func ClickTile($x, $y)
+	MouseClick("right", $x, $y, 1, 0)
 EndFunc
 
 
@@ -1046,10 +1049,13 @@ EndFunc   ;==>TimeToHeal
 ;                                  TARGETING
 ; ------------------------------------------------------------------------------
 Func AttackModeReader()
-	Global $ChattOpenAddress, $Chat, $AttackModeAddress, $AttackMode, $TypeAddress, $Type
-	Global $currentTime, $TargetDelay, $WindowName, $hProcess
+	Global $ChattOpenAddress, $Chat, $AttackModeAddress, $AttackMode
+	Global $TypeAddress, $Type, $hProcess, $WindowName
+	Global $currentTime, $TargetDelay
 	Global $LastTargetTime, $LootQueued, $LootQueue, $LootTriggerTime
-	Global $LootingCheckbox, $LootCheckX, $LootCheckY
+	Global $LootingCheckbox, $LootCheckX, $LootCheckY, $LootCount
+	Global $HadTargetRecently, $PosXAddress, $PosYAddress
+	Global $MoveToLocationsStatus
 
 	$Chat       = _ReadMemory($hProcess, $ChattOpenAddress)
 	$AttackMode = _ReadMemory($hProcess, $AttackModeAddress)
@@ -1057,44 +1063,51 @@ Func AttackModeReader()
 
 	If $AttackMode = 0 Then
 		GUICtrlSetData($AttackModeLabel, "Attack Mode: Safe")
-
 	ElseIf $AttackMode = 1 Then
 		GUICtrlSetData($AttackModeLabel, "Attack Mode: Attack")
+	Else
+		GUICtrlSetData($AttackModeLabel, "Attack Mode: No Target")
+	EndIf
 
-		; If we have a target, start/reset timer
-		If $Type = 1 Then
-			If TimerDiff($LastTargetTime) > 5000 Then ; reset if >5s since last target
-				$LastTargetTime = TimerInit()
-			EndIf
+	If $Type = 1 Then ; Monster Targeted
+		If Not $HadTargetRecently Then
+			$HadTargetRecently = True
+			$LastTargetTime = TimerInit()
+			ConsoleWrite("New target acquired. Timer started." & @CRLF)
+		EndIf
 
-		; If no target, and was targeted for >=2s, queue loot
-		ElseIf $Type = 65535 Then
+		If $LootQueued Then
+			ConsoleWrite("Loot canceled — new target acquired." & @CRLF)
+			$LootQueued = False
+		EndIf
+
+	ElseIf $Type = 65535 Then ; No Target
+		If $HadTargetRecently Then
+			$HadTargetRecently = False
 			Local $targetDuration = TimerDiff($LastTargetTime)
-			If $targetDuration >= 2000 Then
-				If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED And Not $LootQueued Then
-					ConsoleWrite("Target lost after " & $targetDuration & " ms. Queuing loot." & @CRLF)
-					QueueLootPattern()
-					$LootTriggerTime = TimerInit()
-					$LootQueued = True
-
-					; ✅ Save current pos for movement check
+			If $targetDuration >= 2000 And Not $LootQueued Then
+				If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED Then
 					$LootCheckX = _ReadMemory($hProcess, $PosXAddress)
 					$LootCheckY = _ReadMemory($hProcess, $PosYAddress)
+
+					If $LootCheckX <> 0 And $LootCheckY <> 0 Then
+						$LootCount = Min($LootCount + 1, 8)
+						ConsoleWrite("Target lost after " & $targetDuration & " ms. Queuing loot x" & $LootCount & @CRLF)
+						QueueLootPattern()
+						$LootTriggerTime = TimerInit()
+						$LootQueued = True
+					EndIf
 				EndIf
 			EndIf
 		EndIf
+	EndIf
 
-		; If no target & chat closed, press TAB
-		If $Type = 65535 And $Chat = 0 Then
-			Local $elapsed = TimerDiff($currentTime)
-			If $elapsed >= $TargetDelay Then
-				ControlSend($WindowName, "", "", "{TAB}")
-				$currentTime = TimerInit()
-			EndIf
+	If $Type = 65535 And $Chat = 0 Then
+		If TimerDiff($currentTime) >= $TargetDelay Then
+			ControlSend($WindowName, "", "", "{TAB}")
+			$currentTime = TimerInit()
+			ConsoleWrite("No target — retargeting..." & @CRLF)
 		EndIf
-
-	Else
-		GUICtrlSetData($AttackModeLabel, "Attack Mode: No Target")
 	EndIf
 EndFunc
 
