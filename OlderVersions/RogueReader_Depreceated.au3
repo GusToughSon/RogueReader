@@ -44,12 +44,21 @@ Global Const $sButtonConfigFile = @ScriptDir & "\NewButtonConfig.ini"
 ConsoleWrite("Script Version: " & $version & @CRLF)
 
 ; --- Load Config Settings ---
+Global $HealHotkey = ""
+Global $CureHotkey = ""
+Global $TargetHotkey = ""
+Global $ExitHotkey = ""
+Global $SaveLocationHotkey = ""
+Global $EraseLocationsHotkey = ""
+Global $MoveToLocationsHotkey = ""
 Global $aTempBlocked[0][2]
 
 If Not FileExists($sButtonConfigFile) Then CreateButtonDefaultConfig()
 LoadButtonConfig()
 
+Global $iCurrentLocationIndex = 0
 Global $iCurrentIndex = 0
+Global $bPaused = True
 Global $aLocations = LoadLocations()                ; This may show error if the file is missing
 Global $Debug = False
 Global $LootCount = 0
@@ -77,9 +86,13 @@ Global $BackPackMax = 0x731AC          ;
 
 
 Global $currentTime = TimerInit()
+Global $elapsedTime = TimerDiff($currentTime)
 Global $LastHealTime = TimerInit()
+Global $elapsedTimeSinceHeal = TimerDiff($LastHealTime)
+Global $MovementTime = TimerInit()
 Global $lastX = 0
 Global $lastY = 0
+Global $timer = TimerInit()
 Global $Running = True
 Global $HealerStatus = 0
 Global $CureStatus = 0
@@ -89,6 +102,8 @@ Global $iPrevValue = 95
 Global $MPrevValue = " "
 Global $hProcess = 0
 Global $BaseAddress = 0
+Global $PosXOld = -1
+Global $PosYOld = -1
 Global $TypeAddress, $AttackModeAddress, $PosXAddress, $PosYAddress
 Global $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress
 Global $Type, $Chat, $Sickness, $AttackMode
@@ -126,6 +141,7 @@ Global $BackPackLabel = GUICtrlCreateLabel("Weight: N/A", 180, 150, 250, 20)
 
 
 Global $CureLabel = GUICtrlCreateLabel("Cure: Off", 120, 240, 250, 20)
+Global $HotkeyLabel = GUICtrlCreateLabel("Set hotkeys in the config file", 20, 270, 350, 20)
 Global $KillButton = GUICtrlCreateButton("Kill Rogue", 20, 300, 100, 30)
 Global $ExitButton = GUICtrlCreateButton("Exit", 150, 300, 100, 30)
 
@@ -138,8 +154,10 @@ Global $MovmentSlider = GUICtrlCreateSlider(20, 370, 180, 20)
 GUICtrlSetLimit($MovmentSlider, 750, 50)
 GUICtrlSetData($MovmentSlider, 200)
 Global $MoveLabel = GUICtrlCreateLabel("Heal After 200", 185, 370, 100, 20)
+Global $MoveLabell = GUICtrlCreateLabel("ms of no movement.", 280, 370, 100, 20)
 Global $LootingCheckbox = GUICtrlCreateCheckbox("Looting", 240, 220, 200, 20)
 Global $Checkbox = GUICtrlCreateCheckbox("Old Style Pothack", 240, 250, 200, 20)
+Global $CheckboxLabel = GUICtrlCreateLabel("(Ignore Heal After)", 240, 270, 200, 20)
 
 
 GUISetState(@SW_SHOW)
