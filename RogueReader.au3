@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.19
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.22
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.19
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.22
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -69,10 +69,18 @@ LoadButtonConfig()
 Global $iCurrentIndex = 0
 Global $aLocations = LoadLocations()                ; This may show error if the file is missing
 Global $Debug = False
-Global $LootCount = 0
-Global $LootQueue[8][3]
+Global $LootIdleTimer = TimerInit()
+Global $LootIdleWaiting = False
+
 Global $LootQueued = False
-Global $LootTriggerTime = 0
+Global $LootCount = 0
+Global $LootReady = False
+Global $LootTimer = TimerInit()
+Global $PausedWalkerForLoot = False
+Global $LastPlayerX = 0
+Global $LastPlayerY = 0
+Global $HadTarget = False
+Global $LastTargetHeld = TimerInit()
 Global $LastTargetTime = TimerInit()
 Global $LootingCheckbox
 Global $LootCheckX = -1
@@ -126,34 +134,111 @@ Global $TargetDelay = 400, $HealDelay = 1700
 ; Create the GUI
 ; -------------------
 ;...;
-Global $Gui = GUICreate("RougeReader Version - " & $version, 400, 429, 15, 15)
+Global $Gui = GUICreate($version, 233, 389, 15, 15)
 
+Global $TypeLabel = GUICtrlCreateLabel("Target: N/A", 100, 35, 115, 15)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+GUICtrlSetBkColor(-1, 0xBEBEBE)
+Global $AttackModeLabel = GUICtrlCreateLabel("Attack: N/A", 100, 55, 115, 15)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+GUICtrlSetBkColor(-1, 0xBEBEBE)
+Global $PosXLabel = GUICtrlCreateLabel("X: N/A", 17, 30, 60, 15)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+GUICtrlSetBkColor(-1, 0xBEBEBE)
+Global $PosYLabel = GUICtrlCreateLabel("Y: N/A", 17, 46, 60, 15)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+GUICtrlSetBkColor(-1, 0xBEBEBE)
+Global $HPLabel = GUICtrlCreateLabel("HP: N/A /", 15, 100, 45, 15)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+GUICtrlSetBkColor(-1, 0xBEBEBE)
+Global $ChatLabel = GUICtrlCreateLabel("Chat: N/A", 100, 95, 115, 15)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+GUICtrlSetBkColor(-1, 0xBEBEBE)
+Global $HP2Label = GUICtrlCreateLabel("RealHp: N/A", 90, 215, 135, 20)
+GUICtrlSetBkColor(-1, 0x9D9597)
+Global $SicknessLabel = GUICtrlCreateLabel("Sickness: N/A", 100, 75, 115, 15)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+GUICtrlSetBkColor(-1, 0xBEBEBE)
+Global $MaxHPLabel = GUICtrlCreateLabel("N/A", 59, 100, 20, 15)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+GUICtrlSetBkColor(-1, 0xBEBEBE)
+Global $TargetLabel = GUICtrlCreateLabel("Target: Off", 20, 195, 50, 15)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+GUICtrlSetBkColor(-1, 0xBEBEBE)
+Global $HealerLabel = GUICtrlCreateLabel("Healer: Off", 20, 163, 50, 15)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+GUICtrlSetBkColor(-1, 0xBEBEBE)
+Global $WalkerLabel = GUICtrlCreateLabel("Walker: Off", 20, 211, 50, 15)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+GUICtrlSetBkColor(-1, 0xBEBEBE)
+Global $BackPackLabel = GUICtrlCreateLabel("Weight: N/A", 15, 116, 65, 15)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+GUICtrlSetBkColor(-1, 0xBEBEBE)
+Global $CureLabel = GUICtrlCreateLabel("Cure: Off", 20, 179, 50, 15)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+GUICtrlSetBkColor(-1, 0xBEBEBE)
+Global $KillButton = GUICtrlCreateButton("Kill Rogue", 5, 355, 110, 30)
+Global $ExitButton = GUICtrlCreateButton("Exit", 120, 355, 110, 30)
+Global $healLabel = GUICtrlCreateLabel("Heal at: 85%", 78, 240, 65, 15)
+GUICtrlSetBkColor(-1, 0xBEBEBE)
+Global $ReverseLoopCheckbox = GUICtrlCreateCheckbox("Reversed Walker", 100, 165, 115, 20)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+GUICtrlSetBkColor(-1, 0xBEBEBE)
+Global $MoveLabel = GUICtrlCreateLabel("Heal After 200", 76, 297, 70, 15)
+GUICtrlSetBkColor(-1, 0xBEBEBE)
+Global $LootingCheckbox = GUICtrlCreateCheckbox("Autoloot", 100, 145, 115, 20)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+GUICtrlSetBkColor(-1, 0xBEBEBE)
+Global $Checkbox = GUICtrlCreateCheckbox("Old Style Pothack", 100, 185, 115, 20)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+GUICtrlSetBkColor(-1, 0xBEBEBE)
+Global $healSlider = GUICtrlCreateSlider(13, 255, 210, 36)
+Global $MovmentSlider = GUICtrlCreateSlider(13, 313, 210, 36)
+Global $Rect_1 = GUICtrlCreateGraphic(8, 142, 75, 91)
+GUICtrlSetGraphic(-1, $GUI_GR_PENSIZE, 1)
+GUICtrlSetGraphic(-1, $GUI_GR_COLOR, 0x000000, 0x9D9597)
+GUICtrlSetGraphic(-1, $GUI_GR_RECT, 0, 0, 75, 91)
+Global $Helpers = GUICtrlCreateLabel("HELPERS", 15, 146, 60, 11)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+GUICtrlSetBkColor(-1, 0x808080)
+Global $Rect_2 = GUICtrlCreateGraphic(8, 296, 220, 56)
+GUICtrlSetGraphic(-1, $GUI_GR_PENSIZE, 1)
+GUICtrlSetGraphic(-1, $GUI_GR_COLOR, 0x000000, 0x9D9597)
+GUICtrlSetGraphic(-1, $GUI_GR_RECT, 0, 0, 220, 56)
+Global $Rect_3 = GUICtrlCreateGraphic(8, 239, 220, 56)
+GUICtrlSetGraphic(-1, $GUI_GR_PENSIZE, 1)
+GUICtrlSetGraphic(-1, $GUI_GR_COLOR, 0x000000, 0x9D9597)
+GUICtrlSetGraphic(-1, $GUI_GR_RECT, 0, 0, 220, 56)
+Global $Rect_4 = GUICtrlCreateGraphic(8, 76, 75, 61)
+GUICtrlSetGraphic(-1, $GUI_GR_PENSIZE, 1)
+GUICtrlSetGraphic(-1, $GUI_GR_COLOR, 0x000000, 0x9D9597)
+GUICtrlSetGraphic(-1, $GUI_GR_RECT, 0, 0, 75, 61)
+Global $Character = GUICtrlCreateLabel("CHARACTER", 17, 84, 60, 11)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+GUICtrlSetBkColor(-1, 0x808080)
+Global $Rect_5 = GUICtrlCreateGraphic(9, 9, 75, 61)
+GUICtrlSetGraphic(-1, $GUI_GR_PENSIZE, 1)
+GUICtrlSetGraphic(-1, $GUI_GR_COLOR, 0x000000, 0x9D9597)
+GUICtrlSetGraphic(-1, $GUI_GR_RECT, 0, 0, 75, 61)
+Global $Position = GUICtrlCreateLabel("POSITION", 17, 17, 60, 11)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+GUICtrlSetBkColor(-1, 0x808080)
+Global $Rect_6 = GUICtrlCreateGraphic(90, 9, 135, 106)
+GUICtrlSetGraphic(-1, $GUI_GR_PENSIZE, 1)
+GUICtrlSetGraphic(-1, $GUI_GR_COLOR, 0x000000, 0x9D9597)
+GUICtrlSetGraphic(-1, $GUI_GR_RECT, 0, 0, 135, 106)
+Global $Information = GUICtrlCreateLabel("INFORMATION", 127, 18, 65, 11)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+GUICtrlSetBkColor(-1, 0x808080)
+Global $Rect_7 = GUICtrlCreateGraphic(90, 120, 135, 91)
+GUICtrlSetGraphic(-1, $GUI_GR_PENSIZE, 1)
+GUICtrlSetGraphic(-1, $GUI_GR_COLOR, 0x000000, 0x9D9597)
+GUICtrlSetGraphic(-1, $GUI_GR_RECT, 0, 0, 135, 91)
+Global $Options = GUICtrlCreateLabel("OPTIONS", 127, 129, 65, 11)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+GUICtrlSetBkColor(-1, 0x808080)
 
-Global $TypeLabel = GUICtrlCreateLabel("Type: N/A", 20, 30, 85, 20)
-Global $AttackModeLabel = GUICtrlCreateLabel("Attack Mode: N/A", 110, 30, 120, 20)
-Global $PosXLabel = GUICtrlCreateLabel("Pos X: N/A", 20, 55, 85, 20)
-Global $PosYLabel = GUICtrlCreateLabel("Pos Y: N/A", 110, 55, 80, 20)
-Global $HPLabel = GUICtrlCreateLabel("HP: N/A", 20, 130, 95, 20)
-Global $ChatLabel = GUICtrlCreateLabel("Chat: N/A", 255, 55, 90, 20)
-Global $HP2Label = GUICtrlCreateLabel("RealHp: N/A", 20, 105, 125, 20)
-Global $SicknessLabel = GUICtrlCreateLabel("Sickness: N/A", 255, 30, 135, 20)
-Global $MaxHPLabel = GUICtrlCreateLabel("MaxHP: N/A", 20, 160, 100, 20)
-Global $TargetLabel = GUICtrlCreateLabel("Target: Off", 20, 245, 70, 20)
-Global $HealerLabel = GUICtrlCreateLabel("Healer: Off", 20, 195, 70, 20)
-Global $WalkerLabel = GUICtrlCreateLabel("Walker: Off", 20, 270, 70, 20)
-Global $BackPackLabel = GUICtrlCreateLabel("Weight: N/A", 20, 80, 125, 20)
-Global $CureLabel = GUICtrlCreateLabel("Cure: Off", 20, 220, 70, 20)
-Global $KillButton = GUICtrlCreateButton("Kill Rogue", 15, 300, 135, 30)
-Global $ExitButton = GUICtrlCreateButton("Exit", 230, 300, 140, 30)
-Global $healLabel = GUICtrlCreateLabel("Heal at: 85%", 5, 370, 65, 15)
-Global $ReverseLoopCheckbox = GUICtrlCreateCheckbox("ReverseLoop", 160, 160, 90, 20)
-Global $MoveLabel = GUICtrlCreateLabel("Heal After 200", 325, 370, 70, 15)
-Global $LootingCheckbox = GUICtrlCreateCheckbox("Looting", 160, 140, 60, 20)
-Global $Checkbox = GUICtrlCreateCheckbox("Old Style Pothack", 160, 195, 105, 20)
-Global $healSlider = GUICtrlCreateSlider(5, 330, 386, 36)
-GUICtrlSetLimit($healSlider, 95, 45) ; range from 45 to 95
 GUICtrlSetData($healSlider, 85)
-Global $MovmentSlider = GUICtrlCreateSlider(5, 385, 386, 36)
 GUICtrlSetLimit($MovmentSlider, 750, 50)
 GUICtrlSetData($MovmentSlider, 200)
 
@@ -170,46 +255,26 @@ While $Running
 		Case $ExitButton, $GUI_EVENT_CLOSE
 			_WinAPI_CloseHandle($hProcess)
 			GUIDelete($Gui)
-			ConsoleWrite("[Debug] Trainer closed" & @CRLF)
 			Exit
-
 		Case $KillButton
 			Local $pidCheck = ProcessExists($ProcessName)
 			If $pidCheck Then ProcessClose($pidCheck)
 	EndSwitch
 
-	; Lock GUI drawing
 	GUISetState($SW_LOCKDRAW)
 
-	; Update slider labels
-	Local $MValue = GUICtrlRead($MovmentSlider)
-	If $MValue <> $MPrevValue Then
-		GUICtrlSetData($MoveLabel, "Heal After " & $MValue)
-		$MPrevValue = $MValue
-	EndIf
+	; Update slider labels and GUI states here...
 
-	Local $iValue = GUICtrlRead($healSlider)
-	If $iValue <> $iPrevValue Then
-		GUICtrlSetData($healLabel, "Heal at: " & $iValue & "%")
-		$iPrevValue = $iValue
-	EndIf
-
-	; Check if game is running
 	Local $ProcessID = ProcessExists($ProcessName)
 	If Not $ProcessID Then
-		If $hProcess <> 0 Then
-			ConsoleWrite("[Info] Game closed, handle reset..." & @CRLF)
-			_WinAPI_CloseHandle($hProcess)
-		EndIf
+		If $hProcess <> 0 Then _WinAPI_CloseHandle($hProcess)
 		$hProcess = 0
 		$BaseAddress = 0
-		ConsoleWrite("[Info] Game not found, waiting..." & @CRLF)
 		GUISetState($SW_UNLOCKDRAW)
 		Sleep(200)
 		ContinueLoop
 	EndIf
 
-	; Connect if process is open but handle is not
 	If $hProcess = 0 Then
 		ConnectToBaseAddress()
 		If $BaseAddress = 0 Or $hProcess = 0 Then
@@ -218,51 +283,28 @@ While $Running
 			ContinueLoop
 		Else
 			ChangeAddressToBase()
-			ConsoleWrite("[Info] Connected to game process." & @CRLF)
 		EndIf
 	EndIf
 
-	; Update labels from memory
 	GUIReadMemory()
 
-	; Unlock GUI drawing
 	GUISetState($SW_UNLOCKDRAW)
 
-	; Run core features when not chatting
 	If $Chat = 0 Then
-		If $CureStatus = 1 Then CureMe()
+		If $CureStatus = 1 And $Chat = 0 Then CureMe()
+		If $HealerStatus = 1 And $Chat = 0 Then TimeToHeal()
 		If $TargetStatus = 1 Then AttackModeReader()
-		If $HealerStatus = 1 Then TimeToHeal()
+		If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED Then HandleLootQueue()
 
-		; ✅ Standalone Looting (no targeting, no walker)
-		If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED _
-				And $TargetStatus = 0 _
-				And $MoveToLocationsStatus = 0 _
-				And $LootQueued Then
-
-			HandleLootQueue()
-		EndIf
-
-		; Walker runs ONLY when loot is not queued
-		If $MoveToLocationsStatus = 1 And Not $LootQueued Then
+		If $MoveToLocationsStatus = 1 And Not $LootQueued And $Chat = 0 Then
 			Local $result = MoveToLocationsStep($aLocations, $iCurrentIndex)
-			If @error Then
-				ConsoleWrite("Error or end of locations: " & @error & @CRLF)
-				$MoveToLocationsStatus = 0
-			EndIf
+			If @error Then $MoveToLocationsStatus = 0
 		EndIf
 	EndIf
-	; Recheck if process is still alive
-	If Not ProcessExists($ProcessID) Then
-		ConsoleWrite("[Info] Game closed unexpectedly, handle reset..." & @CRLF)
-		_WinAPI_CloseHandle($hProcess)
-		$hProcess = 0
-		$BaseAddress = 0
-	EndIf
+
 
 	Sleep(100)
 WEnd
-
 
 GUIDelete($Gui)
 _WinAPI_CloseHandle($hProcess)
@@ -341,9 +383,11 @@ EndFunc   ;==>Min
 Func QueueLootPattern()
 	Global $LootQueue
 
+	; Screen click coordinates
 	Local $rawX[8] = [320, 350, 385, 325, 385, 325, 350, 385]
 	Local $rawY[8] = [325, 320, 325, 355, 355, 385, 390, 385]
 
+	; Shuffle logic
 	Local $used[8] = [False, False, False, False, False, False, False, False]
 	For $i = 0 To 7
 		Do
@@ -353,75 +397,89 @@ Func QueueLootPattern()
 		$LootQueue[$i][1] = $rawY[$rand]
 		$used[$rand] = True
 	Next
-	ConsoleWrite("New loot pattern queued." & @CRLF)
+
+	ConsoleWrite("[Loot] New loot pattern queued." & @CRLF)
 EndFunc   ;==>QueueLootPattern
 
+; ------------------------------------------------------------------------------
+;                               HANDLE LOOT QUEUE
+; ------------------------------------------------------------------------------
 Func HandleLootQueue()
-	Global $LootQueue, $LootQueued, $hProcess
-	Global $LootTriggerTime, $LootCount
+	Global $hProcess, $BaseAddress, $WindowName
+	Global $LootQueued, $LootCount, $LootReady
 	Global $MoveToLocationsStatus, $PausedWalkerForLoot
-	Global $BaseAddress, $WindowName
-	Global $MouseXAddress = $BaseAddress + 0xA669F0
-	Global $MouseYAddress = $BaseAddress + 0xB5BC0C
+	Global $PosXAddress, $PosYAddress
+	Global $LastPlayerX, $LastPlayerY
+	Global $LootIdleTimer, $LootIdleWaiting
 
-	If Not $LootQueued Then Return
-	If TimerDiff($LootTriggerTime) < 750 Then Return
+	; No loot queued? Skip
+	If Not $LootQueued Or $LootCount = 0 Then Return
+	; Not finished waiting for idle? Skip
+	If Not $LootIdleWaiting Then Return
+	; 750ms idle time check
+	If TimerDiff($LootIdleTimer) < 750 Then Return
 
-	Local $clicksPerTile = Min($LootCount * 4, 32)
-	ConsoleWrite("LOOT: Executing " & $clicksPerTile & " clicks per tile (for " & $LootCount & " kills)" & @CRLF)
+	; Check movement
+	Local $PlayerX = _ReadMemory($hProcess, $PosXAddress)
+	Local $PlayerY = _ReadMemory($hProcess, $PosYAddress)
+	If $PlayerX <> $LastPlayerX Or $PlayerY <> $LastPlayerY Then
+		ConsoleWrite("[Loot] Player moved before looting. Cancelling." & @CRLF)
+		$LootQueued = False
+		$LootCount = 0
+		$LootReady = False
+		$LootIdleWaiting = False
+		Return
+	EndIf
 
-	; Matching memory X/Y values to loot positions
-	Local $memX[8] = [192, 175, 160, 162, 162, 175, 192, 192]
-	Local $memY[8] = [161, 159, 161, 176, 191, 194, 191, 176]
-
-	; Matching screen click coords (client-relative)
-	Local $clickX[8] = [385, 350, 320, 325, 325, 350, 385, 385]
-	Local $clickY[8] = [325, 320, 325, 355, 385, 390, 385, 355]
-
+	; Pause walker
 	If $MoveToLocationsStatus = 1 Then
 		$MoveToLocationsStatus = 0
 		$PausedWalkerForLoot = True
-		ConsoleWrite("LOOT: Pausing walker for loot." & @CRLF)
+		ConsoleWrite("[Loot] Walker paused for looting." & @CRLF)
 	EndIf
 
-	; Process 8 randomized locations from $LootQueue (created by QueueLootPattern)
-	For $i = 0 To 7
-		Local $screenX = $LootQueue[$i][0]
-		Local $screenY = $LootQueue[$i][1]
+	; Looting starts
+	Local $clicksPerTile = Min($LootCount * 4, 32)
+	ConsoleWrite("[Loot] Looting now with " & $clicksPerTile & " clicks per tile." & @CRLF)
 
-		; Match index to memory array
-		Local $matchIndex = -1
-		For $j = 0 To 7
-			If $screenX = $clickX[$j] And $screenY = $clickY[$j] Then
-				$matchIndex = $j
-				ExitLoop
-			EndIf
+	Local $memX[8] = [192, 175, 160, 162, 162, 175, 192, 192]
+	Local $memY[8] = [161, 159, 161, 176, 191, 194, 191, 176]
+	Local $clickX[8] = [385, 350, 320, 325, 325, 350, 385, 385]
+	Local $clickY[8] = [325, 320, 325, 355, 385, 390, 385, 355]
+
+	Local $used[8] = [False, False, False, False, False, False, False, False]
+
+	For $i = 0 To 7
+		Do
+			Local $rand = Random(0, 7, 1)
+		Until Not $used[$rand]
+		$used[$rand] = True
+
+		_WriteMemory($hProcess, $BaseAddress + 0xA669F0, $memX[$rand])
+		_WriteMemory($hProcess, $BaseAddress + 0xB5BC0C, $memY[$rand])
+
+		For $j = 1 To $clicksPerTile
+			ControlClick($WindowName, "", "", "right", 1, $clickX[$rand], $clickY[$rand])
+			Sleep(5)
 		Next
 
-		If $matchIndex <> -1 Then
-			Local $memXVal = $memX[$matchIndex]
-			Local $memYVal = $memY[$matchIndex]
-
-			_WriteMemory($hProcess, $MouseXAddress, $memXVal)
-			_WriteMemory($hProcess, $MouseYAddress, $memYVal)
-
-			ControlClick($WindowName, "", "", "right", $clicksPerTile, $screenX, $screenY)
-			ConsoleWrite("LOOT: Set mouse mem (" & $memXVal & "," & $memYVal & ") and clicked at (" & $screenX & "," & $screenY & ")" & @CRLF)
-		Else
-			ConsoleWrite("LOOT: Skipped unmatched screen coordinate: (" & $screenX & ", " & $screenY & ")" & @CRLF)
-		EndIf
+		ConsoleWrite("[Loot] Clicked (" & $clickX[$rand] & "," & $clickY[$rand] & ") x" & $clicksPerTile & @CRLF)
 	Next
 
-	ConsoleWrite("LOOT: Loot complete. Resetting state." & @CRLF)
+	; Reset state
 	$LootQueued = False
 	$LootCount = 0
+	$LootReady = False
+	$LootIdleWaiting = False
 
+	; Resume walker
 	If $PausedWalkerForLoot Then
 		$MoveToLocationsStatus = 1
 		$PausedWalkerForLoot = False
-		ConsoleWrite("LOOT: Resumed walker after loot." & @CRLF)
+		ConsoleWrite("[Loot] Walker resumed after looting." & @CRLF)
 	EndIf
 EndFunc   ;==>HandleLootQueue
+
 
 Func ClickTile($x, $y)
 	MouseClick("right", $x, $y, 1, 0)
@@ -1087,74 +1145,76 @@ EndFunc   ;==>TimeToHeal
 ;                                  TARGETING
 ; ------------------------------------------------------------------------------
 Func AttackModeReader()
-	Global $ChattOpenAddress, $Chat, $AttackModeAddress, $AttackMode
-	Global $TypeAddress, $Type, $hProcess, $WindowName
+	Global $hProcess, $WindowName
+	Global $Type, $Chat, $AttackMode
+	Global $PosXAddress, $PosYAddress
+	Global $LootingCheckbox, $TargetStatus
+	Global $LootQueued, $LootCount, $LootReady
+	Global $LastPlayerX, $LastPlayerY
+	Global $HadTarget, $LastTargetHeld
 	Global $currentTime, $TargetDelay
-	Global $LastTargetTime, $LootQueued, $LootTriggerTime
-	Global $LootingCheckbox, $LootCheckX, $LootCheckY
-	Global $HadTargetRecently, $PosXAddress, $PosYAddress
-	Global $LootCount, $MoveToLocationsStatus, $PausedWalkerForLoot
+	Global $LootIdleTimer, $LootIdleWaiting
 
 	$Chat = _ReadMemory($hProcess, $ChattOpenAddress)
-	$AttackMode = _ReadMemory($hProcess, $AttackModeAddress)
 	$Type = _ReadMemory($hProcess, $TypeAddress)
+	$AttackMode = _ReadMemory($hProcess, $AttackModeAddress)
 
-	Switch $AttackMode
-		Case 0
-			GUICtrlSetData($AttackModeLabel, "Attack Mode: Safe")
-		Case 1
-			GUICtrlSetData($AttackModeLabel, "Attack Mode: Attack")
-		Case Else
-			GUICtrlSetData($AttackModeLabel, "Attack Mode: No Target")
-	EndSwitch
+	Local $PlayerX = _ReadMemory($hProcess, $PosXAddress)
+	Local $PlayerY = _ReadMemory($hProcess, $PosYAddress)
 
-	If $Type = 1 Then
-		If Not $HadTargetRecently Then
-			$HadTargetRecently = True
-			$LastTargetTime = TimerInit()
-			ConsoleWrite("New target acquired. Timer started." & @CRLF)
-		EndIf
-
-		If $LootQueued Then
-			ConsoleWrite("Loot canceled — new target acquired." & @CRLF)
+	; Cancel loot if player moves
+	If $LastPlayerX <> 0 And $LastPlayerY <> 0 Then
+		If $PlayerX <> $LastPlayerX Or $PlayerY <> $LastPlayerY Then
+			ConsoleWrite("[Loot] Player moved manually, cancelling loot queue." & @CRLF)
 			$LootQueued = False
+			$LootCount = 0
+			$LootReady = False
+			$LootIdleWaiting = False
 		EndIf
+	EndIf
 
-	ElseIf $Type = 65535 Then
-		If $HadTargetRecently Then
-			$HadTargetRecently = False
-			Local $targetHeldFor = TimerDiff($LastTargetTime)
+	$LastPlayerX = $PlayerX
+	$LastPlayerY = $PlayerY
 
-			If $targetHeldFor >= 2000 And GUICtrlRead($LootingCheckbox) = $GUI_CHECKED Then
-				$LootCount = Min($LootCount + 1, 8)
-				ConsoleWrite("Target lost after " & $targetHeldFor & "ms. LootCount=" & $LootCount & @CRLF)
+	; --- Loot kill detection ---
+	If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED Then
+		If $Type = 1 Then ; Monster targeted
+			If Not $HadTarget Then
+				$HadTarget = True
+				$LastTargetHeld = TimerInit()
 
-				$LootCheckX = _ReadMemory($hProcess, $PosXAddress)
-				$LootCheckY = _ReadMemory($hProcess, $PosYAddress)
-
-				If $LootCheckX <> 0 And $LootCheckY <> 0 Then
-					QueueLootPattern()
-					$LootTriggerTime = TimerInit()
-					$LootQueued = True
-
-					If $MoveToLocationsStatus = 1 Then
-						ConsoleWrite("Pausing walker for loot trigger." & @CRLF)
-						$MoveToLocationsStatus = 0
-						$PausedWalkerForLoot = True
-					EndIf
+				; If new monster targeted, cancel loot idle wait
+				If $LootIdleWaiting Then
+					ConsoleWrite("[Loot] New target acquired. Cancelling idle wait." & @CRLF)
+					$LootIdleWaiting = False
 				EndIf
+			ElseIf TimerDiff($LastTargetHeld) >= 100 Then
+				; Held >100ms, stable target
+			EndIf
+		ElseIf $Type = 65535 Then ; No target (possible kill)
+			If $HadTarget Then
+				If TimerDiff($LastTargetHeld) >= 100 Then
+					$LootCount += 1
+					$LootQueued = True
+					ConsoleWrite("[Loot] Monster kill detected. Loot count now: " & $LootCount & @CRLF)
+				EndIf
+				$HadTarget = False
+				$LootIdleTimer = TimerInit()
+				$LootIdleWaiting = True
 			EndIf
 		EndIf
 	EndIf
 
-	If $Type = 65535 And $Chat = 0 Then
+	; --- Targeter Retarget ---
+	If $TargetStatus = 1 And $Type = 65535 And $Chat = 0 Then
 		If TimerDiff($currentTime) >= $TargetDelay Then
 			ControlSend($WindowName, "", "", "{TAB}")
-			ConsoleWrite("No target — retargeting..." & @CRLF)
+			ConsoleWrite("[Target] Retargeting with TAB..." & @CRLF)
 			$currentTime = TimerInit()
 		EndIf
 	EndIf
 EndFunc   ;==>AttackModeReader
+
 
 Func IsBlockedCoord($x, $y)
 	For $i = 0 To UBound($aTempBlocked) - 1
