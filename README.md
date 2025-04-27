@@ -1,5 +1,101 @@
 # Rogue Reader - Project Rogue Trainer
 
+Welcome!  
+This is a helper tool ("trainer") for the game **Project Rogue**.  
+It can **heal you**, **cure you**, **auto-attack monsters**, **walk places**, and **auto-loot** for you.  
+It makes the game easier by doing boring things automatically!
+
+---
+
+## 📦 What This Trainer Does
+
+- 🧹 **Auto-Heal** when your HP gets low
+- 💊 **Auto-Cure** when you're poisoned or sick
+- 🎯 **Auto-Target monsters** with the {TAB} key
+- 🧭 **Auto-Walk** between saved places
+- 💰 **Auto-Loot** dead monsters fast after fighting
+
+---
+
+## 🎮 How to Use It
+
+1. **Open Project Rogue** (the game).
+2. **Start Rogue Reader.exe** (this trainer).
+3. **Click the checkboxes** for what you want to turn ON:
+   - Healer
+   - Cure
+   - Targeter
+   - Walker
+   - Looting
+4. **Set your hotkeys** if you want (or use the defaults).
+5. **Let it run!** It will do the work for you.
+
+✅ You can turn things ON/OFF anytime while playing.
+
+---
+
+## ⚙️ Features Explained (Simple)
+
+| Feature | What It Does |
+|:---|:---|
+| Healer | Presses {2} to heal when your HP gets low. |
+| Cure | Presses {3} to cure sickness if you are poisoned. |
+| Targeter | Presses {TAB} to target monsters automatically. |
+| Walker | Moves you through saved locations like a robot. |
+| Looting | Right-clicks loot spots after killing monsters. |
+
+---
+
+## 🖥️ Controls
+
+| Action | Default Hotkey |
+|:---|:---|
+| Toggle Healer | `~` key |
+| Toggle Cure | `-` key |
+| Toggle Target | `=` key |
+| Save Location | F7 |
+| Erase Locations | F8 |
+| Start/Stop Walker | `Alt` key |
+| Exit Program | `#` key |
+
+---
+
+## 📂 Files Included
+
+- `Rogue Reader.exe` → The main trainer.
+- `Locations.ini` → Your saved walk locations.
+- `NewButtonConfig.ini` → Your saved hotkey settings.
+- `README.md` → This guide!
+
+---
+
+## 🧠 Important Things to Know
+
+- **You must already be inside the game** when you start the trainer.
+- **Looting only works** if you check the Looting box.
+- **Walker will PAUSE** while looting dead monsters, and **resume after**.
+- **If you move your character manually**, the trainer will cancel loot and wait.
+
+---
+
+## 📢 Warning
+
+This tool is for **testing and training** purposes only.  
+Use responsibly.  
+Do not use on servers where it is not allowed!
+
+---
+
+## ❤️ Thanks
+
+Thanks for using Rogue Reader!  
+Have fun, and happy looting!
+
+
+
+
+# Rogue Reader - Project Rogue Trainer
+
 ## Overview
 **Rogue Reader** is an advanced training utility for the game Project Rogue, designed to enhance player capabilities through strategic automation and real-time game memory manipulation. Built with AutoIt, Rogue Reader offers a dynamic GUI that provides real-time game status updates and custom automation features, making it a must-have tool for both casual and hardcore players.
 

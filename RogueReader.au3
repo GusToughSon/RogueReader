@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.22
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.23
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.22
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.23
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -460,7 +460,7 @@ Func HandleLootQueue()
 
 		For $j = 1 To $clicksPerTile
 			ControlClick($WindowName, "", "", "right", 1, $clickX[$rand], $clickY[$rand])
-			Sleep(5)
+			Sleep(1)
 		Next
 
 		ConsoleWrite("[Loot] Clicked (" & $clickX[$rand] & "," & $clickY[$rand] & ") x" & $clicksPerTile & @CRLF)
