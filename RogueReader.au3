@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.23
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.24
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.23
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.24
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -100,6 +100,7 @@ Global $SicknessOffset = 0x7C5E4    ;
 Global $BackPack = 0x731A8          ;
 Global $BackPackMax = 0x731AC          ;
 
+Global $MovmentSlider = 200 ;walk after removed from gui turned to solid state,
 
 Global $currentTime = TimerInit()
 Global $LastHealTime = TimerInit()
@@ -134,113 +135,86 @@ Global $TargetDelay = 400, $HealDelay = 1700
 ; Create the GUI
 ; -------------------
 ;...;
-Global $Gui = GUICreate($version, 233, 389, 15, 15)
+Global $Gui = GUICreate($version, 649, 660, 15, 15)
 
-Global $TypeLabel = GUICtrlCreateLabel("Target: N/A", 100, 35, 115, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+Global $TypeLabel = GUICtrlCreateLabel("Target: N/A", 395, 445, 115, 15)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0xBEBEBE)
-Global $AttackModeLabel = GUICtrlCreateLabel("Attack: N/A", 100, 55, 115, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+Global $AttackModeLabel = GUICtrlCreateLabel("Attack: N/A", 395, 465, 115, 15)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0xBEBEBE)
-Global $PosXLabel = GUICtrlCreateLabel("X: N/A", 17, 30, 60, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+Global $PosXLabel = GUICtrlCreateLabel("X: N/A", 482, 150, 105, 50)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0xBEBEBE)
-Global $PosYLabel = GUICtrlCreateLabel("Y: N/A", 17, 46, 60, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+Global $PosYLabel = GUICtrlCreateLabel("Y: N/A", 492, 231, 110, 55)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0xBEBEBE)
-Global $HPLabel = GUICtrlCreateLabel("HP: N/A /", 15, 100, 45, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+Global $HPLabel = GUICtrlCreateLabel("HP: N/A /", 205, 390, 130, 90)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0xBEBEBE)
-Global $ChatLabel = GUICtrlCreateLabel("Chat: N/A", 100, 95, 115, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+Global $ChatLabel = GUICtrlCreateLabel("Chat: N/A", 395, 505, 115, 15)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0xBEBEBE)
-Global $HP2Label = GUICtrlCreateLabel("RealHp: N/A", 90, 215, 135, 20)
+Global $HP2Label = GUICtrlCreateLabel("RealHp: N/A", 15, 5, 190, 20)
 GUICtrlSetBkColor(-1, 0x9D9597)
-Global $SicknessLabel = GUICtrlCreateLabel("Sickness: N/A", 100, 75, 115, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+Global $SicknessLabel = GUICtrlCreateLabel("Sickness: N/A", 395, 485, 115, 15)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0xBEBEBE)
-Global $MaxHPLabel = GUICtrlCreateLabel("N/A", 59, 100, 20, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+Global $MaxHPLabel = GUICtrlCreateLabel("N/A", 264, 395, 140, 110)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0xBEBEBE)
-Global $TargetLabel = GUICtrlCreateLabel("Target: Off", 20, 195, 50, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+Global $TargetLabel = GUICtrlCreateLabel("Target: Off", 30, 100, 75, 15)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0xBEBEBE)
-Global $HealerLabel = GUICtrlCreateLabel("Healer: Off", 20, 163, 50, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+Global $HealerLabel = GUICtrlCreateLabel("Healer: Off", 30, 68, 75, 15)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0xBEBEBE)
-Global $WalkerLabel = GUICtrlCreateLabel("Walker: Off", 20, 211, 50, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+Global $WalkerLabel = GUICtrlCreateLabel("Walker: Off", 30, 116, 75, 15)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0xBEBEBE)
-Global $BackPackLabel = GUICtrlCreateLabel("Weight: N/A", 15, 116, 65, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+Global $BackPackLabel = GUICtrlCreateLabel("Weight: N/A", 170, 546, 185, 110)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0xBEBEBE)
-Global $CureLabel = GUICtrlCreateLabel("Cure: Off", 20, 179, 50, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+Global $CureLabel = GUICtrlCreateLabel("Cure: Off", 30, 84, 75, 15)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0xBEBEBE)
 Global $KillButton = GUICtrlCreateButton("Kill Rogue", 5, 355, 110, 30)
 Global $ExitButton = GUICtrlCreateButton("Exit", 120, 355, 110, 30)
 Global $healLabel = GUICtrlCreateLabel("Heal at: 85%", 78, 240, 65, 15)
 GUICtrlSetBkColor(-1, 0xBEBEBE)
-Global $ReverseLoopCheckbox = GUICtrlCreateCheckbox("Reversed Walker", 100, 165, 115, 20)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+Global $ReverseLoopCheckbox = GUICtrlCreateCheckbox("Reversed Walker", 385, 340, 115, 20)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0xBEBEBE)
-Global $MoveLabel = GUICtrlCreateLabel("Heal After 200", 76, 297, 70, 15)
+Global $LootingCheckbox = GUICtrlCreateCheckbox("Autoloot", 385, 320, 115, 20)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0xBEBEBE)
-Global $LootingCheckbox = GUICtrlCreateCheckbox("Autoloot", 100, 145, 115, 20)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+Global $Checkbox = GUICtrlCreateCheckbox("Old Style Pothack", 385, 360, 115, 20)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0xBEBEBE)
-Global $Checkbox = GUICtrlCreateCheckbox("Old Style Pothack", 100, 185, 115, 20)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
-GUICtrlSetBkColor(-1, 0xBEBEBE)
-Global $healSlider = GUICtrlCreateSlider(13, 255, 210, 36)
-Global $MovmentSlider = GUICtrlCreateSlider(13, 313, 210, 36)
-Global $Rect_1 = GUICtrlCreateGraphic(8, 142, 75, 91)
-GUICtrlSetGraphic(-1, $GUI_GR_PENSIZE, 1)
-GUICtrlSetGraphic(-1, $GUI_GR_COLOR, 0x000000, 0x9D9597)
-GUICtrlSetGraphic(-1, $GUI_GR_RECT, 0, 0, 75, 91)
-Global $Helpers = GUICtrlCreateLabel("HELPERS", 15, 146, 60, 11)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+Global $Helpers = GUICtrlCreateLabel("HELPERS", 25, 51, 85, 11)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0x808080)
-Global $Rect_2 = GUICtrlCreateGraphic(8, 296, 220, 56)
-GUICtrlSetGraphic(-1, $GUI_GR_PENSIZE, 1)
-GUICtrlSetGraphic(-1, $GUI_GR_COLOR, 0x000000, 0x9D9597)
-GUICtrlSetGraphic(-1, $GUI_GR_RECT, 0, 0, 220, 56)
-Global $Rect_3 = GUICtrlCreateGraphic(8, 239, 220, 56)
-GUICtrlSetGraphic(-1, $GUI_GR_PENSIZE, 1)
-GUICtrlSetGraphic(-1, $GUI_GR_COLOR, 0x000000, 0x9D9597)
-GUICtrlSetGraphic(-1, $GUI_GR_RECT, 0, 0, 220, 56)
-Global $Rect_4 = GUICtrlCreateGraphic(8, 76, 75, 61)
-GUICtrlSetGraphic(-1, $GUI_GR_PENSIZE, 1)
-GUICtrlSetGraphic(-1, $GUI_GR_COLOR, 0x000000, 0x9D9597)
-GUICtrlSetGraphic(-1, $GUI_GR_RECT, 0, 0, 75, 61)
-Global $Character = GUICtrlCreateLabel("CHARACTER", 17, 84, 60, 11)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+Global $Character = GUICtrlCreateLabel("CHARACTER", 7, 419, 180, 106)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0x808080)
-Global $Rect_5 = GUICtrlCreateGraphic(9, 9, 75, 61)
-GUICtrlSetGraphic(-1, $GUI_GR_PENSIZE, 1)
-GUICtrlSetGraphic(-1, $GUI_GR_COLOR, 0x000000, 0x9D9597)
-GUICtrlSetGraphic(-1, $GUI_GR_RECT, 0, 0, 75, 61)
-Global $Position = GUICtrlCreateLabel("POSITION", 17, 17, 60, 11)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+Global $Position = GUICtrlCreateLabel("POSITION", 372, 182, 110, 51)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0x808080)
-Global $Rect_6 = GUICtrlCreateGraphic(90, 9, 135, 106)
-GUICtrlSetGraphic(-1, $GUI_GR_PENSIZE, 1)
-GUICtrlSetGraphic(-1, $GUI_GR_COLOR, 0x000000, 0x9D9597)
-GUICtrlSetGraphic(-1, $GUI_GR_RECT, 0, 0, 135, 106)
-Global $Information = GUICtrlCreateLabel("INFORMATION", 127, 18, 65, 11)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+Global $Information = GUICtrlCreateLabel("INFORMATION", 422, 428, 65, 11)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0x808080)
-Global $Rect_7 = GUICtrlCreateGraphic(90, 120, 135, 91)
-GUICtrlSetGraphic(-1, $GUI_GR_PENSIZE, 1)
-GUICtrlSetGraphic(-1, $GUI_GR_COLOR, 0x000000, 0x9D9597)
-GUICtrlSetGraphic(-1, $GUI_GR_RECT, 0, 0, 135, 91)
-Global $Options = GUICtrlCreateLabel("OPTIONS", 127, 129, 65, 11)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "Calibri Light")
+Global $Options = GUICtrlCreateLabel("OPTIONS", 412, 304, 65, 11)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0x808080)
-
+Global $healSlider = GUICtrlCreateSlider(25, 270, 256, 41)
+Global $HealToggle = GUICtrlCreateButton("Heal", 280, 40, 116, 21)
+Global $CureToggle = GUICtrlCreateButton("Cure", 280, 59, 116, 21)
+Global $TargetToggle = GUICtrlCreateButton("Target", 280, 75, 116, 21)
+Global $WalkerToggle = GUICtrlCreateButton("Walker", 280, 94, 116, 21)
+Global $ToggleAll = GUICtrlCreateButton("ToggleAll", 395, 40, 86, 76)
 GUICtrlSetData($healSlider, 85)
-GUICtrlSetLimit($MovmentSlider, 750, 50)
-GUICtrlSetData($MovmentSlider, 200)
+
+
 
 
 GUISetState(@SW_SHOW)
@@ -251,6 +225,7 @@ GUISetState(@SW_SHOW)
 While $Running
 	Local $msg = GUIGetMsg()
 
+	; ---- Handle GUI messages first ----
 	Switch $msg
 		Case $ExitButton, $GUI_EVENT_CLOSE
 			_WinAPI_CloseHandle($hProcess)
@@ -259,18 +234,24 @@ While $Running
 		Case $KillButton
 			Local $pidCheck = ProcessExists($ProcessName)
 			If $pidCheck Then ProcessClose($pidCheck)
+		Case $HealToggle
+			ToggleHealer()
+		Case $CureToggle
+			ToggleCure()
+		Case $TargetToggle
+			ToggleTarget()
+		Case $WalkerToggle
+			ToggleWalker()
+		Case $ToggleAll
+			ToggleAllHelpers()
 	EndSwitch
 
-	GUISetState($SW_LOCKDRAW)
-
-	; Update slider labels and GUI states here...
-
+	; ---- Now background work ----
 	Local $ProcessID = ProcessExists($ProcessName)
 	If Not $ProcessID Then
 		If $hProcess <> 0 Then _WinAPI_CloseHandle($hProcess)
 		$hProcess = 0
 		$BaseAddress = 0
-		GUISetState($SW_UNLOCKDRAW)
 		Sleep(200)
 		ContinueLoop
 	EndIf
@@ -278,7 +259,6 @@ While $Running
 	If $hProcess = 0 Then
 		ConnectToBaseAddress()
 		If $BaseAddress = 0 Or $hProcess = 0 Then
-			GUISetState($SW_UNLOCKDRAW)
 			Sleep(200)
 			ContinueLoop
 		Else
@@ -287,8 +267,6 @@ While $Running
 	EndIf
 
 	GUIReadMemory()
-
-	GUISetState($SW_UNLOCKDRAW)
 
 	If $Chat = 0 Then
 		If $CureStatus = 1 And $Chat = 0 Then CureMe()
@@ -302,8 +280,7 @@ While $Running
 		EndIf
 	EndIf
 
-
-	Sleep(100)
+	Sleep(50) ; lighter sleep, much more responsive
 WEnd
 
 GUIDelete($Gui)
@@ -523,50 +500,6 @@ Func ConnectToBaseAddress()
 	EndIf
 EndFunc   ;==>ConnectToBaseAddress
 
-Func ChangeAddressToBase()
-	Global $BaseAddress
-	Global $TypeOffset, $AttackModeOffset, $PosXOffset, $PosYOffset
-	Global $HPOffset, $MaxHPOffset, $ChattOpenOffset, $SicknessOffset
-	Global $BackPack, $BackPackMax
-	Global $TypeAddress, $AttackModeAddress, $PosXAddress, $PosYAddress
-	Global $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress
-	Global $BackPackAddress, $BackPackMaxAddress
-
-	$TypeAddress = $BaseAddress + $TypeOffset
-	$AttackModeAddress = $BaseAddress + $AttackModeOffset
-	$PosXAddress = $BaseAddress + $PosXOffset
-	$PosYAddress = $BaseAddress + $PosYOffset
-	$HPAddress = $BaseAddress + $HPOffset
-	$MaxHPAddress = $BaseAddress + $MaxHPOffset
-	$ChattOpenAddress = $BaseAddress + $ChattOpenOffset
-	$SicknessAddress = $BaseAddress + $SicknessOffset
-	$BackPackAddress = $BaseAddress + $BackPack
-	$BackPackMaxAddress = $BaseAddress + $BackPackMax
-EndFunc   ;==>ChangeAddressToBase
-
-
-Func _GetModuleBase_EnumModules($hProc)
-	Local $hPsapi = DllOpen("psapi.dll")
-	If $hPsapi = 0 Then Return 0
-
-	Local $tModules = DllStructCreate("ptr[1024]")
-	Local $tBytesNeeded = DllStructCreate("dword")
-	Local $aCall = DllCall("psapi.dll", "bool", "EnumProcessModules", _
-			"handle", $hProc, _
-			"ptr", DllStructGetPtr($tModules), _
-			"dword", DllStructGetSize($tModules), _
-			"ptr", DllStructGetPtr($tBytesNeeded))
-	If @error Or Not $aCall[0] Then
-		DllClose($hPsapi)
-		Return 0
-	EndIf
-
-	; The first module in the list is usually the main EXE
-	Local $pBaseAddress = DllStructGetData($tModules, 1, 1)
-	DllClose($hPsapi)
-	Return $pBaseAddress
-EndFunc   ;==>_GetModuleBase_EnumModules
-
 ; ------------------------------------------------------------------------------
 ;                       READ AND UPDATE GUI FROM MEMORY
 ; ------------------------------------------------------------------------------
@@ -661,28 +594,70 @@ Func _ReadMemory($hProc, $pAddress)
 	Return DllStructGetData($tBuffer, 1)
 EndFunc   ;==>_ReadMemory
 
+Func _GetModuleBase_EnumModules($hProc)
+	Local $hPsapi = DllOpen("psapi.dll")
+	If $hPsapi = 0 Then Return 0
+
+	Local $tModules = DllStructCreate("ptr[1024]")
+	Local $tBytesNeeded = DllStructCreate("dword")
+	Local $aCall = DllCall("psapi.dll", "bool", "EnumProcessModules", _
+			"handle", $hProc, _
+			"ptr", DllStructGetPtr($tModules), _
+			"dword", DllStructGetSize($tModules), _
+			"ptr", DllStructGetPtr($tBytesNeeded))
+	If @error Or Not $aCall[0] Then
+		DllClose($hPsapi)
+		Return 0
+	EndIf
+
+	; The first module in the list is usually the main EXE
+	Local $pBaseAddress = DllStructGetData($tModules, 1, 1)
+	DllClose($hPsapi)
+	Return $pBaseAddress
+EndFunc   ;==>_GetModuleBase_EnumModules
+
+Func ChangeAddressToBase()
+	Global $BaseAddress
+	Global $TypeOffset, $AttackModeOffset, $PosXOffset, $PosYOffset
+	Global $HPOffset, $MaxHPOffset, $ChattOpenOffset, $SicknessOffset
+	Global $BackPack, $BackPackMax
+	Global $TypeAddress, $AttackModeAddress, $PosXAddress, $PosYAddress
+	Global $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress
+	Global $BackPackAddress, $BackPackMaxAddress
+
+	$TypeAddress = $BaseAddress + $TypeOffset
+	$AttackModeAddress = $BaseAddress + $AttackModeOffset
+	$PosXAddress = $BaseAddress + $PosXOffset
+	$PosYAddress = $BaseAddress + $PosYOffset
+	$HPAddress = $BaseAddress + $HPOffset
+	$MaxHPAddress = $BaseAddress + $MaxHPOffset
+	$ChattOpenAddress = $BaseAddress + $ChattOpenOffset
+	$SicknessAddress = $BaseAddress + $SicknessOffset
+	$BackPackAddress = $BaseAddress + $BackPack
+	$BackPackMaxAddress = $BaseAddress + $BackPackMax
+EndFunc   ;==>ChangeAddressToBase
+
+
 ; --------------------------------------------------------------------------
 ;                           Hotkey Toggle Functions
 ; --------------------------------------------------------------------------
+#Region ;toggles;
 Func Hotkeyshit()
 	Global $HealerStatus
 	$HealerStatus = Not $HealerStatus
 	GUICtrlSetData($HealerLabel, "Healer: " & ($HealerStatus ? "On" : "Off"))
-	Sleep(300)
 EndFunc   ;==>Hotkeyshit
 
 Func CureKeyShit()
 	Global $CureStatus
 	$CureStatus = Not $CureStatus
 	GUICtrlSetData($CureLabel, "Cure: " & ($CureStatus ? "On" : "Off"))
-	Sleep(300)
 EndFunc   ;==>CureKeyShit
 
 Func TargetKeyShit()
 	Global $TargetStatus
 	$TargetStatus = Not $TargetStatus
 	GUICtrlSetData($TargetLabel, "Target: " & ($TargetStatus ? "On" : "Off"))
-	Sleep(300)
 EndFunc   ;==>TargetKeyShit
 
 Func KilledWithFire()
@@ -691,6 +666,79 @@ Func KilledWithFire()
 	Exit
 EndFunc   ;==>KilledWithFire
 
+
+Func ToggleHealer()
+	Global $HealerStatus
+	$HealerStatus = Not $HealerStatus
+	GUICtrlSetData($HealerLabel, "Healer: " & ($HealerStatus ? "On" : "Off"))
+	ConsoleWrite("[GUI] Healer toggled to: " & ($HealerStatus ? "On" : "Off") & @CRLF)
+EndFunc   ;==>ToggleHealer
+
+Func ToggleCure()
+	Global $CureStatus
+	$CureStatus = Not $CureStatus
+	GUICtrlSetData($CureLabel, "Cure: " & ($CureStatus ? "On" : "Off"))
+	ConsoleWrite("[GUI] Cure toggled to: " & ($CureStatus ? "On" : "Off") & @CRLF)
+EndFunc   ;==>ToggleCure
+
+Func ToggleTarget()
+	Global $TargetStatus
+	$TargetStatus = Not $TargetStatus
+	GUICtrlSetData($TargetLabel, "Target: " & ($TargetStatus ? "On" : "Off"))
+	ConsoleWrite("[GUI] Target toggled to: " & ($TargetStatus ? "On" : "Off") & @CRLF)
+EndFunc   ;==>ToggleTarget
+
+Func ToggleWalker()
+	Global $MoveToLocationsStatus
+	If $MoveToLocationsStatus = 0 Then
+		$MoveToLocationsStatus = 1
+		GUICtrlSetData($WalkerLabel, "Walker: On")
+		ConsoleWrite("[GUI] Walker toggled to: On" & @CRLF)
+	Else
+		$MoveToLocationsStatus = 0
+		GUICtrlSetData($WalkerLabel, "Walker: Off")
+		ConsoleWrite("[GUI] Walker toggled to: Off" & @CRLF)
+	EndIf
+EndFunc   ;==>ToggleWalker
+
+Func ToggleAllHelpers()
+	Global $HealerStatus, $CureStatus, $TargetStatus, $MoveToLocationsStatus
+
+	Local $TotalOn = 0
+	If $HealerStatus Then $TotalOn += 1
+	If $CureStatus Then $TotalOn += 1
+	If $TargetStatus Then $TotalOn += 1
+	If $MoveToLocationsStatus = 1 Then $TotalOn += 1
+
+	If $TotalOn >= 1 Then
+		; Turn all OFF
+		$HealerStatus = 0
+		$CureStatus = 0
+		$TargetStatus = 0
+		$MoveToLocationsStatus = 0
+
+		GUICtrlSetData($HealerLabel, "Healer: Off")
+		GUICtrlSetData($CureLabel, "Cure: Off")
+		GUICtrlSetData($TargetLabel, "Target: Off")
+		GUICtrlSetData($WalkerLabel, "Walker: Off")
+
+		ConsoleWrite("[GUI] ToggleAll: All turned OFF" & @CRLF)
+	Else
+		; Turn all ON
+		$HealerStatus = 1
+		$CureStatus = 1
+		$TargetStatus = 1
+		$MoveToLocationsStatus = 1
+
+		GUICtrlSetData($HealerLabel, "Healer: On")
+		GUICtrlSetData($CureLabel, "Cure: On")
+		GUICtrlSetData($TargetLabel, "Target: On")
+		GUICtrlSetData($WalkerLabel, "Walker: On")
+
+		ConsoleWrite("[GUI] ToggleAll: All turned ON" & @CRLF)
+	EndIf
+EndFunc   ;==>ToggleAllHelpers
+#EndRegion ;toggles;
 ; ------------------------------------------------------------------------------
 ; Optional: Return a more human label for some “Sick” codes
 ; ------------------------------------------------------------------------------
@@ -1242,4 +1290,3 @@ Func _WriteMemory($hProc, $pAddress, $value)
 			"dword", DllStructGetSize($tBuffer), _
 			"ptr", 0)
 EndFunc   ;==>_WriteMemory
-
