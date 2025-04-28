@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.31
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.32
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.31
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.32
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -694,7 +694,7 @@ EndFunc   ;==>ToggleTarget
 Func ToggleWalker()
 	Global $MoveToLocationsStatus
 	If $MoveToLocationsStatus = 0 Then
-		$MoveToLocationsStatus = 1
+		MoveToLocations()
 		GUICtrlSetData($WalkerLabel, "Walker: On")
 		ConsoleWrite("[GUI] Walker toggled to: On" & @CRLF)
 	Else
@@ -703,6 +703,7 @@ Func ToggleWalker()
 		ConsoleWrite("[GUI] Walker toggled to: Off" & @CRLF)
 	EndIf
 EndFunc   ;==>ToggleWalker
+;==>ToggleWalker
 
 Func ToggleAllHelpers()
 	Global $HealerStatus, $CureStatus, $TargetStatus, $MoveToLocationsStatus
