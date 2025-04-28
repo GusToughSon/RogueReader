@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.28
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.29
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.28
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.29
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -872,13 +872,17 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 	Global $hProcess, $PosXAddress, $PosYAddress, $TypeAddress
 	Global $WindowName, $lastX, $lastY
 	Global $aTempBlocked[0][2], $ReverseLoopCheckbox
+	Global $MoveToLocationsStatus ; <--- ADD THIS LINE to have access to the live status
 
 	Static $lastMoveTime = TimerInit()
 	Static $stuckCount = 0
 	Static $lastTargetX = -1, $lastTargetY = -1
 
-	If Not IsArray($aLocations) Then Return SetError(1, 0, "Invalid input")
-	If $iCurrentIndex < 0 Or $iCurrentIndex >= UBound($aLocations) Then Return SetError(2, 0, "Index out of range")
+	; EARLY EXIT: if toggled off during movement
+	If $MoveToLocationsStatus = 0 Then Return SetError(1, 0, "Walker turned off mid-step")
+
+	If Not IsArray($aLocations) Then Return SetError(2, 0, "Invalid input")
+	If $iCurrentIndex < 0 Or $iCurrentIndex >= UBound($aLocations) Then Return SetError(3, 0, "Index out of range")
 
 	Local $reverse = (GUICtrlRead($ReverseLoopCheckbox) = $GUI_CHECKED)
 	Local $targetX = $aLocations[$iCurrentIndex][0]
@@ -899,6 +903,9 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 	Local $currentX = _ReadMemory($hProcess, $PosXAddress)
 	Local $currentY = _ReadMemory($hProcess, $PosYAddress)
 	Local $Type = _ReadMemory($hProcess, $TypeAddress)
+
+	; EARLY EXIT: again before move attempt
+	If $MoveToLocationsStatus = 0 Then Return SetError(4, 0, "Walker turned off mid-step")
 
 	If $Type <> 65535 Then Return False
 
@@ -944,6 +951,9 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 		$iCurrentIndex = NextIndex($iCurrentIndex, UBound($aLocations), $reverse)
 		Return True
 	EndIf
+
+	; FINAL EARLY EXIT check before sending any keys
+	If $MoveToLocationsStatus = 0 Then Return SetError(5, 0, "Walker turned off mid-step")
 
 	If $currentX < $targetX Then
 		ControlSend($WindowName, "", "", "{d down}")
