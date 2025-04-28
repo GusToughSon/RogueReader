@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.32
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.33
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.32
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.33
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -802,6 +802,7 @@ EndFunc   ;==>LoadLocations
 Func SaveLocation()
 	Global $hProcess, $PosXAddress, $PosYAddress
 	Global $currentLocations, $maxLocations
+	Global $aLocations  ; <<< Need this to reload
 
 	Local $x = _ReadMemory($hProcess, $PosXAddress)
 	Local $y = _ReadMemory($hProcess, $PosYAddress)
@@ -834,6 +835,14 @@ Func SaveLocation()
 		Else
 			ConsoleWrite("[Info] Data written: " & $data)
 			$currentLocations += 1
+
+			; ===== FIX: Reload locations after save =====
+			$aLocations = LoadLocations()
+			If @error Then
+				ConsoleWrite("[Error] Failed to reload locations after save!" & @CRLF)
+			Else
+				ConsoleWrite("[Info] Locations reloaded successfully after save." & @CRLF)
+			EndIf
 		EndIf
 	Else
 		ConsoleWrite("[Info] Maximum locations reached. Stop pressing the button!" & @CRLF)
