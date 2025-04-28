@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.30
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.31
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.30
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.31
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -135,7 +135,7 @@ Global $TargetDelay = 400, $HealDelay = 1700
 ; Create the GUI
 ; -------------------
 ;...;
-Global $Gui = GUICreate($version, 248, 501, 15, 15)
+Global $Gui = GUICreate($version, 248, 360, 15, 15)
 
 Global $TypeLabel = GUICtrlCreateLabel("Target: N/A", 105, 21, 115, 15)
 GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
@@ -215,7 +215,7 @@ GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 Global $HP2Label = GUICtrlCreateLabel("RealHp: N/A", 11, 224, 76, 21)
 GUICtrlSetBkColor(-1, 0x9D9597)
 
-Global $healSlider = GUICtrlCreateSlider(10, 290, 226, 36)
+Global $healSlider = GUICtrlCreateSlider(10, 270, 226, 36)
 GUICtrlSetData($healSlider, 85)
 
 
