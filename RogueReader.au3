@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.24
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.27
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.24
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.27
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -224,7 +224,6 @@ GUISetState(@SW_SHOW)
 ; --------------------------------------------------------------------------
 While $Running
 	Local $msg = GUIGetMsg()
-
 	; ---- Handle GUI messages first ----
 	Switch $msg
 		Case $ExitButton, $GUI_EVENT_CLOSE
@@ -252,14 +251,14 @@ While $Running
 		If $hProcess <> 0 Then _WinAPI_CloseHandle($hProcess)
 		$hProcess = 0
 		$BaseAddress = 0
-		Sleep(200)
+		Sleep(10)
 		ContinueLoop
 	EndIf
 
 	If $hProcess = 0 Then
 		ConnectToBaseAddress()
 		If $BaseAddress = 0 Or $hProcess = 0 Then
-			Sleep(200)
+			Sleep(10)
 			ContinueLoop
 		Else
 			ChangeAddressToBase()
