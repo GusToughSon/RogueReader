@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.43
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.45
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.43
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.45
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -38,7 +38,7 @@
 #include <WinAPI.au3>
 #include <Process.au3>
 #include <Array.au3> ; For _ArraySearch
-
+#include <Misc.au3>
 ; ---------------------------------------------------------------------------------
 ; 1) Define fallback constants for Lock/Unlock if your AutoIt version doesn't have them
 ; ---------------------------------------------------------------------------------
@@ -178,13 +178,20 @@ GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0xBEBEBE)
 Global $KillButton = GUICtrlCreateButton("Kill Rogue", 10, 315, 110, 30)
 Global $ExitButton = GUICtrlCreateButton("Exit", 120, 315, 110, 30)
-Global $ReverseLoopCheckbox = GUICtrlCreateCheckbox("Reversed Walker", 105, 205, 115, 20)
+
+Global $MayhamCheckbox = GUICtrlCreateCheckbox("Mayham Mode", 105, 175, 115, 20)
 GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0xBEBEBE)
-Global $LootingCheckbox = GUICtrlCreateCheckbox("Autoloot", 107, 185, 115, 20)
+
+
+
+Global $ReverseLoopCheckbox = GUICtrlCreateCheckbox("Reversed Walker", 105, 215, 115, 20)
 GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0xBEBEBE)
-Global $Checkbox = GUICtrlCreateCheckbox("Old Style Pothack", 105, 225, 115, 20)
+Global $LootingCheckbox = GUICtrlCreateCheckbox("Autoloot", 105, 195, 115, 20)
+GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
+GUICtrlSetBkColor(-1, 0xBEBEBE)
+Global $Checkbox = GUICtrlCreateCheckbox("Old Style Pothack", 105, 235, 115, 20)
 GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0xBEBEBE)
 Global $Helpers = GUICtrlCreateLabel("HELPERS", 8, 75, 80, 15)
@@ -199,7 +206,7 @@ GUICtrlSetBkColor(-1, 0x808080)
 Global $Information = GUICtrlCreateLabel("INFORMATION", 103, 4, 120, 15)
 GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0x808080)
-Global $Options = GUICtrlCreateLabel("OPTIONS", 103, 169, 120, 11)
+Global $Options = GUICtrlCreateLabel("OPTIONS", 105, 160, 120, 11)
 GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0x808080)
 Global $HealToggle = GUICtrlCreateButton("HEAL", 95, 92, 60, 15)
@@ -270,12 +277,25 @@ While $Running
 	EndIf
 
 	GUIReadMemory()
+	; ---- Check Mayham Mode ----
 
 	If $Chat = 0 Then
 		If $CureStatus = 1 And $Chat = 0 Then CureMe()
 		If $HealerStatus = 1 And $Chat = 0 Then TimeToHeal()
 		If $TargetStatus = 1 Then AttackModeReader()
 		If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED Then HandleLootQueue()
+		; ---- Check Mayham Mode ----
+		If GUICtrlRead($MayhamCheckbox) = $GUI_CHECKED Then
+			If _IsPressed("04") Then
+				;ConsoleWrite("[Mayham] Middle mouse detected. Sending right click." & @CRLF)
+				MouseClick("right")
+				Sleep(10) ; or whatever delay you want
+			Else
+				;ConsoleWrite("[Mayham] Middle mouse NOT held." & @CRLF)
+			EndIf
+		Else
+			;ConsoleWrite("[Mayham] Mayham checkbox not checked." & @CRLF)
+		EndIf
 
 		If $MoveToLocationsStatus = 1 And Not $LootQueued And $Chat = 0 Then
 			Local $result = MoveToLocationsStep($aLocations, $iCurrentIndex)
@@ -1394,3 +1414,14 @@ Func _WriteMemory($hProc, $pAddress, $value)
 			"dword", DllStructGetSize($tBuffer), _
 			"ptr", 0)
 EndFunc   ;==>_WriteMemory
+
+Func Mayham()
+	While _IsPressed("04") ; "04" = Middle Mouse Button
+		If GUICtrlRead($MayhamCheckbox) = $GUI_CHECKED Then
+			MouseClick("right")
+			Sleep(10) ; Spam rate (adjust if needed)
+		Else
+			ExitLoop ; Stop immediately if box unchecked
+		EndIf
+	WEnd
+EndFunc   ;==>Mayham
