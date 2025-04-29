@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.42
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.43
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.42
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.43
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -397,7 +397,7 @@ Func HandleLootQueue()
 	; Not finished waiting for idle? Skip
 	If Not $LootIdleWaiting Then Return
 	; 750ms idle time check
-	If TimerDiff($LootIdleTimer) < 350 Then Return
+	If TimerDiff($LootIdleTimer) < 275 Then Return   ;howfast till it loots
 
 	; Check movement
 	Local $PlayerX = _ReadMemory($hProcess, $PosXAddress)
