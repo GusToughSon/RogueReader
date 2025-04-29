@@ -1,3 +1,116 @@
+# 🚗✨ WELCOME TO ROGUE READER! ✨🚗
+*(The magic button masher that does all the boring stuff for you!)*
+
+---
+
+## WHAT IS THIS?
+
+Hey kiddo!  
+You ever play a game where you have to heal, loot, cure sickness, and walk *all the way across the whole world*... over and over and over?
+
+**BORING!!!** 😴
+
+Well, GUESS WHAT?!  
+**Rogue Reader** is like having your own *invisible robot buddy* who:
+- Heals you when you get hurt! 🤕✨
+- Cures you when you're sick! 🤢✨
+- Smacks the bad guys when you forget! 👊👹✨
+- Walks around all by itself to places you saved! 🚶‍♂️🏰✨
+- And picks up all the shiny stuff! 💎🐿️✨
+
+---
+
+## HOW DOES IT WORK?
+
+Just like buying a used car:
+- **Step 1:** Push the "HEAL" button. (*vroom vroom! now you heal!*)
+- **Step 2:** Push the "CURE" button. (*no more cough-cough!*)
+- **Step 3:** Push the "TARGET" button. (*pew pew pew! find bad guys!*)
+- **Step 4:** Push the "WALKER" button. (*off we goooo! to grandma's house!*)
+- **Step 5:** Check the "AUTOLOOT" checkbox. (*scooping up treasure like a raccoon!*)
+
+Then sit back, relax, and eat some candy. 🍬
+
+The trainer will:
+- **Auto-heal** you when you get hurt!
+- **Auto-cure** you when you get a boo-boo!
+- **Auto-target** bad guys when they show up!
+- **Auto-walk** to all the cool places you saved!
+- **Auto-loot** all the treasure when monsters fall down!
+
+---
+
+## WHAT IF I DIE??? 😵‍💫
+
+**NO WORRIES, LITTLE BUDDY!**
+
+If you *splat* and respawn somewhere far far away (more than 25 tiles away!),  
+the trainer **stops everything** to keep you safe! 🛑🚫
+
+It turns off:
+- Healing
+- Curing
+- Targeting
+- Walking
+
+**No more ghost running around crazy!** 👻
+
+---
+
+## HOW DOES LOOTING WORK?
+
+Oooh good question!
+
+When you beat monsters, your robot buddy gets excited and clicks all over the shiny stuff!
+
+**Loot rules:**
+- 🥇 Beat 1–3 monsters → click the shiny stuff **4 times** each!
+- 🥈 Beat 4–6 monsters → click the shiny stuff **6 times** each!
+- 🥉 Beat 7–9 monsters → click the shiny stuff **8 times** each!
+- 🏆 Beat 10+ monsters → click the shiny stuff **10 times** each!
+
+**BUT!!**  
+If you get super-duper greedy (more than **20 monsters**)?  
+👮 *"WHOA there, cowboy!"*  
+The robot buddy stops counting after 20. No more!
+
+---
+
+## BUTTONS FOR EVERYTHING!
+
+| BUTTON        | WHAT IT DOES                            |
+| ------------- | ---------------------------------------- |
+| HEAL          | Auto-heal when HP gets low.              |
+| CURE          | Auto-cure when you get sick.             |
+| TARGET        | Auto-find and attack enemies.            |
+| WALKER        | Auto-walk around your saved locations.   |
+| AUTOLOOT      | Auto-pickup loot after monsters die.     |
+| KILL ROGUE    | 🚀 **Emergency button!** Close the game now! |
+| EXIT          | Close the trainer safely.                |
+
+---
+
+## ⚙️ BONUS COOL STUFF
+
+- **Hotkeys!** Push a key to turn things on or off super fast!
+- **Reverse Walker!** Walk your saved places backwards like a moonwalker! 🕺
+- **Death Detection!** If you die, the trainer stops automatically!
+
+---
+
+# 🎉 FINAL WORDS
+
+**Rogue Reader** is like putting your game on *easy mode*!  
+You can fight, loot, heal, walk, and become the KING of the server —  
+**without even touching the keyboard!** 👑
+
+All you gotta do is **push a button... and SMILE.** 😎👍
+
+---
+
+# 🚀 GET OUT THERE AND GRAB THOSE SHINIES, CHAMP!
+
+
 # Rogue Reader - Project Rogue Trainer
 
 Welcome!  
