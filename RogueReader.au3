@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.34
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.35
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.34
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.35
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -419,7 +419,9 @@ Func HandleLootQueue()
 	EndIf
 
 	; Looting starts
-	Local $clicksPerTile = Min($LootCount * 4, 32)
+	; Calculate clicks per tile based on kill count
+	Local $clicksPerTile = CalculateLootClicks($LootCount)
+
 	ConsoleWrite("[Loot] Looting now with " & $clicksPerTile & " clicks per tile." & @CRLF)
 
 	Local $memX[8] = [192, 175, 160, 162, 162, 175, 192, 192]
@@ -460,6 +462,25 @@ Func HandleLootQueue()
 	EndIf
 EndFunc   ;==>HandleLootQueue
 
+Func CalculateLootClicks($kills)
+	If $kills <= 0 Then
+		Return 0
+	ElseIf $kills <= 3 Then
+		Return 4
+	ElseIf $kills <= 6 Then
+		Return 6
+	ElseIf $kills <= 9 Then
+		Return 8
+	ElseIf $kills <= 12 Then
+		Return 10
+	ElseIf $kills <= 15 Then
+		Return 12
+	ElseIf $kills <= 18 Then
+		Return 14
+	Else
+		Return 16
+	EndIf
+EndFunc   ;==>CalculateLootClicks
 
 Func ClickTile($x, $y)
 	MouseClick("right", $x, $y, 1, 0)
