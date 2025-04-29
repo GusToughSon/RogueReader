@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.38
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.39
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.38
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.39
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -71,7 +71,7 @@ Global $aLocations = LoadLocations()                ; This may show error if the
 Global $Debug = False
 Global $LootIdleTimer = TimerInit()
 Global $LootIdleWaiting = False
-
+Global $LastMovementTime = TimerInit()
 Global $LootQueued = False
 Global $LootCount = 0
 Global $LootReady = False
@@ -741,10 +741,16 @@ EndFunc   ;==>KilledWithFire
 
 Func ToggleHealer()
 	Global $HealerStatus
+	Global $LastMovementTime
 	$HealerStatus = Not $HealerStatus
 	GUICtrlSetData($HealerLabel, "Healer: " & ($HealerStatus ? "On" : "Off"))
 	ConsoleWrite("[GUI] Healer toggled to: " & ($HealerStatus ? "On" : "Off") & @CRLF)
+
+	If $HealerStatus Then
+		$LastMovementTime = TimerInit() ; Reset movement timer when healing turned on
+	EndIf
 EndFunc   ;==>ToggleHealer
+
 
 Func ToggleCure()
 	Global $CureStatus
