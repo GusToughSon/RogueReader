@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.33
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.34
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.33
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.34
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -515,6 +515,11 @@ Func GUIReadMemory()
 	Global $HPAddress, $MaxHPAddress
 	Global $ChattOpenAddress, $Chat
 	Global $SicknessAddress, $Sickness
+	Global $BackPack, $BackPackMax
+	Global $BackPackAddress, $BackPackMaxAddress
+	Global $HealerStatus, $CureStatus, $TargetStatus
+	Global $HealerLabel, $CureLabel, $TargetLabel
+	Global $LootQueued, $LootCount, $LootReady, $LootIdleWaiting
 
 	If $hProcess = 0 Then Return
 
@@ -576,11 +581,54 @@ Func GUIReadMemory()
 	$Sickness = $SickVal
 	Local $SicknessDescription = GetSicknessDescription($SickVal)
 	GUICtrlSetData($SicknessLabel, "Sickness: " & $SicknessDescription)
+
 	; Backpack Weight
 	Local $bpWeight = _ReadMemory($hProcess, $BackPackAddress)
 	Local $bpMax = _ReadMemory($hProcess, $BackPackMaxAddress)
 	GUICtrlSetData($BackPackLabel, "Weight " & $bpWeight & " / " & $bpMax)
 
+	; --- Death Detection via sudden teleport ---
+	Local Static $lastX = -1, $lastY = -1
+	If $lastX <> -1 And $lastY <> -1 Then
+		Local $dx = Abs($PosX - $lastX)
+		Local $dy = Abs($PosY - $lastY)
+		If $dx > 25 Or $dy > 25 Then
+			ConsoleWrite("[DeathDetect] Large movement detected: ΔX=" & $dx & ", ΔY=" & $dy & ". Assuming death." & @CRLF)
+
+			; Disable all helpers
+			If $MoveToLocationsStatus = 1 Then
+				$MoveToLocationsStatus = 0
+				GUICtrlSetData($WalkerLabel, "Walker: Off")
+				ConsoleWrite("[DeathDetect] Walker disabled." & @CRLF)
+			EndIf
+
+			If $TargetStatus = 1 Then
+				$TargetStatus = 0
+				GUICtrlSetData($TargetLabel, "Target: Off")
+				ConsoleWrite("[DeathDetect] Targeting disabled." & @CRLF)
+			EndIf
+
+			If $HealerStatus = 1 Then
+				$HealerStatus = 0
+				GUICtrlSetData($HealerLabel, "Healer: Off")
+				ConsoleWrite("[DeathDetect] Healer disabled." & @CRLF)
+			EndIf
+
+			If $CureStatus = 1 Then
+				$CureStatus = 0
+				GUICtrlSetData($CureLabel, "Cure: Off")
+				ConsoleWrite("[DeathDetect] Cure disabled." & @CRLF)
+			EndIf
+
+			; Clear any loot
+			$LootQueued = False
+			$LootCount = 0
+			$LootReady = False
+			$LootIdleWaiting = False
+		EndIf
+	EndIf
+	$lastX = $PosX
+	$lastY = $PosY
 EndFunc   ;==>GUIReadMemory
 
 Func _ReadMemory($hProc, $pAddress)
@@ -692,9 +740,11 @@ Func ToggleTarget()
 EndFunc   ;==>ToggleTarget
 
 Func ToggleWalker()
-	Global $MoveToLocationsStatus
+	Global $MoveToLocationsStatus, $aLocations, $iCurrentIndex
+
 	If $MoveToLocationsStatus = 0 Then
 		MoveToLocations()
+		MoveToLocationsStep($aLocations, $iCurrentIndex) ; <<< NEW LINE!
 		GUICtrlSetData($WalkerLabel, "Walker: On")
 		ConsoleWrite("[GUI] Walker toggled to: On" & @CRLF)
 	Else
@@ -703,7 +753,6 @@ Func ToggleWalker()
 		ConsoleWrite("[GUI] Walker toggled to: Off" & @CRLF)
 	EndIf
 EndFunc   ;==>ToggleWalker
-;==>ToggleWalker
 
 Func ToggleAllHelpers()
 	Global $HealerStatus, $CureStatus, $TargetStatus, $MoveToLocationsStatus
