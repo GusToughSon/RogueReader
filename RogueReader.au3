@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.39
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.41
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.39
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.41
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -1240,7 +1240,7 @@ Func TimeToHeal()
 	Global $Chat, $ChattOpenAddress, $healSlider
 	Global $hProcess
 
-	Local $Healwait = GUICtrlRead($healSlider)
+	Local $Healwait = 200 ; ms to wait after no movement (Fixed 500ms you said)
 	Local $HP = _ReadMemory($hProcess, $HPAddress)
 	Local $RealHP = $HP / 65536
 	Local $MaxHP = _ReadMemory($hProcess, $MaxHPAddress)
@@ -1249,8 +1249,11 @@ Func TimeToHeal()
 
 	Local $currentX = Number(StringRegExpReplace(GUICtrlRead($PosXLabel), "[^\d]", ""))
 	Local $currentY = Number(StringRegExpReplace(GUICtrlRead($PosYLabel), "[^\d]", ""))
+
+	; Make these STATIC so they remember across calls
 	Static $lastX = $currentX, $lastY = $currentY
 	Static $LastMovementTime = TimerInit()
+	Static $HasMoved = False
 
 	$elapsedTimeSinceHeal = TimerDiff($LastHealTime)
 
@@ -1259,6 +1262,7 @@ Func TimeToHeal()
 		$lastX = $currentX
 		$lastY = $currentY
 		$LastMovementTime = TimerInit()
+		$HasMoved = True
 	EndIf
 
 	Local $TimeSinceLastMove = TimerDiff($LastMovementTime)
@@ -1276,12 +1280,13 @@ Func TimeToHeal()
 		; --- Normal logic (requires stationary) ---
 		If $ChatVal = 0 And _ArraySearch($sicknessArray, $Sickness) = -1 Then
 			If $RealHP < ($MaxHP * $HealThreshold) And $elapsedTimeSinceHeal > $HealDelay Then
-				If $TimeSinceLastMove >= $Healwait Then
+				; HERE IS THE TRUE FIX
+				If $HasMoved And $TimeSinceLastMove >= $Healwait Then
 					ControlSend("Project Rogue", "", "", "{2}")
 					ConsoleWrite("Healed: Stationary for " & $TimeSinceLastMove & "ms | HP < threshold." & @CRLF)
 					$LastHealTime = TimerInit()
 				Else
-					ConsoleWrite("No heal: Only stationary for " & $TimeSinceLastMove & "ms." & @CRLF)
+					ConsoleWrite("Waiting: Haven't moved yet OR not stationary long enough." & @CRLF)
 				EndIf
 			EndIf
 		EndIf
