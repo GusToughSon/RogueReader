@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.36
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.37
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.36
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.37
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -624,7 +624,7 @@ Func GUIReadMemory()
 			EndIf
 			;
 			;			If $TargetStatus = 1 Then
-			$TargetStatus = 0
+			;				$TargetStatus = 0
 			;				GUICtrlSetData($TargetLabel, "Target: Off")
 			;				ConsoleWrite("[DeathDetect] Targeting disabled." & @CRLF)
 			;			EndIf
