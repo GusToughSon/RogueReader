@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.37
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.38
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.37
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.38
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -1187,7 +1187,7 @@ Func CureMe()
 	; Check if we have a sickness that is in the array
 	If _ArraySearch($sicknessArray, $Sickness) = -1 Then Return
 
-	Local $Healwait = GUICtrlRead($MovmentSlider)
+	Local $Healwait = GUICtrlRead($healSlider)
 
 	Local $currentX = Number(StringRegExpReplace(GUICtrlRead($PosXLabel), "[^\d]", ""))
 	Local $currentY = Number(StringRegExpReplace(GUICtrlRead($PosYLabel), "[^\d]", ""))
@@ -1234,7 +1234,7 @@ Func TimeToHeal()
 	Global $Chat, $ChattOpenAddress, $healSlider
 	Global $hProcess
 
-	Local $Healwait = GUICtrlRead($MovmentSlider)
+	Local $Healwait = GUICtrlRead($healSlider)
 	Local $HP = _ReadMemory($hProcess, $HPAddress)
 	Local $RealHP = $HP / 65536
 	Local $MaxHP = _ReadMemory($hProcess, $MaxHPAddress)
