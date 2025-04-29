@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.45
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.46
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.45
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.46
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -179,7 +179,7 @@ GUICtrlSetBkColor(-1, 0xBEBEBE)
 Global $KillButton = GUICtrlCreateButton("Kill Rogue", 10, 315, 110, 30)
 Global $ExitButton = GUICtrlCreateButton("Exit", 120, 315, 110, 30)
 
-Global $MayhamCheckbox = GUICtrlCreateCheckbox("Mayham Mode", 105, 175, 115, 20)
+Global $MayhamCheckbox = GUICtrlCreateCheckbox("Mayham", 105, 175, 115, 20)
 GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0xBEBEBE)
 
@@ -462,7 +462,8 @@ Func HandleLootQueue()
 
 		For $j = 1 To $clicksPerTile
 			ControlClick($WindowName, "", "", "right", 1, $clickX[$rand], $clickY[$rand])
-			Sleep(1)
+
+			Sleep(5)
 		Next
 
 		ConsoleWrite("[Loot] Clicked (" & $clickX[$rand] & "," & $clickY[$rand] & ") x" & $clicksPerTile & @CRLF)
