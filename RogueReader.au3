@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.35
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.36
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.35
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.36
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -622,24 +622,24 @@ Func GUIReadMemory()
 				GUICtrlSetData($WalkerLabel, "Walker: Off")
 				ConsoleWrite("[DeathDetect] Walker disabled." & @CRLF)
 			EndIf
-
-			If $TargetStatus = 1 Then
-				$TargetStatus = 0
-				GUICtrlSetData($TargetLabel, "Target: Off")
-				ConsoleWrite("[DeathDetect] Targeting disabled." & @CRLF)
-			EndIf
-
-			If $HealerStatus = 1 Then
-				$HealerStatus = 0
-				GUICtrlSetData($HealerLabel, "Healer: Off")
-				ConsoleWrite("[DeathDetect] Healer disabled." & @CRLF)
-			EndIf
-
-			If $CureStatus = 1 Then
-				$CureStatus = 0
-				GUICtrlSetData($CureLabel, "Cure: Off")
-				ConsoleWrite("[DeathDetect] Cure disabled." & @CRLF)
-			EndIf
+			;
+			;			If $TargetStatus = 1 Then
+			$TargetStatus = 0
+			;				GUICtrlSetData($TargetLabel, "Target: Off")
+			;				ConsoleWrite("[DeathDetect] Targeting disabled." & @CRLF)
+			;			EndIf
+			;
+			;			If $HealerStatus = 1 Then
+			;				$HealerStatus = 0
+			;				GUICtrlSetData($HealerLabel, "Healer: Off")
+			;				ConsoleWrite("[DeathDetect] Healer disabled." & @CRLF)
+			;			EndIf
+			;
+			;			If $CureStatus = 1 Then
+			;				$CureStatus = 0
+			;				GUICtrlSetData($CureLabel, "Cure: Off")
+			;				ConsoleWrite("[DeathDetect] Cure disabled." & @CRLF)
+			;			EndIf
 
 			; Clear any loot
 			$LootQueued = False
