@@ -1,0 +1,1387 @@
+{\rtf1\ansi\deff0\deftab720{\fonttbl{\f0\fnil\fcharset1 Courier New;}}{\colortbl\red0\green0\blue0;\red240\green244\blue249;\red0\green128\blue0;\red0\green0\blue255;\red0\green0\blue144;\red128\green128\blue0;\red255\green0\blue0;\red255\green128\blue0;\red90\green90\blue90;\red128\green128\blue128;\red220\green20\blue60;\red153\green51\blue153;\red0\green128\blue255;\red192\green192\blue192;\red0\green153\blue51;\red255\green255\blue255;\red5\green5\blue5;}
+\f0\fs20\cf0 \cf10 #Region\cf2\i  ;**** Directives created by AutoIt3Wrapper_GUI ****\par
+\cf0\i0 \cf10 #AutoIt3Wrapper_Icon=Include\\RogueReader.ico\par
+\cf0 \cf10 #AutoIt3Wrapper_Compression=4\par
+\cf0 \cf10 #AutoIt3Wrapper_UseX64=y\par
+\cf0 \cf10 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue\par
+\cf0 \cf10 #AutoIt3Wrapper_Res_Fileversion=5.0.0.37\par
+\cf0 \cf10 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y\par
+\cf0 \cf10 #AutoIt3Wrapper_Res_ProductName=Rogue Reader\par
+\cf0 \cf10 #AutoIt3Wrapper_Res_ProductVersion=4\par
+\cf0 \cf10 #AutoIt3Wrapper_Res_CompanyName=Training Trainers.LLC\par
+\cf0 \cf10 #AutoIt3Wrapper_Res_LegalCopyright=Use only for authorized security testing.\par
+\cf0 \cf10 #AutoIt3Wrapper_Res_LegalTradeMarks=TrainingTrainersLLC\par
+\cf0 \cf10 #AutoIt3Wrapper_Res_Language=1033\par
+\cf0 \cf10 #AutoIt3Wrapper_Run_AU3Check=n\par
+\cf0 \cf10 #AutoIt3Wrapper_Run_Tidy=y\par
+\cf0 \cf10 #AutoIt3Wrapper_Tidy_Stop_OnError=n\par
+\cf0 \cf10 #EndRegion\cf2\i  ;**** Directives created by AutoIt3Wrapper_GUI ****\par
+\cf0\i0 \cf10 #Region\cf2\i  ;**** Directives created by AutoIt3Wrapper_GUI ****\par
+\cf0\i0 \cf10 #AutoIt3Wrapper_Icon=Include\\RogueReader.ico\par
+\cf0 \cf10 #AutoIt3Wrapper_Compression=4\par
+\cf0 \cf10 #AutoIt3Wrapper_UseX64=y\par
+\cf0 \cf10 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue\par
+\cf0 \cf10 #AutoIt3Wrapper_Res_Fileversion=5.0.0.37\par
+\cf0 \cf10 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y\par
+\cf0 \cf10 #AutoIt3Wrapper_Res_ProductName=Rogue Reader\par
+\cf0 \cf10 #AutoIt3Wrapper_Res_ProductVersion=4\par
+\cf0 \cf10 #AutoIt3Wrapper_Res_CompanyName=Training Trainers.LLC\par
+\cf0 \cf10 #AutoIt3Wrapper_Res_LegalCopyright=Use only for authorized security testing.\par
+\cf0 \cf10 #AutoIt3Wrapper_Res_LegalTradeMarks=TrainingTrainersLLC\par
+\cf0 \cf10 #AutoIt3Wrapper_Res_Language=1033\par
+\cf0 \cf10 #AutoIt3Wrapper_Run_AU3Check=n\par
+\cf0 \cf10 #AutoIt3Wrapper_Tidy_Stop_OnError=n\par
+\cf0 \cf10 #EndRegion\cf2\i  ;**** Directives created by AutoIt3Wrapper_GUI ****\par
+\cf0\i0 \par
+\cf5 #include\cf0  \cf6 <GUIConstantsEx.au3>\cf0 \par
+\cf5 #include\cf0  \cf6 <File.au3>\cf0 \par
+\cf5 #include\cf0  \cf6 <WindowsConstants.au3>\cf0 \par
+\cf5 #include\cf0  \cf6 <WinAPI.au3>\cf0 \par
+\cf5 #include\cf0  \cf6 <Process.au3>\cf0 \par
+\cf5 #include\cf0  \cf6 <Array.au3>\cf0  \cf2\i ; For _ArraySearch\par
+\cf0\i0 \par
+\cf2\i ; ---------------------------------------------------------------------------------\par
+\cf0\i0 \cf2\i ; 1) Define fallback constants for Lock/Unlock if your AutoIt version doesn't have them\par
+\cf0\i0 \cf2\i ; ---------------------------------------------------------------------------------\par
+\cf0\i0 \cf3 If\cf0  \cf3 Not\cf0  \cf4 IsDeclared\cf7 (\cf6 "SW_LOCKDRAW"\cf7 )\cf0  \cf3 Then\cf0 \par
+   \cf3 Global\cf0  \cf3 Const\cf0  \cf8 $SW_LOCKDRAW\cf0  \cf7 =\cf0  \cf3 133\cf0    \cf2\i ; numeric values introduced in v3.3.17\par
+\cf0\i0 \cf3 EndIf\cf0 \par
+\par
+\cf3 If\cf0  \cf3 Not\cf0  \cf4 IsDeclared\cf7 (\cf6 "SW_UNLOCKDRAW"\cf7 )\cf0  \cf3 Then\cf0 \par
+   \cf3 Global\cf0  \cf3 Const\cf0  \cf8 $SW_UNLOCKDRAW\cf0  \cf7 =\cf0  \cf3 134\cf0 \par
+\cf3 EndIf\cf0 \par
+\par
+\cf4 Opt\cf7 (\cf6 "MouseCoordMode"\cf7 ,\cf0  \cf3 2\cf7 )\cf0 \par
+\par
+\cf3 Global\cf0  \cf8 $version\cf0  \cf7 =\cf0  \cf4 FileGetVersion\cf7 (\cf5 @ScriptFullPath\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf3 Const\cf0  \cf8 $locationFile\cf0  \cf7 =\cf0  \cf5 @ScriptDir\cf0  \cf7 &\cf0  \cf6 "\\Locations.ini"\cf0 \par
+\cf3 Global\cf0  \cf8 $currentLocations\cf0  \cf7 =\cf0  \cf3 1\cf0 \par
+\cf3 Global\cf0  \cf8 $maxLocations\cf0  \cf7 =\cf0  \cf3 20000\cf0 \par
+\cf3 Global\cf0  \cf3 Const\cf0  \cf8 $sButtonConfigFile\cf0  \cf7 =\cf0  \cf5 @ScriptDir\cf0  \cf7 &\cf0  \cf6 "\\NewButtonConfig.ini"\cf0 \par
+\par
+\cf4 ConsoleWrite\cf7 (\cf6 "Script Version: "\cf0  \cf7 &\cf0  \cf8 $version\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+\par
+\cf2\i ; --- Load Config Settings ---\par
+\cf0\i0 \cf3 Global\cf0  \cf8 $aTempBlocked\cf7 [\cf3 0\cf7 ][\cf3 2\cf7 ]\cf0 \par
+\par
+\cf3 If\cf0  \cf3 Not\cf0  \cf4 FileExists\cf7 (\cf8 $sButtonConfigFile\cf7 )\cf0  \cf3 Then\cf0  CreateButtonDefaultConfig\cf7 ()\cf0 \par
+LoadButtonConfig\cf7 ()\cf0 \par
+\par
+\cf3 Global\cf0  \cf8 $iCurrentIndex\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+\cf3 Global\cf0  \cf8 $aLocations\cf0  \cf7 =\cf0  LoadLocations\cf7 ()\cf0                 \cf2\i ; This may show error if the file is missing\par
+\cf0\i0 \cf3 Global\cf0  \cf8 $Debug\cf0  \cf7 =\cf0  \cf3 False\cf0 \par
+\cf3 Global\cf0  \cf8 $LootIdleTimer\cf0  \cf7 =\cf0  \cf4 TimerInit\cf7 ()\cf0 \par
+\cf3 Global\cf0  \cf8 $LootIdleWaiting\cf0  \cf7 =\cf0  \cf3 False\cf0 \par
+\par
+\cf3 Global\cf0  \cf8 $LootQueued\cf0  \cf7 =\cf0  \cf3 False\cf0 \par
+\cf3 Global\cf0  \cf8 $LootCount\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+\cf3 Global\cf0  \cf8 $LootReady\cf0  \cf7 =\cf0  \cf3 False\cf0 \par
+\cf3 Global\cf0  \cf8 $LootTimer\cf0  \cf7 =\cf0  \cf4 TimerInit\cf7 ()\cf0 \par
+\cf3 Global\cf0  \cf8 $PausedWalkerForLoot\cf0  \cf7 =\cf0  \cf3 False\cf0 \par
+\cf3 Global\cf0  \cf8 $LastPlayerX\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+\cf3 Global\cf0  \cf8 $LastPlayerY\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+\cf3 Global\cf0  \cf8 $HadTarget\cf0  \cf7 =\cf0  \cf3 False\cf0 \par
+\cf3 Global\cf0  \cf8 $LastTargetHeld\cf0  \cf7 =\cf0  \cf4 TimerInit\cf7 ()\cf0 \par
+\cf3 Global\cf0  \cf8 $LastTargetTime\cf0  \cf7 =\cf0  \cf4 TimerInit\cf7 ()\cf0 \par
+\cf3 Global\cf0  \cf8 $LootingCheckbox\cf0 \par
+\cf3 Global\cf0  \cf8 $LootCheckX\cf0  \cf7 =\cf0  \cf7 -\cf3 1\cf0 \par
+\cf3 Global\cf0  \cf8 $LootCheckY\cf0  \cf7 =\cf0  \cf7 -\cf3 1\cf0 \par
+\par
+\cf2\i ; Define the game process and memory offsets\par
+\cf0\i0 \cf3 Global\cf0  \cf8 $ProcessName\cf0  \cf7 =\cf0  \cf6 "Project Rogue Client.exe"\cf0 \par
+\cf3 Global\cf0  \cf8 $WindowName\cf0  \cf7 =\cf0  \cf6 "Project Rogue"\cf0 \par
+\cf3 Global\cf0  \cf8 $TypeOffset\cf0  \cf7 =\cf0  \cf3 0xBE7974\cf0         \cf2\i ; ; 0=Player, 1=Monster, etc\par
+\cf0\i0 \cf3 Global\cf0  \cf8 $AttackModeOffset\cf0  \cf7 =\cf0  \cf3 0xB5BC00\cf0   \cf2\i ;\par
+\cf0\i0 \cf3 Global\cf0  \cf8 $PosYOffset\cf0  \cf7 =\cf0  \cf3 0xBF9E08\cf0         \cf2\i ;\par
+\cf0\i0 \cf3 Global\cf0  \cf8 $PosXOffset\cf0  \cf7 =\cf0  \cf3 0xBF9E10\cf0         \cf2\i ;\par
+\cf0\i0 \cf3 Global\cf0  \cf8 $HPOffset\cf0  \cf7 =\cf0  \cf3 0x7C400\cf0           \cf2\i ;\par
+\cf0\i0 \cf3 Global\cf0  \cf8 $MaxHPOffset\cf0  \cf7 =\cf0  \cf3 0x7C404\cf0        \cf2\i ;\par
+\cf0\i0 \cf3 Global\cf0  \cf8 $ChattOpenOffset\cf0  \cf7 =\cf0  \cf3 0xB678D8\cf0    \cf2\i ;\par
+\cf0\i0 \cf3 Global\cf0  \cf8 $SicknessOffset\cf0  \cf7 =\cf0  \cf3 0x7C5E4\cf0     \cf2\i ;\par
+\cf0\i0 \cf3 Global\cf0  \cf8 $BackPack\cf0  \cf7 =\cf0  \cf3 0x731A8\cf0           \cf2\i ;\par
+\cf0\i0 \cf3 Global\cf0  \cf8 $BackPackMax\cf0  \cf7 =\cf0  \cf3 0x731AC\cf0           \cf2\i ;\par
+\cf0\i0 \par
+\cf3 Global\cf0  \cf8 $MovmentSlider\cf0  \cf7 =\cf0  \cf3 200\cf0  \cf2\i ;walk after removed from gui turned to solid state,\par
+\cf0\i0 \par
+\cf3 Global\cf0  \cf8 $currentTime\cf0  \cf7 =\cf0  \cf4 TimerInit\cf7 ()\cf0 \par
+\cf3 Global\cf0  \cf8 $LastHealTime\cf0  \cf7 =\cf0  \cf4 TimerInit\cf7 ()\cf0 \par
+\cf3 Global\cf0  \cf8 $lastX\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+\cf3 Global\cf0  \cf8 $lastY\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+\cf3 Global\cf0  \cf8 $Running\cf0  \cf7 =\cf0  \cf3 True\cf0 \par
+\cf3 Global\cf0  \cf8 $HealerStatus\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+\cf3 Global\cf0  \cf8 $CureStatus\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+\cf3 Global\cf0  \cf8 $TargetStatus\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+\cf3 Global\cf0  \cf8 $MoveToLocationsStatus\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+\cf3 Global\cf0  \cf8 $iPrevValue\cf0  \cf7 =\cf0  \cf3 95\cf0 \par
+\cf3 Global\cf0  \cf8 $MPrevValue\cf0  \cf7 =\cf0  \cf6 " "\cf0 \par
+\cf3 Global\cf0  \cf8 $hProcess\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+\cf3 Global\cf0  \cf8 $BaseAddress\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+\cf3 Global\cf0  \cf8 $TypeAddress\cf7 ,\cf0  \cf8 $AttackModeAddress\cf7 ,\cf0  \cf8 $PosXAddress\cf7 ,\cf0  \cf8 $PosYAddress\cf0 \par
+\cf3 Global\cf0  \cf8 $HPAddress\cf7 ,\cf0  \cf8 $MaxHPAddress\cf7 ,\cf0  \cf8 $ChattOpenAddress\cf7 ,\cf0  \cf8 $SicknessAddress\cf0 \par
+\cf3 Global\cf0  \cf8 $Type\cf7 ,\cf0  \cf8 $Chat\cf7 ,\cf0  \cf8 $Sickness\cf7 ,\cf0  \cf8 $AttackMode\cf0 \par
+\par
+\cf3 Global\cf0  \cf8 $sicknessArray\cf0  \cf7 =\cf0  \cf7 [\cf0  \cf7 _\cf0 \par
+       \cf3 1\cf7 ,\cf0  \cf3 2\cf7 ,\cf0  \cf3 65\cf7 ,\cf0  \cf3 66\cf7 ,\cf0  \cf3 67\cf7 ,\cf0  \cf3 68\cf7 ,\cf0  \cf3 69\cf7 ,\cf0  \cf3 72\cf7 ,\cf0  \cf3 73\cf7 ,\cf0  \cf3 81\cf7 ,\cf0  \cf3 97\cf7 ,\cf0  \cf3 98\cf7 ,\cf0  \cf3 99\cf7 ,\cf0  \cf3 257\cf7 ,\cf0  \cf3 258\cf7 ,\cf0  \cf3 513\cf7 ,\cf0  \cf3 514\cf7 ,\cf0  \cf3 515\cf7 ,\cf0  \cf3 577\cf7 ,\cf0  \cf7 _\cf0 \par
+       \cf3 8193\cf7 ,\cf0  \cf3 8194\cf7 ,\cf0  \cf3 8195\cf7 ,\cf0  \cf3 8257\cf7 ,\cf0  \cf3 8258\cf7 ,\cf0  \cf3 8705\cf7 ,\cf0  \cf3 8706\cf7 ,\cf0  \cf3 8707\cf7 ,\cf0  \cf3 8708\cf7 ,\cf0  \cf3 8709\cf7 ,\cf0  \cf3 8712\cf7 ,\cf0  \cf3 8713\cf7 ,\cf0  \cf7 _\cf0 \par
+       \cf3 8721\cf7 ,\cf0  \cf3 8737\cf7 ,\cf0  \cf3 8769\cf7 ,\cf0  \cf3 8770\cf7 ,\cf0  \cf3 16385\cf7 ,\cf0  \cf3 16386\cf7 ,\cf0  \cf3 16449\cf7 ,\cf0  \cf3 16450\cf7 ,\cf0  \cf3 16451\cf7 ,\cf0  \cf3 16452\cf7 ,\cf0  \cf3 16897\cf7 ,\cf0  \cf7 _\cf0 \par
+       \cf3 16898\cf7 ,\cf0  \cf3 24577\cf7 ,\cf0  \cf3 24578\cf7 ,\cf0  \cf3 24579\cf7 ,\cf0  \cf3 24581\cf7 ,\cf0  \cf3 24582\cf7 ,\cf0  \cf3 24583\cf7 ,\cf0  \cf3 24585\cf7 ,\cf0  \cf3 24609\cf7 ,\cf0  \cf3 24641\cf7 ,\cf0  \cf7 _\cf0 \par
+       \cf3 24642\cf7 ,\cf0  \cf3 24643\cf7 ,\cf0  \cf3 24645\cf7 ,\cf0  \cf3 24646\cf7 ,\cf0  \cf3 24647\cf7 ,\cf0  \cf3 24649\cf7 ,\cf0  \cf3 25089\cf7 ,\cf0  \cf3 25090\cf7 ,\cf0  \cf3 25091\cf7 ,\cf0  \cf3 25093\cf7 ,\cf0  \cf7 _\cf0 \par
+       \cf3 25094\cf7 ,\cf0  \cf3 25095\cf7 ,\cf0  \cf3 25097\cf7 ,\cf0  \cf3 25121\cf7 ,\cf0  \cf3 33283\cf7 ,\cf0  \cf3 33284\cf7 ,\cf0  \cf3 33285\cf7 ,\cf0  \cf3 33286\cf7 ,\cf0  \cf3 33287\cf7 ,\cf0  \cf3 33288\cf7 ,\cf0  \cf7 _\cf0 \par
+       \cf3 33289\cf7 ,\cf0  \cf3 33291\cf7 ,\cf0  \cf3 33293\cf7 ,\cf0  \cf3 33294\cf7 ,\cf0  \cf3 33295\cf7 ,\cf0  \cf3 33793\cf7 ,\cf0  \cf3 41985\cf7 ,\cf0  \cf3 41986\cf7 ,\cf0  \cf3 41987\cf7 ,\cf0  \cf3 41988\cf7 ,\cf0  \cf7 _\cf0 \par
+       \cf3 41989\cf7 ,\cf0  \cf3 41990\cf7 ,\cf0  \cf3 41991\cf7 ,\cf0  \cf3 41993\cf7 ,\cf0  \cf3 41995\cf7 ]\cf0 \par
+\par
+\cf3 Global\cf0  \cf8 $TargetDelay\cf0  \cf7 =\cf0  \cf3 400\cf7 ,\cf0  \cf8 $HealDelay\cf0  \cf7 =\cf0  \cf3 1700\cf0 \par
+\par
+\cf2\i ; -------------------\par
+\cf0\i0 \cf2\i ; Create the GUI\par
+\cf0\i0 \cf2\i ; -------------------\par
+\cf0\i0 \cf2\i ;...;\par
+\cf0\i0 \cf3 Global\cf0  \cf8 $Gui\cf0  \cf7 =\cf0  \cf4 GUICreate\cf7 (\cf8 $version\cf7 ,\cf0  \cf3 248\cf7 ,\cf0  \cf3 360\cf7 ,\cf0  \cf3 15\cf7 ,\cf0  \cf3 15\cf7 )\cf0 \par
+\par
+\cf3 Global\cf0  \cf8 $TypeLabel\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateLabel\cf7 (\cf6 "Target: N/A"\cf7 ,\cf0  \cf3 105\cf7 ,\cf0  \cf3 21\cf7 ,\cf0  \cf3 115\cf7 ,\cf0  \cf3 15\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf4 GUICtrlSetBkColor\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 0xBEBEBE\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $AttackModeLabel\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateLabel\cf7 (\cf6 "Attack: N/A"\cf7 ,\cf0  \cf3 105\cf7 ,\cf0  \cf3 37\cf7 ,\cf0  \cf3 115\cf7 ,\cf0  \cf3 15\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf4 GUICtrlSetBkColor\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 0xBEBEBE\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $PosXLabel\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateLabel\cf7 (\cf6 "X: N/A"\cf7 ,\cf0  \cf3 11\cf7 ,\cf0  \cf3 23\cf7 ,\cf0  \cf3 75\cf7 ,\cf0  \cf3 15\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf4 GUICtrlSetBkColor\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 0xBEBEBE\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $PosYLabel\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateLabel\cf7 (\cf6 "Y: N/A"\cf7 ,\cf0  \cf3 11\cf7 ,\cf0  \cf3 39\cf7 ,\cf0  \cf3 75\cf7 ,\cf0  \cf3 15\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf4 GUICtrlSetBkColor\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 0xBEBEBE\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $HPLabel\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateLabel\cf7 (\cf6 "HP: N/A /"\cf7 ,\cf0  \cf3 10\cf7 ,\cf0  \cf3 187\cf7 ,\cf0  \cf3 45\cf7 ,\cf0  \cf3 15\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf4 GUICtrlSetBkColor\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 0xBEBEBE\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $ChatLabel\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateLabel\cf7 (\cf6 "Chat: N/A"\cf7 ,\cf0  \cf3 105\cf7 ,\cf0  \cf3 69\cf7 ,\cf0  \cf3 115\cf7 ,\cf0  \cf3 15\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf4 GUICtrlSetBkColor\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 0xBEBEBE\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $SicknessLabel\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateLabel\cf7 (\cf6 "Sickness: N/A"\cf7 ,\cf0  \cf3 105\cf7 ,\cf0  \cf3 53\cf7 ,\cf0  \cf3 115\cf7 ,\cf0  \cf3 15\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf4 GUICtrlSetBkColor\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 0xBEBEBE\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $MaxHPLabel\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateLabel\cf7 (\cf6 "N/A"\cf7 ,\cf0  \cf3 55\cf7 ,\cf0  \cf3 187\cf7 ,\cf0  \cf3 30\cf7 ,\cf0  \cf3 15\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf4 GUICtrlSetBkColor\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 0xBEBEBE\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $TargetLabel\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateLabel\cf7 (\cf6 "Target: Off"\cf7 ,\cf0  \cf3 10\cf7 ,\cf0  \cf3 124\cf7 ,\cf0  \cf3 75\cf7 ,\cf0  \cf3 15\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf4 GUICtrlSetBkColor\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 0xBEBEBE\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $HealerLabel\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateLabel\cf7 (\cf6 "Healer: Off"\cf7 ,\cf0  \cf3 10\cf7 ,\cf0  \cf3 92\cf7 ,\cf0  \cf3 75\cf7 ,\cf0  \cf3 15\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf4 GUICtrlSetBkColor\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 0xBEBEBE\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $WalkerLabel\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateLabel\cf7 (\cf6 "Walker: Off"\cf7 ,\cf0  \cf3 10\cf7 ,\cf0  \cf3 140\cf7 ,\cf0  \cf3 75\cf7 ,\cf0  \cf3 15\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf4 GUICtrlSetBkColor\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 0xBEBEBE\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $BackPackLabel\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateLabel\cf7 (\cf6 "Weight: N/A"\cf7 ,\cf0  \cf3 10\cf7 ,\cf0  \cf3 203\cf7 ,\cf0  \cf3 75\cf7 ,\cf0  \cf3 15\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf4 GUICtrlSetBkColor\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 0xBEBEBE\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $CureLabel\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateLabel\cf7 (\cf6 "Cure: Off"\cf7 ,\cf0  \cf3 10\cf7 ,\cf0  \cf3 108\cf7 ,\cf0  \cf3 75\cf7 ,\cf0  \cf3 15\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf4 GUICtrlSetBkColor\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 0xBEBEBE\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $KillButton\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateButton\cf7 (\cf6 "Kill Rogue"\cf7 ,\cf0  \cf3 10\cf7 ,\cf0  \cf3 315\cf7 ,\cf0  \cf3 110\cf7 ,\cf0  \cf3 30\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $ExitButton\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateButton\cf7 (\cf6 "Exit"\cf7 ,\cf0  \cf3 120\cf7 ,\cf0  \cf3 315\cf7 ,\cf0  \cf3 110\cf7 ,\cf0  \cf3 30\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $ReverseLoopCheckbox\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateCheckbox\cf7 (\cf6 "Reversed Walker"\cf7 ,\cf0  \cf3 105\cf7 ,\cf0  \cf3 205\cf7 ,\cf0  \cf3 115\cf7 ,\cf0  \cf3 20\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf4 GUICtrlSetBkColor\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 0xBEBEBE\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $LootingCheckbox\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateCheckbox\cf7 (\cf6 "Autoloot"\cf7 ,\cf0  \cf3 107\cf7 ,\cf0  \cf3 185\cf7 ,\cf0  \cf3 115\cf7 ,\cf0  \cf3 20\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf4 GUICtrlSetBkColor\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 0xBEBEBE\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $Checkbox\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateCheckbox\cf7 (\cf6 "Old Style Pothack"\cf7 ,\cf0  \cf3 105\cf7 ,\cf0  \cf3 225\cf7 ,\cf0  \cf3 115\cf7 ,\cf0  \cf3 20\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf4 GUICtrlSetBkColor\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 0xBEBEBE\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $Helpers\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateLabel\cf7 (\cf6 "HELPERS"\cf7 ,\cf0  \cf3 8\cf7 ,\cf0  \cf3 75\cf7 ,\cf0  \cf3 80\cf7 ,\cf0  \cf3 15\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf4 GUICtrlSetBkColor\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 0x808080\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $Character\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateLabel\cf7 (\cf6 "CHARACTER"\cf7 ,\cf0  \cf3 8\cf7 ,\cf0  \cf3 170\cf7 ,\cf0  \cf3 80\cf7 ,\cf0  \cf3 15\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf4 GUICtrlSetBkColor\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 0x808080\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $Position\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateLabel\cf7 (\cf6 "POSITION"\cf7 ,\cf0  \cf3 8\cf7 ,\cf0  \cf3 5\cf7 ,\cf0  \cf3 80\cf7 ,\cf0  \cf3 15\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf4 GUICtrlSetBkColor\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 0x808080\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $Information\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateLabel\cf7 (\cf6 "INFORMATION"\cf7 ,\cf0  \cf3 103\cf7 ,\cf0  \cf3 4\cf7 ,\cf0  \cf3 120\cf7 ,\cf0  \cf3 15\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf4 GUICtrlSetBkColor\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 0x808080\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $Options\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateLabel\cf7 (\cf6 "OPTIONS"\cf7 ,\cf0  \cf3 103\cf7 ,\cf0  \cf3 169\cf7 ,\cf0  \cf3 120\cf7 ,\cf0  \cf3 11\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf4 GUICtrlSetBkColor\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 0x808080\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $HealToggle\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateButton\cf7 (\cf6 "HEAL"\cf7 ,\cf0  \cf3 95\cf7 ,\cf0  \cf3 92\cf7 ,\cf0  \cf3 60\cf7 ,\cf0  \cf3 15\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $CureToggle\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateButton\cf7 (\cf6 "CURE"\cf7 ,\cf0  \cf3 95\cf7 ,\cf0  \cf3 108\cf7 ,\cf0  \cf3 60\cf7 ,\cf0  \cf3 15\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $TargetToggle\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateButton\cf7 (\cf6 "TARGET"\cf7 ,\cf0  \cf3 95\cf7 ,\cf0  \cf3 124\cf7 ,\cf0  \cf3 60\cf7 ,\cf0  \cf3 15\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $WalkerToggle\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateButton\cf7 (\cf6 "WALKER"\cf7 ,\cf0  \cf3 95\cf7 ,\cf0  \cf3 140\cf7 ,\cf0  \cf3 60\cf7 ,\cf0  \cf3 15\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $ToggleAll\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateButton\cf7 (\cf6 "ToggleAll"\cf7 ,\cf0  \cf3 155\cf7 ,\cf0  \cf3 94\cf7 ,\cf0  \cf3 71\cf7 ,\cf0  \cf3 60\cf7 )\cf0 \par
+\cf4 GUICtrlSetFont\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 8.5\cf7 ,\cf0  \cf3 400\cf7 ,\cf0  \cf8 $GUI_FONTNORMAL\cf7 ,\cf0  \cf6 "$GUI_FONTNORMAL"\cf7 )\cf0 \par
+\cf3 Global\cf0  \cf8 $HP2Label\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateLabel\cf7 (\cf6 "RealHp: N/A"\cf7 ,\cf0  \cf3 11\cf7 ,\cf0  \cf3 224\cf7 ,\cf0  \cf3 76\cf7 ,\cf0  \cf3 21\cf7 )\cf0 \par
+\cf4 GUICtrlSetBkColor\cf7 (-\cf3 1\cf7 ,\cf0  \cf3 0x9D9597\cf7 )\cf0 \par
+\par
+\cf3 Global\cf0  \cf8 $healSlider\cf0  \cf7 =\cf0  \cf4 GUICtrlCreateSlider\cf7 (\cf3 10\cf7 ,\cf0  \cf3 270\cf7 ,\cf0  \cf3 226\cf7 ,\cf0  \cf3 36\cf7 )\cf0 \par
+\cf4 GUICtrlSetData\cf7 (\cf8 $healSlider\cf7 ,\cf0  \cf3 85\cf7 )\cf0 \par
+\par
+\par
+\par
+\par
+\cf4 GUISetState\cf7 (\cf5 @SW_SHOW\cf7 )\cf0 \par
+\par
+\cf2\i ; --------------------------------------------------------------------------\par
+\cf0\i0 \cf2\i ;   :                      STREAMLINED MAIN LOOP\par
+\cf0\i0 \cf2\i ; --------------------------------------------------------------------------\par
+\cf0\i0 \cf3 While\cf0  \cf8 $Running\cf0 \par
+   \cf3 Local\cf0  \cf8 $msg\cf0  \cf7 =\cf0  \cf4 GUIGetMsg\cf7 ()\cf0 \par
+   \cf2\i ; ---- Handle GUI messages first ----\par
+\cf0\i0    \cf3 Switch\cf0  \cf8 $msg\cf0 \par
+       \cf3 Case\cf0  \cf8 $ExitButton\cf7 ,\cf0  \cf8 $GUI_EVENT_CLOSE\cf0 \par
+           \cf12 _WinAPI_CloseHandle\cf7 (\cf8 $hProcess\cf7 )\cf0 \par
+           \cf4 GUIDelete\cf7 (\cf8 $Gui\cf7 )\cf0 \par
+           \cf3 Exit\cf0 \par
+       \cf3 Case\cf0  \cf8 $KillButton\cf0 \par
+           \cf3 Local\cf0  \cf8 $pidCheck\cf0  \cf7 =\cf0  \cf4 ProcessExists\cf7 (\cf8 $ProcessName\cf7 )\cf0 \par
+           \cf3 If\cf0  \cf8 $pidCheck\cf0  \cf3 Then\cf0  \cf4 ProcessClose\cf7 (\cf8 $pidCheck\cf7 )\cf0 \par
+       \cf3 Case\cf0  \cf8 $HealToggle\cf0 \par
+           ToggleHealer\cf7 ()\cf0 \par
+       \cf3 Case\cf0  \cf8 $CureToggle\cf0 \par
+           ToggleCure\cf7 ()\cf0 \par
+       \cf3 Case\cf0  \cf8 $TargetToggle\cf0 \par
+           ToggleTarget\cf7 ()\cf0 \par
+       \cf3 Case\cf0  \cf8 $WalkerToggle\cf0 \par
+           ToggleWalker\cf7 ()\cf0 \par
+       \cf3 Case\cf0  \cf8 $ToggleAll\cf0 \par
+           ToggleAllHelpers\cf7 ()\cf0 \par
+   \cf3 EndSwitch\cf0 \par
+\par
+   \cf2\i ; ---- Now background work ----\par
+\cf0\i0    \cf3 Local\cf0  \cf8 $ProcessID\cf0  \cf7 =\cf0  \cf4 ProcessExists\cf7 (\cf8 $ProcessName\cf7 )\cf0 \par
+   \cf3 If\cf0  \cf3 Not\cf0  \cf8 $ProcessID\cf0  \cf3 Then\cf0 \par
+       \cf3 If\cf0  \cf8 $hProcess\cf0  \cf7 <>\cf0  \cf3 0\cf0  \cf3 Then\cf0  \cf12 _WinAPI_CloseHandle\cf7 (\cf8 $hProcess\cf7 )\cf0 \par
+       \cf8 $hProcess\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+       \cf8 $BaseAddress\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+       \cf4 Sleep\cf7 (\cf3 10\cf7 )\cf0 \par
+       \cf3 ContinueLoop\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf3 If\cf0  \cf8 $hProcess\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Then\cf0 \par
+       ConnectToBaseAddress\cf7 ()\cf0 \par
+       \cf3 If\cf0  \cf8 $BaseAddress\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Or\cf0  \cf8 $hProcess\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Then\cf0 \par
+           \cf4 Sleep\cf7 (\cf3 10\cf7 )\cf0 \par
+           \cf3 ContinueLoop\cf0 \par
+       \cf3 Else\cf0 \par
+           ChangeAddressToBase\cf7 ()\cf0 \par
+       \cf3 EndIf\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   GUIReadMemory\cf7 ()\cf0 \par
+\par
+   \cf3 If\cf0  \cf8 $Chat\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Then\cf0 \par
+       \cf3 If\cf0  \cf8 $CureStatus\cf0  \cf7 =\cf0  \cf3 1\cf0  \cf3 And\cf0  \cf8 $Chat\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Then\cf0  CureMe\cf7 ()\cf0 \par
+       \cf3 If\cf0  \cf8 $HealerStatus\cf0  \cf7 =\cf0  \cf3 1\cf0  \cf3 And\cf0  \cf8 $Chat\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Then\cf0  TimeToHeal\cf7 ()\cf0 \par
+       \cf3 If\cf0  \cf8 $TargetStatus\cf0  \cf7 =\cf0  \cf3 1\cf0  \cf3 Then\cf0  AttackModeReader\cf7 ()\cf0 \par
+       \cf3 If\cf0  \cf4 GUICtrlRead\cf7 (\cf8 $LootingCheckbox\cf7 )\cf0  \cf7 =\cf0  \cf8 $GUI_CHECKED\cf0  \cf3 Then\cf0  HandleLootQueue\cf7 ()\cf0 \par
+\par
+       \cf3 If\cf0  \cf8 $MoveToLocationsStatus\cf0  \cf7 =\cf0  \cf3 1\cf0  \cf3 And\cf0  \cf3 Not\cf0  \cf8 $LootQueued\cf0  \cf3 And\cf0  \cf8 $Chat\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Then\cf0 \par
+           \cf3 Local\cf0  \cf8 $result\cf0  \cf7 =\cf0  MoveToLocationsStep\cf7 (\cf8 $aLocations\cf7 ,\cf0  \cf8 $iCurrentIndex\cf7 )\cf0 \par
+           \cf3 If\cf0  \cf5 @error\cf0  \cf3 Then\cf0  \cf8 $MoveToLocationsStatus\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+       \cf3 EndIf\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf4 Sleep\cf7 (\cf3 50\cf7 )\cf0  \cf2\i ; lighter sleep, much more responsive\par
+\cf0\i0 \cf3 WEnd\cf0 \par
+\par
+\cf4 GUIDelete\cf7 (\cf8 $Gui\cf7 )\cf0 \par
+\cf12 _WinAPI_CloseHandle\cf7 (\cf8 $hProcess\cf7 )\cf0 \par
+\cf4 ConsoleWrite\cf7 (\cf6 "[Debug] Trainer closed by script end"\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+\cf3 Exit\cf0 \par
+\par
+\cf2\i ; ------------------------------------------------------------------------------\par
+\cf0\i0 \cf2\i ;                               LOAD CONFIG\par
+\cf0\i0 \cf2\i ; ------------------------------------------------------------------------------\par
+\cf0\i0 \cf3 Func\cf0  LoadButtonConfig\cf7 ()\cf0 \par
+   \cf3 Local\cf0  \cf8 $sButtonConfigFile\cf0  \cf7 =\cf0  \cf5 @ScriptDir\cf0  \cf7 &\cf0  \cf6 "\\NewButtonConfig.ini"\cf0 \par
+\par
+   \cf2\i ; Remove old/unused entries\par
+\cf0\i0    \cf4 IniDelete\cf7 (\cf8 $sButtonConfigFile\cf7 ,\cf0  \cf6 "Hotkeys"\cf7 ,\cf0  \cf6 "TogglePauseHotkey"\cf7 )\cf0 \par
+   \cf4 IniDelete\cf7 (\cf8 $sButtonConfigFile\cf7 ,\cf0  \cf6 "Hotkeys"\cf7 ,\cf0  \cf6 "PlayLocationsHotkey"\cf7 )\cf0 \par
+\par
+   \cf2\i ; Define the hotkeys and default values\par
+\cf0\i0    \cf3 Local\cf0  \cf8 $aKeys\cf7 [\cf3 7\cf7 ][\cf3 2\cf7 ]\cf0  \cf7 =\cf0  \cf7 [\cf0  \cf7 _\cf0 \par
+           \cf7 [\cf6 "HealHotkey"\cf7 ,\cf0  \cf6 "\{"\cf0  \cf7 &\cf0  \cf4 Chr\cf7 (\cf3 96\cf7 )\cf0  \cf7 &\cf0  \cf6 "\}"\cf7 ],\cf0  \cf7 _\cf0 \par
+           \cf7 [\cf6 "CureHotkey"\cf7 ,\cf0  \cf6 "\cf9 \{-\}\cf6 "\cf7 ],\cf0  \cf7 _\cf0 \par
+           \cf7 [\cf6 "TargetHotkey"\cf7 ,\cf0  \cf6 "\cf9 \{=\}\cf6 "\cf7 ],\cf0  \cf7 _\cf0 \par
+           \cf7 [\cf6 "ExitHotkey"\cf7 ,\cf0  \cf6 "\cf9 \{#\}\cf6 "\cf7 ],\cf0  \cf7 _\cf0 \par
+           \cf7 [\cf6 "SaveLocationHotkey"\cf7 ,\cf0  \cf6 "\cf9 \{F7\}\cf6 "\cf7 ],\cf0  \cf7 _\cf0 \par
+           \cf7 [\cf6 "EraseLocationsHotkey"\cf7 ,\cf0  \cf6 "\cf9 \{F8\}\cf6 "\cf7 ],\cf0  \cf7 _\cf0 \par
+           \cf7 [\cf6 "MoveToLocationsHotkey"\cf7 ,\cf0  \cf6 "\cf9 \{!\}\cf6 "\cf7 ]\cf0  \cf7 _\cf0 \par
+           \cf7 ]\cf0 \par
+\par
+   \cf3 Local\cf0  \cf8 $bMissingKeys\cf0  \cf7 =\cf0  \cf3 False\cf0 \par
+   \cf3 For\cf0  \cf8 $i\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 To\cf0  \cf4 UBound\cf7 (\cf8 $aKeys\cf7 )\cf0  \cf7 -\cf0  \cf3 1\cf0 \par
+       \cf3 Local\cf0  \cf8 $sKey\cf0  \cf7 =\cf0  \cf4 IniRead\cf7 (\cf8 $sButtonConfigFile\cf7 ,\cf0  \cf6 "Hotkeys"\cf7 ,\cf0  \cf8 $aKeys\cf7 [\cf8 $i\cf7 ][\cf3 0\cf7 ],\cf0  \cf6 ""\cf7 )\cf0 \par
+       \cf3 If\cf0  \cf8 $sKey\cf0  \cf7 =\cf0  \cf6 ""\cf0  \cf3 Then\cf0 \par
+           \cf4 ConsoleWrite\cf7 (\cf6 "[Warning] Missing key: "\cf0  \cf7 &\cf0  \cf8 $aKeys\cf7 [\cf8 $i\cf7 ][\cf3 0\cf7 ]\cf0  \cf7 &\cf0  \cf6 ". Will create default config."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+           \cf8 $bMissingKeys\cf0  \cf7 =\cf0  \cf3 True\cf0 \par
+           \cf3 ExitLoop\cf0 \par
+       \cf3 EndIf\cf0 \par
+   \cf3 Next\cf0 \par
+\par
+   \cf2\i ; If any key was missing, recreate the default configuration\par
+\cf0\i0    \cf3 If\cf0  \cf8 $bMissingKeys\cf0  \cf3 Then\cf0 \par
+       CreateButtonDefaultConfig\cf7 ()\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf2\i ; Re-read keys\par
+\cf0\i0    \cf3 For\cf0  \cf8 $i\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 To\cf0  \cf4 UBound\cf7 (\cf8 $aKeys\cf7 )\cf0  \cf7 -\cf0  \cf3 1\cf0 \par
+       \cf3 Local\cf0  \cf8 $sKey\cf0  \cf7 =\cf0  \cf4 IniRead\cf7 (\cf8 $sButtonConfigFile\cf7 ,\cf0  \cf6 "Hotkeys"\cf7 ,\cf0  \cf8 $aKeys\cf7 [\cf8 $i\cf7 ][\cf3 0\cf7 ],\cf0  \cf8 $aKeys\cf7 [\cf8 $i\cf7 ][\cf3 1\cf7 ])\cf0 \par
+\par
+       \cf3 Switch\cf0  \cf8 $aKeys\cf7 [\cf8 $i\cf7 ][\cf3 0\cf7 ]\cf0 \par
+           \cf3 Case\cf0  \cf6 "HealHotkey"\cf0 \par
+               \cf4 HotKeySet\cf7 (\cf8 $sKey\cf7 ,\cf0  \cf6 "Hotkeyshit"\cf7 )\cf0 \par
+           \cf3 Case\cf0  \cf6 "CureHotkey"\cf0 \par
+               \cf4 HotKeySet\cf7 (\cf8 $sKey\cf7 ,\cf0  \cf6 "CureKeyShit"\cf7 )\cf0 \par
+           \cf3 Case\cf0  \cf6 "TargetHotkey"\cf0 \par
+               \cf4 HotKeySet\cf7 (\cf8 $sKey\cf7 ,\cf0  \cf6 "TargetKeyShit"\cf7 )\cf0 \par
+           \cf3 Case\cf0  \cf6 "ExitHotkey"\cf0 \par
+               \cf4 HotKeySet\cf7 (\cf8 $sKey\cf7 ,\cf0  \cf6 "KilledWithFire"\cf7 )\cf0 \par
+           \cf3 Case\cf0  \cf6 "SaveLocationHotkey"\cf0 \par
+               \cf4 HotKeySet\cf7 (\cf8 $sKey\cf7 ,\cf0  \cf6 "SaveLocation"\cf7 )\cf0 \par
+           \cf3 Case\cf0  \cf6 "EraseLocationsHotkey"\cf0 \par
+               \cf4 HotKeySet\cf7 (\cf8 $sKey\cf7 ,\cf0  \cf6 "EraseLocations"\cf7 )\cf0 \par
+           \cf3 Case\cf0  \cf6 "MoveToLocationsHotkey"\cf0 \par
+               \cf4 HotKeySet\cf7 (\cf8 $sKey\cf7 ,\cf0  \cf6 "MoveToLocations"\cf7 )\cf0 \par
+       \cf3 EndSwitch\cf0 \par
+\par
+       \cf4 ConsoleWrite\cf7 (\cf6 "[Info] Hotkey for "\cf0  \cf7 &\cf0  \cf8 $aKeys\cf7 [\cf8 $i\cf7 ][\cf3 0\cf7 ]\cf0  \cf7 &\cf0  \cf6 " set to "\cf0  \cf7 &\cf0  \cf8 $sKey\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+   \cf3 Next\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>LoadButtonConfig\par
+\cf0\i0 \par
+\cf3 Func\cf0  Min\cf7 (\cf8 $a\cf7 ,\cf0  \cf8 $b\cf7 )\cf0 \par
+   \cf3 If\cf0  \cf8 $a\cf0  \cf7 <\cf0  \cf8 $b\cf0  \cf3 Then\cf0 \par
+       \cf3 Return\cf0  \cf8 $a\cf0 \par
+   \cf3 Else\cf0 \par
+       \cf3 Return\cf0  \cf8 $b\cf0 \par
+   \cf3 EndIf\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>Min\par
+\cf0\i0 \par
+\cf3 Func\cf0  QueueLootPattern\cf7 ()\cf0 \par
+   \cf3 Global\cf0  \cf8 $LootQueue\cf0 \par
+\par
+   \cf2\i ; Screen click coordinates\par
+\cf0\i0    \cf3 Local\cf0  \cf8 $rawX\cf7 [\cf3 8\cf7 ]\cf0  \cf7 =\cf0  \cf7 [\cf3 320\cf7 ,\cf0  \cf3 350\cf7 ,\cf0  \cf3 385\cf7 ,\cf0  \cf3 325\cf7 ,\cf0  \cf3 385\cf7 ,\cf0  \cf3 325\cf7 ,\cf0  \cf3 350\cf7 ,\cf0  \cf3 385\cf7 ]\cf0 \par
+   \cf3 Local\cf0  \cf8 $rawY\cf7 [\cf3 8\cf7 ]\cf0  \cf7 =\cf0  \cf7 [\cf3 325\cf7 ,\cf0  \cf3 320\cf7 ,\cf0  \cf3 325\cf7 ,\cf0  \cf3 355\cf7 ,\cf0  \cf3 355\cf7 ,\cf0  \cf3 385\cf7 ,\cf0  \cf3 390\cf7 ,\cf0  \cf3 385\cf7 ]\cf0 \par
+\par
+   \cf2\i ; Shuffle logic\par
+\cf0\i0    \cf3 Local\cf0  \cf8 $used\cf7 [\cf3 8\cf7 ]\cf0  \cf7 =\cf0  \cf7 [\cf3 False\cf7 ,\cf0  \cf3 False\cf7 ,\cf0  \cf3 False\cf7 ,\cf0  \cf3 False\cf7 ,\cf0  \cf3 False\cf7 ,\cf0  \cf3 False\cf7 ,\cf0  \cf3 False\cf7 ,\cf0  \cf3 False\cf7 ]\cf0 \par
+   \cf3 For\cf0  \cf8 $i\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 To\cf0  \cf3 7\cf0 \par
+       \cf3 Do\cf0 \par
+           \cf3 Local\cf0  \cf8 $rand\cf0  \cf7 =\cf0  \cf4 Random\cf7 (\cf3 0\cf7 ,\cf0  \cf3 7\cf7 ,\cf0  \cf3 1\cf7 )\cf0 \par
+       \cf3 Until\cf0  \cf3 Not\cf0  \cf8 $used\cf7 [\cf8 $rand\cf7 ]\cf0 \par
+       \cf8 $LootQueue\cf7 [\cf8 $i\cf7 ][\cf3 0\cf7 ]\cf0  \cf7 =\cf0  \cf8 $rawX\cf7 [\cf8 $rand\cf7 ]\cf0 \par
+       \cf8 $LootQueue\cf7 [\cf8 $i\cf7 ][\cf3 1\cf7 ]\cf0  \cf7 =\cf0  \cf8 $rawY\cf7 [\cf8 $rand\cf7 ]\cf0 \par
+       \cf8 $used\cf7 [\cf8 $rand\cf7 ]\cf0  \cf7 =\cf0  \cf3 True\cf0 \par
+   \cf3 Next\cf0 \par
+\par
+   \cf4 ConsoleWrite\cf7 (\cf6 "[Loot] New loot pattern queued."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>QueueLootPattern\par
+\cf0\i0 \par
+\cf2\i ; ------------------------------------------------------------------------------\par
+\cf0\i0 \cf2\i ;                               HANDLE LOOT QUEUE\par
+\cf0\i0 \cf2\i ; ------------------------------------------------------------------------------\par
+\cf0\i0 \cf3 Func\cf0  HandleLootQueue\cf7 ()\cf0 \par
+   \cf3 Global\cf0  \cf8 $hProcess\cf7 ,\cf0  \cf8 $BaseAddress\cf7 ,\cf0  \cf8 $WindowName\cf0 \par
+   \cf3 Global\cf0  \cf8 $LootQueued\cf7 ,\cf0  \cf8 $LootCount\cf7 ,\cf0  \cf8 $LootReady\cf0 \par
+   \cf3 Global\cf0  \cf8 $MoveToLocationsStatus\cf7 ,\cf0  \cf8 $PausedWalkerForLoot\cf0 \par
+   \cf3 Global\cf0  \cf8 $PosXAddress\cf7 ,\cf0  \cf8 $PosYAddress\cf0 \par
+   \cf3 Global\cf0  \cf8 $LastPlayerX\cf7 ,\cf0  \cf8 $LastPlayerY\cf0 \par
+   \cf3 Global\cf0  \cf8 $LootIdleTimer\cf7 ,\cf0  \cf8 $LootIdleWaiting\cf0 \par
+\par
+   \cf2\i ; No loot queued? Skip\par
+\cf0\i0    \cf3 If\cf0  \cf3 Not\cf0  \cf8 $LootQueued\cf0  \cf3 Or\cf0  \cf8 $LootCount\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Then\cf0  \cf3 Return\cf0 \par
+   \cf2\i ; Not finished waiting for idle? Skip\par
+\cf0\i0    \cf3 If\cf0  \cf3 Not\cf0  \cf8 $LootIdleWaiting\cf0  \cf3 Then\cf0  \cf3 Return\cf0 \par
+   \cf2\i ; 750ms idle time check\par
+\cf0\i0    \cf3 If\cf0  \cf4 TimerDiff\cf7 (\cf8 $LootIdleTimer\cf7 )\cf0  \cf7 <\cf0  \cf3 750\cf0  \cf3 Then\cf0  \cf3 Return\cf0 \par
+\par
+   \cf2\i ; Check movement\par
+\cf0\i0    \cf3 Local\cf0  \cf8 $PlayerX\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $PosXAddress\cf7 )\cf0 \par
+   \cf3 Local\cf0  \cf8 $PlayerY\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $PosYAddress\cf7 )\cf0 \par
+   \cf3 If\cf0  \cf8 $PlayerX\cf0  \cf7 <>\cf0  \cf8 $LastPlayerX\cf0  \cf3 Or\cf0  \cf8 $PlayerY\cf0  \cf7 <>\cf0  \cf8 $LastPlayerY\cf0  \cf3 Then\cf0 \par
+       \cf4 ConsoleWrite\cf7 (\cf6 "[Loot] Player moved before looting. Cancelling."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+       \cf8 $LootQueued\cf0  \cf7 =\cf0  \cf3 False\cf0 \par
+       \cf8 $LootCount\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+       \cf8 $LootReady\cf0  \cf7 =\cf0  \cf3 False\cf0 \par
+       \cf8 $LootIdleWaiting\cf0  \cf7 =\cf0  \cf3 False\cf0 \par
+       \cf3 Return\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf2\i ; Pause walker\par
+\cf0\i0    \cf3 If\cf0  \cf8 $MoveToLocationsStatus\cf0  \cf7 =\cf0  \cf3 1\cf0  \cf3 Then\cf0 \par
+       \cf8 $MoveToLocationsStatus\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+       \cf8 $PausedWalkerForLoot\cf0  \cf7 =\cf0  \cf3 True\cf0 \par
+       \cf4 ConsoleWrite\cf7 (\cf6 "[Loot] Walker paused for looting."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf2\i ; Looting starts\par
+\cf0\i0    \cf2\i ; Calculate clicks per tile based on kill count\par
+\cf0\i0    \cf3 Local\cf0  \cf8 $clicksPerTile\cf0  \cf7 =\cf0  CalculateLootClicks\cf7 (\cf8 $LootCount\cf7 )\cf0 \par
+\par
+   \cf4 ConsoleWrite\cf7 (\cf6 "[Loot] Looting now with "\cf0  \cf7 &\cf0  \cf8 $clicksPerTile\cf0  \cf7 &\cf0  \cf6 " clicks per tile."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+\par
+   \cf3 Local\cf0  \cf8 $memX\cf7 [\cf3 8\cf7 ]\cf0  \cf7 =\cf0  \cf7 [\cf3 192\cf7 ,\cf0  \cf3 175\cf7 ,\cf0  \cf3 160\cf7 ,\cf0  \cf3 162\cf7 ,\cf0  \cf3 162\cf7 ,\cf0  \cf3 175\cf7 ,\cf0  \cf3 192\cf7 ,\cf0  \cf3 192\cf7 ]\cf0 \par
+   \cf3 Local\cf0  \cf8 $memY\cf7 [\cf3 8\cf7 ]\cf0  \cf7 =\cf0  \cf7 [\cf3 161\cf7 ,\cf0  \cf3 159\cf7 ,\cf0  \cf3 161\cf7 ,\cf0  \cf3 176\cf7 ,\cf0  \cf3 191\cf7 ,\cf0  \cf3 194\cf7 ,\cf0  \cf3 191\cf7 ,\cf0  \cf3 176\cf7 ]\cf0 \par
+   \cf3 Local\cf0  \cf8 $clickX\cf7 [\cf3 8\cf7 ]\cf0  \cf7 =\cf0  \cf7 [\cf3 385\cf7 ,\cf0  \cf3 350\cf7 ,\cf0  \cf3 320\cf7 ,\cf0  \cf3 325\cf7 ,\cf0  \cf3 325\cf7 ,\cf0  \cf3 350\cf7 ,\cf0  \cf3 385\cf7 ,\cf0  \cf3 385\cf7 ]\cf0 \par
+   \cf3 Local\cf0  \cf8 $clickY\cf7 [\cf3 8\cf7 ]\cf0  \cf7 =\cf0  \cf7 [\cf3 325\cf7 ,\cf0  \cf3 320\cf7 ,\cf0  \cf3 325\cf7 ,\cf0  \cf3 355\cf7 ,\cf0  \cf3 385\cf7 ,\cf0  \cf3 390\cf7 ,\cf0  \cf3 385\cf7 ,\cf0  \cf3 355\cf7 ]\cf0 \par
+\par
+   \cf3 Local\cf0  \cf8 $used\cf7 [\cf3 8\cf7 ]\cf0  \cf7 =\cf0  \cf7 [\cf3 False\cf7 ,\cf0  \cf3 False\cf7 ,\cf0  \cf3 False\cf7 ,\cf0  \cf3 False\cf7 ,\cf0  \cf3 False\cf7 ,\cf0  \cf3 False\cf7 ,\cf0  \cf3 False\cf7 ,\cf0  \cf3 False\cf7 ]\cf0 \par
+\par
+   \cf3 For\cf0  \cf8 $i\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 To\cf0  \cf3 7\cf0 \par
+       \cf3 Do\cf0 \par
+           \cf3 Local\cf0  \cf8 $rand\cf0  \cf7 =\cf0  \cf4 Random\cf7 (\cf3 0\cf7 ,\cf0  \cf3 7\cf7 ,\cf0  \cf3 1\cf7 )\cf0 \par
+       \cf3 Until\cf0  \cf3 Not\cf0  \cf8 $used\cf7 [\cf8 $rand\cf7 ]\cf0 \par
+       \cf8 $used\cf7 [\cf8 $rand\cf7 ]\cf0  \cf7 =\cf0  \cf3 True\cf0 \par
+\par
+       _WriteMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $BaseAddress\cf0  \cf7 +\cf0  \cf3 0xA669F0\cf7 ,\cf0  \cf8 $memX\cf7 [\cf8 $rand\cf7 ])\cf0 \par
+       _WriteMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $BaseAddress\cf0  \cf7 +\cf0  \cf3 0xB5BC0C\cf7 ,\cf0  \cf8 $memY\cf7 [\cf8 $rand\cf7 ])\cf0 \par
+\par
+       \cf3 For\cf0  \cf8 $j\cf0  \cf7 =\cf0  \cf3 1\cf0  \cf3 To\cf0  \cf8 $clicksPerTile\cf0 \par
+           \cf4 ControlClick\cf7 (\cf8 $WindowName\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 "right"\cf7 ,\cf0  \cf3 1\cf7 ,\cf0  \cf8 $clickX\cf7 [\cf8 $rand\cf7 ],\cf0  \cf8 $clickY\cf7 [\cf8 $rand\cf7 ])\cf0 \par
+           \cf4 Sleep\cf7 (\cf3 1\cf7 )\cf0 \par
+       \cf3 Next\cf0 \par
+\par
+       \cf4 ConsoleWrite\cf7 (\cf6 "[Loot] Clicked ("\cf0  \cf7 &\cf0  \cf8 $clickX\cf7 [\cf8 $rand\cf7 ]\cf0  \cf7 &\cf0  \cf6 ","\cf0  \cf7 &\cf0  \cf8 $clickY\cf7 [\cf8 $rand\cf7 ]\cf0  \cf7 &\cf0  \cf6 ") x"\cf0  \cf7 &\cf0  \cf8 $clicksPerTile\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+   \cf3 Next\cf0 \par
+\par
+   \cf2\i ; Reset state\par
+\cf0\i0    \cf8 $LootQueued\cf0  \cf7 =\cf0  \cf3 False\cf0 \par
+   \cf8 $LootCount\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+   \cf8 $LootReady\cf0  \cf7 =\cf0  \cf3 False\cf0 \par
+   \cf8 $LootIdleWaiting\cf0  \cf7 =\cf0  \cf3 False\cf0 \par
+\par
+   \cf2\i ; Resume walker\par
+\cf0\i0    \cf3 If\cf0  \cf8 $PausedWalkerForLoot\cf0  \cf3 Then\cf0 \par
+       \cf8 $MoveToLocationsStatus\cf0  \cf7 =\cf0  \cf3 1\cf0 \par
+       \cf8 $PausedWalkerForLoot\cf0  \cf7 =\cf0  \cf3 False\cf0 \par
+       \cf4 ConsoleWrite\cf7 (\cf6 "[Loot] Walker resumed after looting."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+   \cf3 EndIf\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>HandleLootQueue\par
+\cf0\i0 \par
+\cf3 Func\cf0  CalculateLootClicks\cf7 (\cf8 $kills\cf7 )\cf0 \par
+   \cf3 If\cf0  \cf8 $kills\cf0  \cf7 <=\cf0  \cf3 0\cf0  \cf3 Then\cf0 \par
+       \cf3 Return\cf0  \cf3 0\cf0 \par
+   \cf3 ElseIf\cf0  \cf8 $kills\cf0  \cf7 <=\cf0  \cf3 3\cf0  \cf3 Then\cf0 \par
+       \cf3 Return\cf0  \cf3 4\cf0 \par
+   \cf3 ElseIf\cf0  \cf8 $kills\cf0  \cf7 <=\cf0  \cf3 6\cf0  \cf3 Then\cf0 \par
+       \cf3 Return\cf0  \cf3 6\cf0 \par
+   \cf3 ElseIf\cf0  \cf8 $kills\cf0  \cf7 <=\cf0  \cf3 9\cf0  \cf3 Then\cf0 \par
+       \cf3 Return\cf0  \cf3 8\cf0 \par
+   \cf3 ElseIf\cf0  \cf8 $kills\cf0  \cf7 <=\cf0  \cf3 12\cf0  \cf3 Then\cf0 \par
+       \cf3 Return\cf0  \cf3 10\cf0 \par
+   \cf3 ElseIf\cf0  \cf8 $kills\cf0  \cf7 <=\cf0  \cf3 15\cf0  \cf3 Then\cf0 \par
+       \cf3 Return\cf0  \cf3 12\cf0 \par
+   \cf3 ElseIf\cf0  \cf8 $kills\cf0  \cf7 <=\cf0  \cf3 18\cf0  \cf3 Then\cf0 \par
+       \cf3 Return\cf0  \cf3 14\cf0 \par
+   \cf3 Else\cf0 \par
+       \cf3 Return\cf0  \cf3 16\cf0 \par
+   \cf3 EndIf\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>CalculateLootClicks\par
+\cf0\i0 \par
+\cf3 Func\cf0  ClickTile\cf7 (\cf8 $x\cf7 ,\cf0  \cf8 $y\cf7 )\cf0 \par
+   \cf4 MouseClick\cf7 (\cf6 "right"\cf7 ,\cf0  \cf8 $x\cf7 ,\cf0  \cf8 $y\cf7 ,\cf0  \cf3 1\cf7 ,\cf0  \cf3 0\cf7 )\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>ClickTile\par
+\cf0\i0 \par
+\par
+\cf3 Func\cf0  CreateButtonDefaultConfig\cf7 ()\cf0 \par
+   \cf3 Local\cf0  \cf8 $sButtonConfigFile\cf0  \cf7 =\cf0  \cf5 @ScriptDir\cf0  \cf7 &\cf0  \cf6 "\\NewButtonConfig.ini"\cf0 \par
+   \cf3 Local\cf0  \cf8 $aKeys\cf7 [\cf3 7\cf7 ][\cf3 2\cf7 ]\cf0  \cf7 =\cf0  \cf7 [\cf0  \cf7 _\cf0 \par
+           \cf7 [\cf6 "HealHotkey"\cf7 ,\cf0  \cf6 "\{"\cf0  \cf7 &\cf0  \cf4 Chr\cf7 (\cf3 96\cf7 )\cf0  \cf7 &\cf0  \cf6 "\}"\cf7 ],\cf0  \cf7 _\cf0 \par
+           \cf7 [\cf6 "CureHotkey"\cf7 ,\cf0  \cf6 "\cf9 \{-\}\cf6 "\cf7 ],\cf0  \cf7 _\cf0 \par
+           \cf7 [\cf6 "TargetHotkey"\cf7 ,\cf0  \cf6 "\cf9 \{=\}\cf6 "\cf7 ],\cf0  \cf7 _\cf0 \par
+           \cf7 [\cf6 "ExitHotkey"\cf7 ,\cf0  \cf6 "\cf9 \{#\}\cf6 "\cf7 ],\cf0  \cf7 _\cf0 \par
+           \cf7 [\cf6 "SaveLocationHotkey"\cf7 ,\cf0  \cf6 "\cf9 \{F7\}\cf6 "\cf7 ],\cf0  \cf7 _\cf0 \par
+           \cf7 [\cf6 "EraseLocationsHotkey"\cf7 ,\cf0  \cf6 "\cf9 \{F8\}\cf6 "\cf7 ],\cf0  \cf7 _\cf0 \par
+           \cf7 [\cf6 "MoveToLocationsHotkey"\cf7 ,\cf0  \cf6 "\cf9 \{!\}\cf6 "\cf7 ]\cf0  \cf7 _\cf0 \par
+           \cf7 ]\cf0 \par
+   \cf3 For\cf0  \cf8 $i\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 To\cf0  \cf4 UBound\cf7 (\cf8 $aKeys\cf7 )\cf0  \cf7 -\cf0  \cf3 1\cf0 \par
+       \cf4 IniWrite\cf7 (\cf8 $sButtonConfigFile\cf7 ,\cf0  \cf6 "Hotkeys"\cf7 ,\cf0  \cf8 $aKeys\cf7 [\cf8 $i\cf7 ][\cf3 0\cf7 ],\cf0  \cf8 $aKeys\cf7 [\cf8 $i\cf7 ][\cf3 1\cf7 ])\cf0 \par
+   \cf3 Next\cf0 \par
+   \cf4 ConsoleWrite\cf7 (\cf6 "[Info] Default ButtonConfig.ini created with hotkeys."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>CreateButtonDefaultConfig\par
+\cf0\i0 \par
+\cf2\i ; ------------------------------------------------------------------------------\par
+\cf0\i0 \cf2\i ;   Function to Open Process & Retrieve Base Address\par
+\cf0\i0 \cf2\i ; ------------------------------------------------------------------------------\par
+\cf0\i0 \cf3 Func\cf0  ConnectToBaseAddress\cf7 ()\cf0 \par
+   \cf3 Global\cf0  \cf8 $hProcess\cf0 \par
+   \cf3 Global\cf0  \cf8 $ProcessID\cf0 \par
+   \cf3 Global\cf0  \cf8 $BaseAddress\cf0 \par
+\par
+   \cf8 $hProcess\cf0  \cf7 =\cf0  \cf12 _WinAPI_OpenProcess\cf7 (\cf3 0x1F0FFF\cf7 ,\cf0  \cf3 False\cf7 ,\cf0  \cf8 $ProcessID\cf7 )\cf0 \par
+   \cf3 If\cf0  \cf8 $hProcess\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Then\cf0 \par
+       \cf4 ConsoleWrite\cf7 (\cf6 "[Error] Failed to open process! Try running as administrator."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+       \cf3 Return\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf8 $BaseAddress\cf0  \cf7 =\cf0  _GetModuleBase_EnumModules\cf7 (\cf8 $hProcess\cf7 )\cf0 \par
+   \cf3 If\cf0  \cf8 $BaseAddress\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Then\cf0 \par
+       \cf4 ConsoleWrite\cf7 (\cf6 "[Error] Failed to obtain a valid base address!"\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+   \cf3 EndIf\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>ConnectToBaseAddress\par
+\cf0\i0 \par
+\cf2\i ; ------------------------------------------------------------------------------\par
+\cf0\i0 \cf2\i ;                       READ AND UPDATE GUI FROM MEMORY\par
+\cf0\i0 \cf2\i ; ------------------------------------------------------------------------------\par
+\cf0\i0 \cf3 Func\cf0  GUIReadMemory\cf7 ()\cf0 \par
+   \cf3 Global\cf0  \cf8 $hProcess\cf0 \par
+   \cf3 Global\cf0  \cf8 $Type\cf7 ,\cf0  \cf8 $TypeAddress\cf0 \par
+   \cf3 Global\cf0  \cf8 $WalkerLabel\cf7 ,\cf0  \cf8 $MoveToLocationsStatus\cf0 \par
+   \cf3 Global\cf0  \cf8 $AttackMode\cf7 ,\cf0  \cf8 $AttackModeAddress\cf0 \par
+   \cf3 Global\cf0  \cf8 $PosXAddress\cf7 ,\cf0  \cf8 $PosYAddress\cf0 \par
+   \cf3 Global\cf0  \cf8 $HPAddress\cf7 ,\cf0  \cf8 $MaxHPAddress\cf0 \par
+   \cf3 Global\cf0  \cf8 $ChattOpenAddress\cf7 ,\cf0  \cf8 $Chat\cf0 \par
+   \cf3 Global\cf0  \cf8 $SicknessAddress\cf7 ,\cf0  \cf8 $Sickness\cf0 \par
+   \cf3 Global\cf0  \cf8 $BackPack\cf7 ,\cf0  \cf8 $BackPackMax\cf0 \par
+   \cf3 Global\cf0  \cf8 $BackPackAddress\cf7 ,\cf0  \cf8 $BackPackMaxAddress\cf0 \par
+   \cf3 Global\cf0  \cf8 $HealerStatus\cf7 ,\cf0  \cf8 $CureStatus\cf7 ,\cf0  \cf8 $TargetStatus\cf0 \par
+   \cf3 Global\cf0  \cf8 $HealerLabel\cf7 ,\cf0  \cf8 $CureLabel\cf7 ,\cf0  \cf8 $TargetLabel\cf0 \par
+   \cf3 Global\cf0  \cf8 $LootQueued\cf7 ,\cf0  \cf8 $LootCount\cf7 ,\cf0  \cf8 $LootReady\cf7 ,\cf0  \cf8 $LootIdleWaiting\cf0 \par
+\par
+   \cf3 If\cf0  \cf8 $hProcess\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Then\cf0  \cf3 Return\cf0 \par
+\par
+   \cf2\i ; Read Type\par
+\cf0\i0    \cf8 $Type\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $TypeAddress\cf7 )\cf0 \par
+   \cf3 If\cf0  \cf8 $Type\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Then\cf0 \par
+       \cf4 GUICtrlSetData\cf7 (\cf8 $TypeLabel\cf7 ,\cf0  \cf6 "Type: Player"\cf7 )\cf0 \par
+   \cf3 ElseIf\cf0  \cf8 $Type\cf0  \cf7 =\cf0  \cf3 1\cf0  \cf3 Then\cf0 \par
+       \cf4 GUICtrlSetData\cf7 (\cf8 $TypeLabel\cf7 ,\cf0  \cf6 "Type: Monster"\cf7 )\cf0 \par
+   \cf3 ElseIf\cf0  \cf8 $Type\cf0  \cf7 =\cf0  \cf3 2\cf0  \cf3 Then\cf0 \par
+       \cf4 GUICtrlSetData\cf7 (\cf8 $TypeLabel\cf7 ,\cf0  \cf6 "Type: NPC"\cf7 )\cf0 \par
+   \cf3 ElseIf\cf0  \cf8 $Type\cf0  \cf7 =\cf0  \cf3 65535\cf0  \cf3 Then\cf0 \par
+       \cf4 GUICtrlSetData\cf7 (\cf8 $TypeLabel\cf7 ,\cf0  \cf6 "Type: No Target"\cf7 )\cf0 \par
+   \cf3 Else\cf0 \par
+       \cf4 GUICtrlSetData\cf7 (\cf8 $TypeLabel\cf7 ,\cf0  \cf6 "Type: Unknown ("\cf0  \cf7 &\cf0  \cf8 $Type\cf0  \cf7 &\cf0  \cf6 ")"\cf7 )\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf2\i ; Walker On/Off\par
+\cf0\i0    \cf3 If\cf0  \cf8 $MoveToLocationsStatus\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Then\cf0 \par
+       \cf4 GUICtrlSetData\cf7 (\cf8 $WalkerLabel\cf7 ,\cf0  \cf6 "Walker: Off"\cf7 )\cf0 \par
+   \cf3 ElseIf\cf0  \cf8 $MoveToLocationsStatus\cf0  \cf7 =\cf0  \cf3 1\cf0  \cf3 Then\cf0 \par
+       \cf4 GUICtrlSetData\cf7 (\cf8 $WalkerLabel\cf7 ,\cf0  \cf6 "Walker: On"\cf7 )\cf0 \par
+   \cf3 Else\cf0 \par
+       \cf4 GUICtrlSetData\cf7 (\cf8 $WalkerLabel\cf7 ,\cf0  \cf6 "Error: Broken"\cf7 )\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf2\i ; Attack Mode\par
+\cf0\i0    \cf8 $AttackMode\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $AttackModeAddress\cf7 )\cf0 \par
+   \cf3 If\cf0  \cf8 $AttackMode\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Then\cf0 \par
+       \cf4 GUICtrlSetData\cf7 (\cf8 $AttackModeLabel\cf7 ,\cf0  \cf6 "Attack Mode: Safe"\cf7 )\cf0 \par
+   \cf3 ElseIf\cf0  \cf8 $AttackMode\cf0  \cf7 =\cf0  \cf3 1\cf0  \cf3 Then\cf0 \par
+       \cf4 GUICtrlSetData\cf7 (\cf8 $AttackModeLabel\cf7 ,\cf0  \cf6 "Attack Mode: Attack"\cf7 )\cf0 \par
+   \cf3 Else\cf0 \par
+       \cf4 GUICtrlSetData\cf7 (\cf8 $AttackModeLabel\cf7 ,\cf0  \cf6 "Attack Mode: No Target"\cf7 )\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf2\i ; Position\par
+\cf0\i0    \cf3 Local\cf0  \cf8 $PosX\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $PosXAddress\cf7 )\cf0 \par
+   \cf3 Local\cf0  \cf8 $PosY\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $PosYAddress\cf7 )\cf0 \par
+   \cf4 GUICtrlSetData\cf7 (\cf8 $PosXLabel\cf7 ,\cf0  \cf6 "Pos X: "\cf0  \cf7 &\cf0  \cf8 $PosX\cf7 )\cf0 \par
+   \cf4 GUICtrlSetData\cf7 (\cf8 $PosYLabel\cf7 ,\cf0  \cf6 "Pos Y: "\cf0  \cf7 &\cf0  \cf8 $PosY\cf7 )\cf0 \par
+\par
+   \cf2\i ; HP\par
+\cf0\i0    \cf3 Local\cf0  \cf8 $HP\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $HPAddress\cf7 )\cf0 \par
+   \cf4 GUICtrlSetData\cf7 (\cf8 $HPLabel\cf7 ,\cf0  \cf6 "HP: "\cf0  \cf7 &\cf0  \cf8 $HP\cf7 )\cf0 \par
+   \cf4 GUICtrlSetData\cf7 (\cf8 $HP2Label\cf7 ,\cf0  \cf6 "RealHp: "\cf0  \cf7 &\cf0  \cf7 (\cf8 $HP\cf0  \cf7 /\cf0  \cf3 65536\cf7 ))\cf0 \par
+\par
+   \cf2\i ; MaxHP\par
+\cf0\i0    \cf3 Local\cf0  \cf8 $MaxHP\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $MaxHPAddress\cf7 )\cf0 \par
+   \cf4 GUICtrlSetData\cf7 (\cf8 $MaxHPLabel\cf7 ,\cf0  \cf6 "MaxHP: "\cf0  \cf7 &\cf0  \cf8 $MaxHP\cf7 )\cf0 \par
+\par
+   \cf2\i ; Chat\par
+\cf0\i0    \cf3 Local\cf0  \cf8 $ChatVal\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $ChattOpenAddress\cf7 )\cf0 \par
+   \cf8 $Chat\cf0  \cf7 =\cf0  \cf8 $ChatVal\cf0 \par
+   \cf4 GUICtrlSetData\cf7 (\cf8 $ChatLabel\cf7 ,\cf0  \cf6 "Chat: "\cf0  \cf7 &\cf0  \cf8 $ChatVal\cf7 )\cf0 \par
+\par
+   \cf2\i ; Sickness\par
+\cf0\i0    \cf3 Local\cf0  \cf8 $SickVal\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $SicknessAddress\cf7 )\cf0 \par
+   \cf8 $Sickness\cf0  \cf7 =\cf0  \cf8 $SickVal\cf0 \par
+   \cf3 Local\cf0  \cf8 $SicknessDescription\cf0  \cf7 =\cf0  GetSicknessDescription\cf7 (\cf8 $SickVal\cf7 )\cf0 \par
+   \cf4 GUICtrlSetData\cf7 (\cf8 $SicknessLabel\cf7 ,\cf0  \cf6 "Sickness: "\cf0  \cf7 &\cf0  \cf8 $SicknessDescription\cf7 )\cf0 \par
+\par
+   \cf2\i ; Backpack Weight\par
+\cf0\i0    \cf3 Local\cf0  \cf8 $bpWeight\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $BackPackAddress\cf7 )\cf0 \par
+   \cf3 Local\cf0  \cf8 $bpMax\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $BackPackMaxAddress\cf7 )\cf0 \par
+   \cf4 GUICtrlSetData\cf7 (\cf8 $BackPackLabel\cf7 ,\cf0  \cf6 "Weight "\cf0  \cf7 &\cf0  \cf8 $bpWeight\cf0  \cf7 &\cf0  \cf6 " / "\cf0  \cf7 &\cf0  \cf8 $bpMax\cf7 )\cf0 \par
+\par
+   \cf2\i ; --- Death Detection via sudden teleport ---\par
+\cf0\i0    \cf3 Local\cf0  \cf3 Static\cf0  \cf8 $lastX\cf0  \cf7 =\cf0  \cf7 -\cf3 1\cf7 ,\cf0  \cf8 $lastY\cf0  \cf7 =\cf0  \cf7 -\cf3 1\cf0 \par
+   \cf3 If\cf0  \cf8 $lastX\cf0  \cf7 <>\cf0  \cf7 -\cf3 1\cf0  \cf3 And\cf0  \cf8 $lastY\cf0  \cf7 <>\cf0  \cf7 -\cf3 1\cf0  \cf3 Then\cf0 \par
+       \cf3 Local\cf0  \cf8 $dx\cf0  \cf7 =\cf0  \cf4 Abs\cf7 (\cf8 $PosX\cf0  \cf7 -\cf0  \cf8 $lastX\cf7 )\cf0 \par
+       \cf3 Local\cf0  \cf8 $dy\cf0  \cf7 =\cf0  \cf4 Abs\cf7 (\cf8 $PosY\cf0  \cf7 -\cf0  \cf8 $lastY\cf7 )\cf0 \par
+       \cf3 If\cf0  \cf8 $dx\cf0  \cf7 >\cf0  \cf3 25\cf0  \cf3 Or\cf0  \cf8 $dy\cf0  \cf7 >\cf0  \cf3 25\cf0  \cf3 Then\cf0 \par
+           \cf4 ConsoleWrite\cf7 (\cf6 "[DeathDetect] Large movement detected: \u916?X="\cf0  \cf7 &\cf0  \cf8 $dx\cf0  \cf7 &\cf0  \cf6 ", \u916?Y="\cf0  \cf7 &\cf0  \cf8 $dy\cf0  \cf7 &\cf0  \cf6 ". Assuming death."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+\par
+           \cf2\i ; Disable all helpers\par
+\cf0\i0            \cf3 If\cf0  \cf8 $MoveToLocationsStatus\cf0  \cf7 =\cf0  \cf3 1\cf0  \cf3 Then\cf0 \par
+               \cf8 $MoveToLocationsStatus\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+               \cf4 GUICtrlSetData\cf7 (\cf8 $WalkerLabel\cf7 ,\cf0  \cf6 "Walker: Off"\cf7 )\cf0 \par
+               \cf4 ConsoleWrite\cf7 (\cf6 "[DeathDetect] Walker disabled."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+           \cf3 EndIf\cf0 \par
+           \cf2\i ;\par
+\cf0\i0            \cf2\i ;           If $TargetStatus = 1 Then\par
+\cf0\i0            \cf2\i ;               $TargetStatus = 0\par
+\cf0\i0            \cf2\i ;               GUICtrlSetData($TargetLabel, "Target: Off")\par
+\cf0\i0            \cf2\i ;               ConsoleWrite("[DeathDetect] Targeting disabled." & @CRLF)\par
+\cf0\i0            \cf2\i ;           EndIf\par
+\cf0\i0            \cf2\i ;\par
+\cf0\i0            \cf2\i ;           If $HealerStatus = 1 Then\par
+\cf0\i0            \cf2\i ;               $HealerStatus = 0\par
+\cf0\i0            \cf2\i ;               GUICtrlSetData($HealerLabel, "Healer: Off")\par
+\cf0\i0            \cf2\i ;               ConsoleWrite("[DeathDetect] Healer disabled." & @CRLF)\par
+\cf0\i0            \cf2\i ;           EndIf\par
+\cf0\i0            \cf2\i ;\par
+\cf0\i0            \cf2\i ;           If $CureStatus = 1 Then\par
+\cf0\i0            \cf2\i ;               $CureStatus = 0\par
+\cf0\i0            \cf2\i ;               GUICtrlSetData($CureLabel, "Cure: Off")\par
+\cf0\i0            \cf2\i ;               ConsoleWrite("[DeathDetect] Cure disabled." & @CRLF)\par
+\cf0\i0            \cf2\i ;           EndIf\par
+\cf0\i0 \par
+           \cf2\i ; Clear any loot\par
+\cf0\i0            \cf8 $LootQueued\cf0  \cf7 =\cf0  \cf3 False\cf0 \par
+           \cf8 $LootCount\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+           \cf8 $LootReady\cf0  \cf7 =\cf0  \cf3 False\cf0 \par
+           \cf8 $LootIdleWaiting\cf0  \cf7 =\cf0  \cf3 False\cf0 \par
+       \cf3 EndIf\cf0 \par
+   \cf3 EndIf\cf0 \par
+   \cf8 $lastX\cf0  \cf7 =\cf0  \cf8 $PosX\cf0 \par
+   \cf8 $lastY\cf0  \cf7 =\cf0  \cf8 $PosY\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>GUIReadMemory\par
+\cf0\i0 \par
+\cf3 Func\cf0  _ReadMemory\cf7 (\cf8 $hProc\cf7 ,\cf0  \cf8 $pAddress\cf7 )\cf0 \par
+   \cf3 If\cf0  \cf8 $hProc\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Or\cf0  \cf8 $pAddress\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Then\cf0  \cf3 Return\cf0  \cf3 0\cf0 \par
+\par
+   \cf3 Local\cf0  \cf8 $tBuffer\cf0  \cf7 =\cf0  \cf4 DllStructCreate\cf7 (\cf6 "dword"\cf7 )\cf0 \par
+   \cf3 Local\cf0  \cf8 $aRead\cf0  \cf7 =\cf0  \cf4 DllCall\cf7 (\cf6 "kernel32.dll"\cf7 ,\cf0  \cf6 "bool"\cf7 ,\cf0  \cf6 "ReadProcessMemory"\cf7 ,\cf0  \cf7 _\cf0 \par
+           \cf6 "handle"\cf7 ,\cf0  \cf8 $hProc\cf7 ,\cf0  \cf7 _\cf0 \par
+           \cf6 "ptr"\cf7 ,\cf0  \cf8 $pAddress\cf7 ,\cf0  \cf7 _\cf0 \par
+           \cf6 "ptr"\cf7 ,\cf0  \cf4 DllStructGetPtr\cf7 (\cf8 $tBuffer\cf7 ),\cf0  \cf7 _\cf0 \par
+           \cf6 "dword"\cf7 ,\cf0  \cf4 DllStructGetSize\cf7 (\cf8 $tBuffer\cf7 ),\cf0  \cf7 _\cf0 \par
+           \cf6 "ptr"\cf7 ,\cf0  \cf3 0\cf7 )\cf0 \par
+   \cf3 If\cf0  \cf5 @error\cf0  \cf3 Or\cf0  \cf3 Not\cf0  \cf8 $aRead\cf7 [\cf3 0\cf7 ]\cf0  \cf3 Then\cf0  \cf3 Return\cf0  \cf3 0\cf0 \par
+   \cf3 Return\cf0  \cf4 DllStructGetData\cf7 (\cf8 $tBuffer\cf7 ,\cf0  \cf3 1\cf7 )\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>_ReadMemory\par
+\cf0\i0 \par
+\cf3 Func\cf0  _GetModuleBase_EnumModules\cf7 (\cf8 $hProc\cf7 )\cf0 \par
+   \cf3 Local\cf0  \cf8 $hPsapi\cf0  \cf7 =\cf0  \cf4 DllOpen\cf7 (\cf6 "psapi.dll"\cf7 )\cf0 \par
+   \cf3 If\cf0  \cf8 $hPsapi\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Then\cf0  \cf3 Return\cf0  \cf3 0\cf0 \par
+\par
+   \cf3 Local\cf0  \cf8 $tModules\cf0  \cf7 =\cf0  \cf4 DllStructCreate\cf7 (\cf6 "ptr[1024]"\cf7 )\cf0 \par
+   \cf3 Local\cf0  \cf8 $tBytesNeeded\cf0  \cf7 =\cf0  \cf4 DllStructCreate\cf7 (\cf6 "dword"\cf7 )\cf0 \par
+   \cf3 Local\cf0  \cf8 $aCall\cf0  \cf7 =\cf0  \cf4 DllCall\cf7 (\cf6 "psapi.dll"\cf7 ,\cf0  \cf6 "bool"\cf7 ,\cf0  \cf6 "EnumProcessModules"\cf7 ,\cf0  \cf7 _\cf0 \par
+           \cf6 "handle"\cf7 ,\cf0  \cf8 $hProc\cf7 ,\cf0  \cf7 _\cf0 \par
+           \cf6 "ptr"\cf7 ,\cf0  \cf4 DllStructGetPtr\cf7 (\cf8 $tModules\cf7 ),\cf0  \cf7 _\cf0 \par
+           \cf6 "dword"\cf7 ,\cf0  \cf4 DllStructGetSize\cf7 (\cf8 $tModules\cf7 ),\cf0  \cf7 _\cf0 \par
+           \cf6 "ptr"\cf7 ,\cf0  \cf4 DllStructGetPtr\cf7 (\cf8 $tBytesNeeded\cf7 ))\cf0 \par
+   \cf3 If\cf0  \cf5 @error\cf0  \cf3 Or\cf0  \cf3 Not\cf0  \cf8 $aCall\cf7 [\cf3 0\cf7 ]\cf0  \cf3 Then\cf0 \par
+       \cf4 DllClose\cf7 (\cf8 $hPsapi\cf7 )\cf0 \par
+       \cf3 Return\cf0  \cf3 0\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf2\i ; The first module in the list is usually the main EXE\par
+\cf0\i0    \cf3 Local\cf0  \cf8 $pBaseAddress\cf0  \cf7 =\cf0  \cf4 DllStructGetData\cf7 (\cf8 $tModules\cf7 ,\cf0  \cf3 1\cf7 ,\cf0  \cf3 1\cf7 )\cf0 \par
+   \cf4 DllClose\cf7 (\cf8 $hPsapi\cf7 )\cf0 \par
+   \cf3 Return\cf0  \cf8 $pBaseAddress\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>_GetModuleBase_EnumModules\par
+\cf0\i0 \par
+\cf3 Func\cf0  ChangeAddressToBase\cf7 ()\cf0 \par
+   \cf3 Global\cf0  \cf8 $BaseAddress\cf0 \par
+   \cf3 Global\cf0  \cf8 $TypeOffset\cf7 ,\cf0  \cf8 $AttackModeOffset\cf7 ,\cf0  \cf8 $PosXOffset\cf7 ,\cf0  \cf8 $PosYOffset\cf0 \par
+   \cf3 Global\cf0  \cf8 $HPOffset\cf7 ,\cf0  \cf8 $MaxHPOffset\cf7 ,\cf0  \cf8 $ChattOpenOffset\cf7 ,\cf0  \cf8 $SicknessOffset\cf0 \par
+   \cf3 Global\cf0  \cf8 $BackPack\cf7 ,\cf0  \cf8 $BackPackMax\cf0 \par
+   \cf3 Global\cf0  \cf8 $TypeAddress\cf7 ,\cf0  \cf8 $AttackModeAddress\cf7 ,\cf0  \cf8 $PosXAddress\cf7 ,\cf0  \cf8 $PosYAddress\cf0 \par
+   \cf3 Global\cf0  \cf8 $HPAddress\cf7 ,\cf0  \cf8 $MaxHPAddress\cf7 ,\cf0  \cf8 $ChattOpenAddress\cf7 ,\cf0  \cf8 $SicknessAddress\cf0 \par
+   \cf3 Global\cf0  \cf8 $BackPackAddress\cf7 ,\cf0  \cf8 $BackPackMaxAddress\cf0 \par
+\par
+   \cf8 $TypeAddress\cf0  \cf7 =\cf0  \cf8 $BaseAddress\cf0  \cf7 +\cf0  \cf8 $TypeOffset\cf0 \par
+   \cf8 $AttackModeAddress\cf0  \cf7 =\cf0  \cf8 $BaseAddress\cf0  \cf7 +\cf0  \cf8 $AttackModeOffset\cf0 \par
+   \cf8 $PosXAddress\cf0  \cf7 =\cf0  \cf8 $BaseAddress\cf0  \cf7 +\cf0  \cf8 $PosXOffset\cf0 \par
+   \cf8 $PosYAddress\cf0  \cf7 =\cf0  \cf8 $BaseAddress\cf0  \cf7 +\cf0  \cf8 $PosYOffset\cf0 \par
+   \cf8 $HPAddress\cf0  \cf7 =\cf0  \cf8 $BaseAddress\cf0  \cf7 +\cf0  \cf8 $HPOffset\cf0 \par
+   \cf8 $MaxHPAddress\cf0  \cf7 =\cf0  \cf8 $BaseAddress\cf0  \cf7 +\cf0  \cf8 $MaxHPOffset\cf0 \par
+   \cf8 $ChattOpenAddress\cf0  \cf7 =\cf0  \cf8 $BaseAddress\cf0  \cf7 +\cf0  \cf8 $ChattOpenOffset\cf0 \par
+   \cf8 $SicknessAddress\cf0  \cf7 =\cf0  \cf8 $BaseAddress\cf0  \cf7 +\cf0  \cf8 $SicknessOffset\cf0 \par
+   \cf8 $BackPackAddress\cf0  \cf7 =\cf0  \cf8 $BaseAddress\cf0  \cf7 +\cf0  \cf8 $BackPack\cf0 \par
+   \cf8 $BackPackMaxAddress\cf0  \cf7 =\cf0  \cf8 $BaseAddress\cf0  \cf7 +\cf0  \cf8 $BackPackMax\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>ChangeAddressToBase\par
+\cf0\i0 \par
+\par
+\cf2\i ; --------------------------------------------------------------------------\par
+\cf0\i0 \cf2\i ;                           Hotkey Toggle Functions\par
+\cf0\i0 \cf2\i ; --------------------------------------------------------------------------\par
+\cf0\i0 \cf10 #Region\cf2\i  ;toggles;\par
+\cf0\i0 \cf3 Func\cf0  Hotkeyshit\cf7 ()\cf0 \par
+   \cf3 Global\cf0  \cf8 $HealerStatus\cf0 \par
+   \cf8 $HealerStatus\cf0  \cf7 =\cf0  \cf3 Not\cf0  \cf8 $HealerStatus\cf0 \par
+   \cf4 GUICtrlSetData\cf7 (\cf8 $HealerLabel\cf7 ,\cf0  \cf6 "Healer: "\cf0  \cf7 &\cf0  \cf7 (\cf8 $HealerStatus\cf0  \cf7 ?\cf0  \cf6 "On"\cf0  \cf7 :\cf0  \cf6 "Off"\cf7 ))\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>Hotkeyshit\par
+\cf0\i0 \par
+\cf3 Func\cf0  CureKeyShit\cf7 ()\cf0 \par
+   \cf3 Global\cf0  \cf8 $CureStatus\cf0 \par
+   \cf8 $CureStatus\cf0  \cf7 =\cf0  \cf3 Not\cf0  \cf8 $CureStatus\cf0 \par
+   \cf4 GUICtrlSetData\cf7 (\cf8 $CureLabel\cf7 ,\cf0  \cf6 "Cure: "\cf0  \cf7 &\cf0  \cf7 (\cf8 $CureStatus\cf0  \cf7 ?\cf0  \cf6 "On"\cf0  \cf7 :\cf0  \cf6 "Off"\cf7 ))\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>CureKeyShit\par
+\cf0\i0 \par
+\cf3 Func\cf0  TargetKeyShit\cf7 ()\cf0 \par
+   \cf3 Global\cf0  \cf8 $TargetStatus\cf0 \par
+   \cf8 $TargetStatus\cf0  \cf7 =\cf0  \cf3 Not\cf0  \cf8 $TargetStatus\cf0 \par
+   \cf4 GUICtrlSetData\cf7 (\cf8 $TargetLabel\cf7 ,\cf0  \cf6 "Target: "\cf0  \cf7 &\cf0  \cf7 (\cf8 $TargetStatus\cf0  \cf7 ?\cf0  \cf6 "On"\cf0  \cf7 :\cf0  \cf6 "Off"\cf7 ))\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>TargetKeyShit\par
+\cf0\i0 \par
+\cf3 Func\cf0  KilledWithFire\cf7 ()\cf0 \par
+   \cf3 Global\cf0  \cf8 $Debug\cf0 \par
+   \cf3 If\cf0  \cf8 $Debug\cf0  \cf3 Then\cf0  \cf4 ConsoleWrite\cf7 (\cf6 "Killed with fire"\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+   \cf3 Exit\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>KilledWithFire\par
+\cf0\i0 \par
+\par
+\cf3 Func\cf0  ToggleHealer\cf7 ()\cf0 \par
+   \cf3 Global\cf0  \cf8 $HealerStatus\cf0 \par
+   \cf8 $HealerStatus\cf0  \cf7 =\cf0  \cf3 Not\cf0  \cf8 $HealerStatus\cf0 \par
+   \cf4 GUICtrlSetData\cf7 (\cf8 $HealerLabel\cf7 ,\cf0  \cf6 "Healer: "\cf0  \cf7 &\cf0  \cf7 (\cf8 $HealerStatus\cf0  \cf7 ?\cf0  \cf6 "On"\cf0  \cf7 :\cf0  \cf6 "Off"\cf7 ))\cf0 \par
+   \cf4 ConsoleWrite\cf7 (\cf6 "[GUI] Healer toggled to: "\cf0  \cf7 &\cf0  \cf7 (\cf8 $HealerStatus\cf0  \cf7 ?\cf0  \cf6 "On"\cf0  \cf7 :\cf0  \cf6 "Off"\cf7 )\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>ToggleHealer\par
+\cf0\i0 \par
+\cf3 Func\cf0  ToggleCure\cf7 ()\cf0 \par
+   \cf3 Global\cf0  \cf8 $CureStatus\cf0 \par
+   \cf8 $CureStatus\cf0  \cf7 =\cf0  \cf3 Not\cf0  \cf8 $CureStatus\cf0 \par
+   \cf4 GUICtrlSetData\cf7 (\cf8 $CureLabel\cf7 ,\cf0  \cf6 "Cure: "\cf0  \cf7 &\cf0  \cf7 (\cf8 $CureStatus\cf0  \cf7 ?\cf0  \cf6 "On"\cf0  \cf7 :\cf0  \cf6 "Off"\cf7 ))\cf0 \par
+   \cf4 ConsoleWrite\cf7 (\cf6 "[GUI] Cure toggled to: "\cf0  \cf7 &\cf0  \cf7 (\cf8 $CureStatus\cf0  \cf7 ?\cf0  \cf6 "On"\cf0  \cf7 :\cf0  \cf6 "Off"\cf7 )\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>ToggleCure\par
+\cf0\i0 \par
+\cf3 Func\cf0  ToggleTarget\cf7 ()\cf0 \par
+   \cf3 Global\cf0  \cf8 $TargetStatus\cf0 \par
+   \cf8 $TargetStatus\cf0  \cf7 =\cf0  \cf3 Not\cf0  \cf8 $TargetStatus\cf0 \par
+   \cf4 GUICtrlSetData\cf7 (\cf8 $TargetLabel\cf7 ,\cf0  \cf6 "Target: "\cf0  \cf7 &\cf0  \cf7 (\cf8 $TargetStatus\cf0  \cf7 ?\cf0  \cf6 "On"\cf0  \cf7 :\cf0  \cf6 "Off"\cf7 ))\cf0 \par
+   \cf4 ConsoleWrite\cf7 (\cf6 "[GUI] Target toggled to: "\cf0  \cf7 &\cf0  \cf7 (\cf8 $TargetStatus\cf0  \cf7 ?\cf0  \cf6 "On"\cf0  \cf7 :\cf0  \cf6 "Off"\cf7 )\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>ToggleTarget\par
+\cf0\i0 \par
+\cf3 Func\cf0  ToggleWalker\cf7 ()\cf0 \par
+   \cf3 Global\cf0  \cf8 $MoveToLocationsStatus\cf7 ,\cf0  \cf8 $aLocations\cf7 ,\cf0  \cf8 $iCurrentIndex\cf0 \par
+\par
+   \cf3 If\cf0  \cf8 $MoveToLocationsStatus\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Then\cf0 \par
+       MoveToLocations\cf7 ()\cf0 \par
+       MoveToLocationsStep\cf7 (\cf8 $aLocations\cf7 ,\cf0  \cf8 $iCurrentIndex\cf7 )\cf0  \cf2\i ; <<< NEW LINE!\par
+\cf0\i0        \cf4 GUICtrlSetData\cf7 (\cf8 $WalkerLabel\cf7 ,\cf0  \cf6 "Walker: On"\cf7 )\cf0 \par
+       \cf4 ConsoleWrite\cf7 (\cf6 "[GUI] Walker toggled to: On"\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+   \cf3 Else\cf0 \par
+       \cf8 $MoveToLocationsStatus\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+       \cf4 GUICtrlSetData\cf7 (\cf8 $WalkerLabel\cf7 ,\cf0  \cf6 "Walker: Off"\cf7 )\cf0 \par
+       \cf4 ConsoleWrite\cf7 (\cf6 "[GUI] Walker toggled to: Off"\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+   \cf3 EndIf\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>ToggleWalker\par
+\cf0\i0 \par
+\cf3 Func\cf0  ToggleAllHelpers\cf7 ()\cf0 \par
+   \cf3 Global\cf0  \cf8 $HealerStatus\cf7 ,\cf0  \cf8 $CureStatus\cf7 ,\cf0  \cf8 $TargetStatus\cf7 ,\cf0  \cf8 $MoveToLocationsStatus\cf0 \par
+\par
+   \cf3 Local\cf0  \cf8 $TotalOn\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+   \cf3 If\cf0  \cf8 $HealerStatus\cf0  \cf3 Then\cf0  \cf8 $TotalOn\cf0  \cf7 +=\cf0  \cf3 1\cf0 \par
+   \cf3 If\cf0  \cf8 $CureStatus\cf0  \cf3 Then\cf0  \cf8 $TotalOn\cf0  \cf7 +=\cf0  \cf3 1\cf0 \par
+   \cf3 If\cf0  \cf8 $TargetStatus\cf0  \cf3 Then\cf0  \cf8 $TotalOn\cf0  \cf7 +=\cf0  \cf3 1\cf0 \par
+   \cf3 If\cf0  \cf8 $MoveToLocationsStatus\cf0  \cf7 =\cf0  \cf3 1\cf0  \cf3 Then\cf0  \cf8 $TotalOn\cf0  \cf7 +=\cf0  \cf3 1\cf0 \par
+\par
+   \cf3 If\cf0  \cf8 $TotalOn\cf0  \cf7 >=\cf0  \cf3 1\cf0  \cf3 Then\cf0 \par
+       \cf2\i ; Turn all OFF\par
+\cf0\i0        \cf8 $HealerStatus\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+       \cf8 $CureStatus\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+       \cf8 $TargetStatus\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+       \cf8 $MoveToLocationsStatus\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+\par
+       \cf4 GUICtrlSetData\cf7 (\cf8 $HealerLabel\cf7 ,\cf0  \cf6 "Healer: Off"\cf7 )\cf0 \par
+       \cf4 GUICtrlSetData\cf7 (\cf8 $CureLabel\cf7 ,\cf0  \cf6 "Cure: Off"\cf7 )\cf0 \par
+       \cf4 GUICtrlSetData\cf7 (\cf8 $TargetLabel\cf7 ,\cf0  \cf6 "Target: Off"\cf7 )\cf0 \par
+       \cf4 GUICtrlSetData\cf7 (\cf8 $WalkerLabel\cf7 ,\cf0  \cf6 "Walker: Off"\cf7 )\cf0 \par
+\par
+       \cf4 ConsoleWrite\cf7 (\cf6 "[GUI] ToggleAll: All turned OFF"\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+   \cf3 Else\cf0 \par
+       \cf2\i ; Turn all ON\par
+\cf0\i0        \cf8 $HealerStatus\cf0  \cf7 =\cf0  \cf3 1\cf0 \par
+       \cf8 $CureStatus\cf0  \cf7 =\cf0  \cf3 1\cf0 \par
+       \cf8 $TargetStatus\cf0  \cf7 =\cf0  \cf3 1\cf0 \par
+       \cf8 $MoveToLocationsStatus\cf0  \cf7 =\cf0  \cf3 1\cf0 \par
+\par
+       \cf4 GUICtrlSetData\cf7 (\cf8 $HealerLabel\cf7 ,\cf0  \cf6 "Healer: On"\cf7 )\cf0 \par
+       \cf4 GUICtrlSetData\cf7 (\cf8 $CureLabel\cf7 ,\cf0  \cf6 "Cure: On"\cf7 )\cf0 \par
+       \cf4 GUICtrlSetData\cf7 (\cf8 $TargetLabel\cf7 ,\cf0  \cf6 "Target: On"\cf7 )\cf0 \par
+       \cf4 GUICtrlSetData\cf7 (\cf8 $WalkerLabel\cf7 ,\cf0  \cf6 "Walker: On"\cf7 )\cf0 \par
+\par
+       \cf4 ConsoleWrite\cf7 (\cf6 "[GUI] ToggleAll: All turned ON"\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+   \cf3 EndIf\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>ToggleAllHelpers\par
+\cf0\i0 \cf10 #EndRegion\cf2\i  ;toggles;\par
+\cf0\i0 \cf2\i ; ------------------------------------------------------------------------------\par
+\cf0\i0 \cf2\i ; Optional: Return a more human label for some \u8220?Sick\u8221? codes\par
+\cf0\i0 \cf2\i ; ------------------------------------------------------------------------------\par
+\cf0\i0 \cf3 Func\cf0  GetSicknessDescription\cf7 (\cf8 $Sick\cf7 )\cf0 \par
+   \cf3 Local\cf0  \cf8 $SicknessDescription\cf0  \cf7 =\cf0  \cf6 "Unknown"\cf0 \par
+   \cf3 Switch\cf0  \cf8 $Sick\cf0 \par
+       \cf3 Case\cf0  \cf3 1\cf0 \par
+           \cf8 $SicknessDescription\cf0  \cf7 =\cf0  \cf6 "Poison1 ("\cf0  \cf7 &\cf0  \cf8 $Sick\cf0  \cf7 &\cf0  \cf6 ")"\cf0 \par
+       \cf3 Case\cf0  \cf3 2\cf0 \par
+           \cf8 $SicknessDescription\cf0  \cf7 =\cf0  \cf6 "Disease1 ("\cf0  \cf7 &\cf0  \cf8 $Sick\cf0  \cf7 &\cf0  \cf6 ")"\cf0 \par
+           \cf2\i ; ...\par
+\cf0\i0        \cf3 Case\cf0  \cf3 Else\cf0 \par
+           \cf8 $SicknessDescription\cf0  \cf7 =\cf0  \cf8 $Sick\cf0 \par
+   \cf3 EndSwitch\cf0 \par
+   \cf3 Return\cf0  \cf8 $SicknessDescription\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>GetSicknessDescription\par
+\cf0\i0 \par
+\cf2\i ; ------------------------------------------------------------------------------\par
+\cf0\i0 \cf2\i ;                                LOCATION LOADING\par
+\cf0\i0 \cf2\i ; ------------------------------------------------------------------------------\par
+\cf0\i0 \cf3 Func\cf0  LoadLocations\cf7 ()\cf0 \par
+   \cf3 If\cf0  \cf3 Not\cf0  \cf4 FileExists\cf7 (\cf8 $locationFile\cf7 )\cf0  \cf3 Then\cf0 \par
+       \cf4 ConsoleWrite\cf7 (\cf6 "[Error] Location file not found: "\cf0  \cf7 &\cf0  \cf8 $locationFile\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+       \cf3 Return\cf0  \cf4 SetError\cf7 (\cf3 1\cf7 ,\cf0  \cf3 0\cf7 ,\cf0  \cf3 0\cf7 )\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf3 Local\cf0  \cf8 $aLines\cf0  \cf7 =\cf0  \cf4 FileReadToArray\cf7 (\cf8 $locationFile\cf7 )\cf0 \par
+   \cf3 If\cf0  \cf5 @error\cf0  \cf3 Then\cf0 \par
+       \cf4 ConsoleWrite\cf7 (\cf6 "[Error] Failed to read file: "\cf0  \cf7 &\cf0  \cf8 $locationFile\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+       \cf3 Return\cf0  \cf4 SetError\cf7 (\cf3 2\cf7 ,\cf0  \cf3 0\cf7 ,\cf0  \cf3 0\cf7 )\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf3 Local\cf0  \cf8 $iLocationCount\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+   \cf3 Dim\cf0  \cf8 $aTempLocations\cf7 [\cf4 UBound\cf7 (\cf8 $aLines\cf7 )][\cf3 2\cf7 ]\cf0 \par
+\par
+   \cf3 For\cf0  \cf8 $i\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 To\cf0  \cf4 UBound\cf7 (\cf8 $aLines\cf7 )\cf0  \cf7 -\cf0  \cf3 1\cf0 \par
+       \cf3 Local\cf0  \cf8 $aMatches\cf0  \cf7 =\cf0  \cf4 StringRegExp\cf7 (\cf8 $aLines\cf7 [\cf8 $i\cf7 ],\cf0  \cf6 "X:(\\d+);Y:(\\d+)"\cf7 ,\cf0  \cf3 3\cf7 )\cf0 \par
+       \cf3 If\cf0  \cf3 Not\cf0  \cf5 @error\cf0  \cf3 And\cf0  \cf4 UBound\cf7 (\cf8 $aMatches\cf7 )\cf0  \cf7 =\cf0  \cf3 2\cf0  \cf3 Then\cf0 \par
+           \cf8 $aTempLocations\cf7 [\cf8 $iLocationCount\cf7 ][\cf3 0\cf7 ]\cf0  \cf7 =\cf0  \cf4 Int\cf7 (\cf8 $aMatches\cf7 [\cf3 0\cf7 ])\cf0 \par
+           \cf8 $aTempLocations\cf7 [\cf8 $iLocationCount\cf7 ][\cf3 1\cf7 ]\cf0  \cf7 =\cf0  \cf4 Int\cf7 (\cf8 $aMatches\cf7 [\cf3 1\cf7 ])\cf0 \par
+           \cf8 $iLocationCount\cf0  \cf7 +=\cf0  \cf3 1\cf0 \par
+       \cf3 Else\cf0 \par
+           \cf4 ConsoleWrite\cf7 (\cf6 "[Warning] Failed to parse line "\cf0  \cf7 &\cf0  \cf8 $i\cf0  \cf7 &\cf0  \cf6 ": "\cf0  \cf7 &\cf0  \cf8 $aLines\cf7 [\cf8 $i\cf7 ]\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+       \cf3 EndIf\cf0 \par
+   \cf3 Next\cf0 \par
+\par
+   \cf3 If\cf0  \cf8 $iLocationCount\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Then\cf0 \par
+       \cf4 ConsoleWrite\cf7 (\cf6 "[Warning] No valid locations found in "\cf0  \cf7 &\cf0  \cf8 $locationFile\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+       \cf3 Return\cf0  \cf4 SetError\cf7 (\cf3 3\cf7 ,\cf0  \cf3 0\cf7 ,\cf0  \cf3 0\cf7 )\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf3 ReDim\cf0  \cf8 $aTempLocations\cf7 [\cf8 $iLocationCount\cf7 ][\cf3 2\cf7 ]\cf0 \par
+   \cf4 ConsoleWrite\cf7 (\cf6 "[Success] Loaded "\cf0  \cf7 &\cf0  \cf8 $iLocationCount\cf0  \cf7 &\cf0  \cf6 " locations."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+   \cf3 Return\cf0  \cf8 $aTempLocations\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>LoadLocations\par
+\cf0\i0 \par
+\cf3 Func\cf0  SaveLocation\cf7 ()\cf0 \par
+   \cf3 Global\cf0  \cf8 $hProcess\cf7 ,\cf0  \cf8 $PosXAddress\cf7 ,\cf0  \cf8 $PosYAddress\cf0 \par
+   \cf3 Global\cf0  \cf8 $currentLocations\cf7 ,\cf0  \cf8 $maxLocations\cf0 \par
+   \cf3 Global\cf0  \cf8 $aLocations\cf0   \cf2\i ; <<< Need this to reload\par
+\cf0\i0 \par
+   \cf3 Local\cf0  \cf8 $x\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $PosXAddress\cf7 )\cf0 \par
+   \cf3 Local\cf0  \cf8 $y\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $PosYAddress\cf7 )\cf0 \par
+   \cf4 ConsoleWrite\cf7 (\cf6 "Attempting to read X: "\cf0  \cf7 &\cf0  \cf8 $x\cf0  \cf7 &\cf0  \cf6 " Y: "\cf0  \cf7 &\cf0  \cf8 $y\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+\par
+   \cf3 If\cf0  \cf5 @error\cf0  \cf3 Then\cf0 \par
+       \cf4 ConsoleWrite\cf7 (\cf6 "[Error] Failed to read memory. Error code: "\cf0  \cf7 &\cf0  \cf5 @error\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+       \cf3 Return\cf0 \par
+   \cf3 EndIf\cf0 \par
+   \cf3 If\cf0  \cf8 $x\cf0  \cf7 ==\cf0  \cf3 0\cf0  \cf3 And\cf0  \cf8 $y\cf0  \cf7 ==\cf0  \cf3 0\cf0  \cf3 Then\cf0 \par
+       \cf4 ConsoleWrite\cf7 (\cf6 "[Warning] Read zero for both coordinates. Possibly a bad read."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+       \cf3 Return\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf3 If\cf0  \cf3 Not\cf0  \cf4 FileExists\cf7 (\cf8 $locationFile\cf7 )\cf0  \cf3 Then\cf0 \par
+       \cf3 Local\cf0  \cf8 $file\cf0  \cf7 =\cf0  \cf4 FileOpen\cf7 (\cf8 $locationFile\cf7 ,\cf0  \cf8 $FO_CREATEPATH\cf0  \cf7 +\cf0  \cf8 $FO_OVERWRITE\cf7 )\cf0 \par
+       \cf3 If\cf0  \cf8 $file\cf0  \cf7 ==\cf0  \cf7 -\cf3 1\cf0  \cf3 Then\cf0 \par
+           \cf4 ConsoleWrite\cf7 (\cf6 "[Error] Failed to create file: "\cf0  \cf7 &\cf0  \cf8 $locationFile\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+           \cf3 Return\cf0 \par
+       \cf3 EndIf\cf0 \par
+       \cf4 FileClose\cf7 (\cf8 $file\cf7 )\cf0 \par
+       \cf4 ConsoleWrite\cf7 (\cf6 "[Info] File created: "\cf0  \cf7 &\cf0  \cf8 $locationFile\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf3 Local\cf0  \cf8 $data\cf0  \cf7 =\cf0  \cf6 " : Location"\cf0  \cf7 &\cf0  \cf8 $currentLocations\cf0  \cf7 &\cf0  \cf6 "=X:"\cf0  \cf7 &\cf0  \cf8 $x\cf0  \cf7 &\cf0  \cf6 ";Y:"\cf0  \cf7 &\cf0  \cf8 $y\cf0  \cf7 &\cf0  \cf5 @CRLF\cf0 \par
+   \cf3 If\cf0  \cf8 $currentLocations\cf0  \cf7 <\cf0  \cf8 $maxLocations\cf0  \cf3 Then\cf0 \par
+       \cf12 _FileWriteLog\cf7 (\cf8 $locationFile\cf7 ,\cf0  \cf8 $data\cf7 )\cf0 \par
+       \cf3 If\cf0  \cf5 @error\cf0  \cf3 Then\cf0 \par
+           \cf4 ConsoleWrite\cf7 (\cf6 "[Error] Failed to write to file: "\cf0  \cf7 &\cf0  \cf8 $locationFile\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+       \cf3 Else\cf0 \par
+           \cf4 ConsoleWrite\cf7 (\cf6 "[Info] Data written: "\cf0  \cf7 &\cf0  \cf8 $data\cf7 )\cf0 \par
+           \cf8 $currentLocations\cf0  \cf7 +=\cf0  \cf3 1\cf0 \par
+\par
+           \cf2\i ; ===== FIX: Reload locations after save =====\par
+\cf0\i0            \cf8 $aLocations\cf0  \cf7 =\cf0  LoadLocations\cf7 ()\cf0 \par
+           \cf3 If\cf0  \cf5 @error\cf0  \cf3 Then\cf0 \par
+               \cf4 ConsoleWrite\cf7 (\cf6 "[Error] Failed to reload locations after save!"\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+           \cf3 Else\cf0 \par
+               \cf4 ConsoleWrite\cf7 (\cf6 "[Info] Locations reloaded successfully after save."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+           \cf3 EndIf\cf0 \par
+       \cf3 EndIf\cf0 \par
+   \cf3 Else\cf0 \par
+       \cf4 ConsoleWrite\cf7 (\cf6 "[Info] Maximum locations reached. Stop pressing the button!"\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+   \cf3 EndIf\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>SaveLocation\par
+\cf0\i0 \par
+\cf3 Func\cf0  EraseLocations\cf7 ()\cf0 \par
+   \cf4 FileDelete\cf7 (\cf8 $locationFile\cf7 )\cf0 \par
+   \cf8 $currentLocations\cf0  \cf7 =\cf0  \cf3 1\cf0 \par
+   \cf4 ConsoleWrite\cf7 (\cf6 "Success - All locations erased."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>EraseLocations\par
+\cf0\i0 \par
+\cf2\i ; ------------------------------------------------------------------------------\par
+\cf0\i0 \cf2\i ;                           LOCATION WALKING\par
+\cf0\i0 \cf2\i ; ------------------------------------------------------------------------------\par
+\cf0\i0 \cf3 Func\cf0  MoveToLocations\cf7 ()\cf0 \par
+   \cf3 Global\cf0  \cf8 $MoveToLocationsStatus\cf7 ,\cf0  \cf8 $hProcess\cf7 ,\cf0  \cf8 $PosXAddress\cf7 ,\cf0  \cf8 $PosYAddress\cf7 ,\cf0  \cf8 $iCurrentIndex\cf7 ,\cf0  \cf8 $aLocations\cf0 \par
+\par
+   \cf3 If\cf0  \cf8 $MoveToLocationsStatus\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Then\cf0 \par
+       \cf3 Local\cf0  \cf8 $currentX\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $PosXAddress\cf7 )\cf0 \par
+       \cf3 Local\cf0  \cf8 $currentY\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $PosYAddress\cf7 )\cf0 \par
+       \cf8 $iCurrentIndex\cf0  \cf7 =\cf0  FindClosestLocationIndex\cf7 (\cf8 $currentX\cf7 ,\cf0  \cf8 $currentY\cf7 ,\cf0  \cf8 $aLocations\cf7 )\cf0 \par
+\par
+       \cf3 If\cf0  \cf8 $iCurrentIndex\cf0  \cf7 =\cf0  \cf7 -\cf3 1\cf0  \cf3 Then\cf0 \par
+           \cf4 ConsoleWrite\cf7 (\cf6 "[Error] Could not find a closest location index (no valid data?)."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+           \cf3 Return\cf0 \par
+       \cf3 EndIf\cf0 \par
+       \cf8 $MoveToLocationsStatus\cf0  \cf7 =\cf0  \cf3 1\cf0 \par
+       \cf4 ConsoleWrite\cf7 (\cf6 "move on"\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+\par
+   \cf3 ElseIf\cf0  \cf8 $MoveToLocationsStatus\cf0  \cf7 =\cf0  \cf3 1\cf0  \cf3 Then\cf0 \par
+       \cf8 $MoveToLocationsStatus\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+       \cf4 ConsoleWrite\cf7 (\cf6 "move off"\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+\par
+   \cf3 Else\cf0 \par
+       \cf4 MsgBox\cf7 (\cf3 0\cf7 ,\cf0  \cf6 "Error"\cf7 ,\cf0  \cf6 "You shouldn't have gotten this error"\cf7 ,\cf0  \cf3 5\cf7 )\cf0 \par
+   \cf3 EndIf\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>MoveToLocations\par
+\cf0\i0 \par
+\cf3 Func\cf0  MoveToLocationsStep\cf7 (\cf8 $aLocations\cf7 ,\cf0  \cf3 ByRef\cf0  \cf8 $iCurrentIndex\cf7 )\cf0 \par
+   \cf3 Global\cf0  \cf8 $hProcess\cf7 ,\cf0  \cf8 $PosXAddress\cf7 ,\cf0  \cf8 $PosYAddress\cf7 ,\cf0  \cf8 $TypeAddress\cf0 \par
+   \cf3 Global\cf0  \cf8 $WindowName\cf7 ,\cf0  \cf8 $lastX\cf7 ,\cf0  \cf8 $lastY\cf0 \par
+   \cf3 Global\cf0  \cf8 $aTempBlocked\cf7 [\cf3 0\cf7 ][\cf3 2\cf7 ],\cf0  \cf8 $ReverseLoopCheckbox\cf0 \par
+   \cf3 Global\cf0  \cf8 $MoveToLocationsStatus\cf0  \cf2\i ; <--- ADD THIS LINE to have access to the live status\par
+\cf0\i0 \par
+   \cf3 Static\cf0  \cf8 $lastMoveTime\cf0  \cf7 =\cf0  \cf4 TimerInit\cf7 ()\cf0 \par
+   \cf3 Static\cf0  \cf8 $stuckCount\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+   \cf3 Static\cf0  \cf8 $lastTargetX\cf0  \cf7 =\cf0  \cf7 -\cf3 1\cf7 ,\cf0  \cf8 $lastTargetY\cf0  \cf7 =\cf0  \cf7 -\cf3 1\cf0 \par
+\par
+   \cf2\i ; EARLY EXIT: if toggled off during movement\par
+\cf0\i0    \cf3 If\cf0  \cf8 $MoveToLocationsStatus\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Then\cf0  \cf3 Return\cf0  \cf4 SetError\cf7 (\cf3 1\cf7 ,\cf0  \cf3 0\cf7 ,\cf0  \cf6 "Walker turned off mid-step"\cf7 )\cf0 \par
+\par
+   \cf3 If\cf0  \cf3 Not\cf0  \cf4 IsArray\cf7 (\cf8 $aLocations\cf7 )\cf0  \cf3 Then\cf0  \cf3 Return\cf0  \cf4 SetError\cf7 (\cf3 2\cf7 ,\cf0  \cf3 0\cf7 ,\cf0  \cf6 "Invalid input"\cf7 )\cf0 \par
+   \cf3 If\cf0  \cf8 $iCurrentIndex\cf0  \cf7 <\cf0  \cf3 0\cf0  \cf3 Or\cf0  \cf8 $iCurrentIndex\cf0  \cf7 >=\cf0  \cf4 UBound\cf7 (\cf8 $aLocations\cf7 )\cf0  \cf3 Then\cf0  \cf3 Return\cf0  \cf4 SetError\cf7 (\cf3 3\cf7 ,\cf0  \cf3 0\cf7 ,\cf0  \cf6 "Index out of range"\cf7 )\cf0 \par
+\par
+   \cf3 Local\cf0  \cf8 $reverse\cf0  \cf7 =\cf0  \cf7 (\cf4 GUICtrlRead\cf7 (\cf8 $ReverseLoopCheckbox\cf7 )\cf0  \cf7 =\cf0  \cf8 $GUI_CHECKED\cf7 )\cf0 \par
+   \cf3 Local\cf0  \cf8 $targetX\cf0  \cf7 =\cf0  \cf8 $aLocations\cf7 [\cf8 $iCurrentIndex\cf7 ][\cf3 0\cf7 ]\cf0 \par
+   \cf3 Local\cf0  \cf8 $targetY\cf0  \cf7 =\cf0  \cf8 $aLocations\cf7 [\cf8 $iCurrentIndex\cf7 ][\cf3 1\cf7 ]\cf0 \par
+\par
+   \cf3 If\cf0  \cf8 $lastTargetX\cf0  \cf7 <>\cf0  \cf8 $targetX\cf0  \cf3 Or\cf0  \cf8 $lastTargetY\cf0  \cf7 <>\cf0  \cf8 $targetY\cf0  \cf3 Then\cf0 \par
+       \cf8 $stuckCount\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+       \cf8 $lastTargetX\cf0  \cf7 =\cf0  \cf8 $targetX\cf0 \par
+       \cf8 $lastTargetY\cf0  \cf7 =\cf0  \cf8 $targetY\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf3 If\cf0  IsBlockedCoord\cf7 (\cf8 $targetX\cf7 ,\cf0  \cf8 $targetY\cf7 )\cf0  \cf3 Then\cf0 \par
+       \cf4 ConsoleWrite\cf7 (\cf6 "Skipping known blocked coordinate ("\cf0  \cf7 &\cf0  \cf8 $targetX\cf0  \cf7 &\cf0  \cf6 ", "\cf0  \cf7 &\cf0  \cf8 $targetY\cf0  \cf7 &\cf0  \cf6 ")"\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+       \cf8 $iCurrentIndex\cf0  \cf7 =\cf0  NextIndex\cf7 (\cf8 $iCurrentIndex\cf7 ,\cf0  \cf4 UBound\cf7 (\cf8 $aLocations\cf7 ),\cf0  \cf8 $reverse\cf7 )\cf0 \par
+       \cf3 Return\cf0  \cf3 True\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf3 Local\cf0  \cf8 $currentX\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $PosXAddress\cf7 )\cf0 \par
+   \cf3 Local\cf0  \cf8 $currentY\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $PosYAddress\cf7 )\cf0 \par
+   \cf3 Local\cf0  \cf8 $Type\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $TypeAddress\cf7 )\cf0 \par
+\par
+   \cf2\i ; EARLY EXIT: again before move attempt\par
+\cf0\i0    \cf3 If\cf0  \cf8 $MoveToLocationsStatus\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Then\cf0  \cf3 Return\cf0  \cf4 SetError\cf7 (\cf3 4\cf7 ,\cf0  \cf3 0\cf7 ,\cf0  \cf6 "Walker turned off mid-step"\cf7 )\cf0 \par
+\par
+   \cf3 If\cf0  \cf8 $Type\cf0  \cf7 <>\cf0  \cf3 65535\cf0  \cf3 Then\cf0  \cf3 Return\cf0  \cf3 False\cf0 \par
+\par
+   \cf3 If\cf0  \cf8 $currentX\cf0  \cf7 =\cf0  \cf8 $lastX\cf0  \cf3 And\cf0  \cf8 $currentY\cf0  \cf7 =\cf0  \cf8 $lastY\cf0  \cf3 Then\cf0 \par
+       \cf3 If\cf0  \cf4 TimerDiff\cf7 (\cf8 $lastMoveTime\cf7 )\cf0  \cf7 >\cf0  \cf3 1000\cf0  \cf3 Then\cf0 \par
+           \cf4 ConsoleWrite\cf7 (\cf6 "Detected stuck, trying bypass."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+           \cf3 Local\cf0  \cf8 $beforeX\cf0  \cf7 =\cf0  \cf8 $currentX\cf0 \par
+           \cf3 Local\cf0  \cf8 $beforeY\cf0  \cf7 =\cf0  \cf8 $currentY\cf0 \par
+\par
+           \cf3 Local\cf0  \cf8 $bypassSuccess\cf0  \cf7 =\cf0  TryBypass\cf7 ()\cf0 \par
+\par
+           \cf8 $currentX\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $PosXAddress\cf7 )\cf0 \par
+           \cf8 $currentY\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $PosYAddress\cf7 )\cf0 \par
+\par
+           \cf3 If\cf0  \cf8 $bypassSuccess\cf0  \cf3 And\cf0  \cf7 (\cf8 $currentX\cf0  \cf7 <>\cf0  \cf8 $beforeX\cf0  \cf3 Or\cf0  \cf8 $currentY\cf0  \cf7 <>\cf0  \cf8 $beforeY\cf7 )\cf0  \cf3 Then\cf0 \par
+               \cf4 ConsoleWrite\cf7 (\cf6 "Bypass moved us away. Marking previous target blocked and skipping."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+               MarkCoordAsBlocked\cf7 (\cf8 $lastTargetX\cf7 ,\cf0  \cf8 $lastTargetY\cf7 )\cf0 \par
+               \cf8 $iCurrentIndex\cf0  \cf7 =\cf0  NextIndex\cf7 (\cf8 $iCurrentIndex\cf7 ,\cf0  \cf4 UBound\cf7 (\cf8 $aLocations\cf7 ),\cf0  \cf8 $reverse\cf7 )\cf0 \par
+               \cf8 $lastMoveTime\cf0  \cf7 =\cf0  \cf4 TimerInit\cf7 ()\cf0 \par
+               \cf8 $lastX\cf0  \cf7 =\cf0  \cf8 $currentX\cf0 \par
+               \cf8 $lastY\cf0  \cf7 =\cf0  \cf8 $currentY\cf0 \par
+               \cf3 Return\cf0  \cf3 True\cf0 \par
+           \cf3 Else\cf0 \par
+               \cf8 $stuckCount\cf0  \cf7 +=\cf0  \cf3 1\cf0 \par
+               \cf3 If\cf0  \cf8 $stuckCount\cf0  \cf7 >=\cf0  \cf3 3\cf0  \cf3 Then\cf0 \par
+                   MarkCoordAsBlocked\cf7 (\cf8 $targetX\cf7 ,\cf0  \cf8 $targetY\cf7 )\cf0 \par
+                   \cf4 ConsoleWrite\cf7 (\cf6 "Skipping stubborn target at ("\cf0  \cf7 &\cf0  \cf8 $targetX\cf0  \cf7 &\cf0  \cf6 ", "\cf0  \cf7 &\cf0  \cf8 $targetY\cf0  \cf7 &\cf0  \cf6 ")"\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+                   \cf8 $iCurrentIndex\cf0  \cf7 =\cf0  NextIndex\cf7 (\cf8 $iCurrentIndex\cf7 ,\cf0  \cf4 UBound\cf7 (\cf8 $aLocations\cf7 ),\cf0  \cf8 $reverse\cf7 )\cf0 \par
+                   \cf8 $stuckCount\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+                   \cf3 Return\cf0  \cf3 True\cf0 \par
+               \cf3 EndIf\cf0 \par
+           \cf3 EndIf\cf0 \par
+       \cf3 EndIf\cf0 \par
+   \cf3 Else\cf0 \par
+       \cf8 $lastMoveTime\cf0  \cf7 =\cf0  \cf4 TimerInit\cf7 ()\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf8 $lastX\cf0  \cf7 =\cf0  \cf8 $currentX\cf0 \par
+   \cf8 $lastY\cf0  \cf7 =\cf0  \cf8 $currentY\cf0 \par
+\par
+   \cf3 If\cf0  \cf8 $currentX\cf0  \cf7 =\cf0  \cf8 $targetX\cf0  \cf3 And\cf0  \cf8 $currentY\cf0  \cf7 =\cf0  \cf8 $targetY\cf0  \cf3 Then\cf0 \par
+       \cf4 ConsoleWrite\cf7 (\cf6 "Arrived at target index: "\cf0  \cf7 &\cf0  \cf8 $iCurrentIndex\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+       \cf8 $iCurrentIndex\cf0  \cf7 =\cf0  NextIndex\cf7 (\cf8 $iCurrentIndex\cf7 ,\cf0  \cf4 UBound\cf7 (\cf8 $aLocations\cf7 ),\cf0  \cf8 $reverse\cf7 )\cf0 \par
+       \cf3 Return\cf0  \cf3 True\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf2\i ; FINAL EARLY EXIT check before sending any keys\par
+\cf0\i0    \cf3 If\cf0  \cf8 $MoveToLocationsStatus\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Then\cf0  \cf3 Return\cf0  \cf4 SetError\cf7 (\cf3 5\cf7 ,\cf0  \cf3 0\cf7 ,\cf0  \cf6 "Walker turned off mid-step"\cf7 )\cf0 \par
+\par
+   \cf3 If\cf0  \cf8 $currentX\cf0  \cf7 <\cf0  \cf8 $targetX\cf0  \cf3 Then\cf0 \par
+       \cf4 ControlSend\cf7 (\cf8 $WindowName\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 "\cf9 \{d down\}\cf6 "\cf7 )\cf0 \par
+       \cf4 Sleep\cf7 (\cf3 30\cf7 )\cf0 \par
+       \cf4 ControlSend\cf7 (\cf8 $WindowName\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 "\cf9 \{d up\}\cf6 "\cf7 )\cf0 \par
+   \cf3 ElseIf\cf0  \cf8 $currentX\cf0  \cf7 >\cf0  \cf8 $targetX\cf0  \cf3 Then\cf0 \par
+       \cf4 ControlSend\cf7 (\cf8 $WindowName\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 "\cf9 \{a down\}\cf6 "\cf7 )\cf0 \par
+       \cf4 Sleep\cf7 (\cf3 30\cf7 )\cf0 \par
+       \cf4 ControlSend\cf7 (\cf8 $WindowName\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 "\cf9 \{a up\}\cf6 "\cf7 )\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf3 If\cf0  \cf8 $currentY\cf0  \cf7 <\cf0  \cf8 $targetY\cf0  \cf3 Then\cf0 \par
+       \cf4 ControlSend\cf7 (\cf8 $WindowName\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 "\cf9 \{s down\}\cf6 "\cf7 )\cf0 \par
+       \cf4 Sleep\cf7 (\cf3 30\cf7 )\cf0 \par
+       \cf4 ControlSend\cf7 (\cf8 $WindowName\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 "\cf9 \{s up\}\cf6 "\cf7 )\cf0 \par
+   \cf3 ElseIf\cf0  \cf8 $currentY\cf0  \cf7 >\cf0  \cf8 $targetY\cf0  \cf3 Then\cf0 \par
+       \cf4 ControlSend\cf7 (\cf8 $WindowName\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 "\cf9 \{w down\}\cf6 "\cf7 )\cf0 \par
+       \cf4 Sleep\cf7 (\cf3 30\cf7 )\cf0 \par
+       \cf4 ControlSend\cf7 (\cf8 $WindowName\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 "\cf9 \{w up\}\cf6 "\cf7 )\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf3 Return\cf0  \cf3 True\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>MoveToLocationsStep\par
+\cf0\i0 \par
+\cf3 Func\cf0  NextIndex\cf7 (\cf8 $iCurrent\cf7 ,\cf0  \cf8 $iBound\cf7 ,\cf0  \cf8 $reverse\cf7 )\cf0 \par
+   \cf3 If\cf0  \cf8 $reverse\cf0  \cf3 Then\cf0 \par
+       \cf8 $iCurrent\cf0  \cf7 -=\cf0  \cf3 1\cf0 \par
+       \cf3 If\cf0  \cf8 $iCurrent\cf0  \cf7 <\cf0  \cf3 0\cf0  \cf3 Then\cf0  \cf8 $iCurrent\cf0  \cf7 =\cf0  \cf8 $iBound\cf0  \cf7 -\cf0  \cf3 1\cf0 \par
+   \cf3 Else\cf0 \par
+       \cf8 $iCurrent\cf0  \cf7 +=\cf0  \cf3 1\cf0 \par
+       \cf3 If\cf0  \cf8 $iCurrent\cf0  \cf7 >=\cf0  \cf8 $iBound\cf0  \cf3 Then\cf0  \cf8 $iCurrent\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+   \cf3 EndIf\cf0 \par
+   \cf3 Return\cf0  \cf8 $iCurrent\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>NextIndex\par
+\cf0\i0 \par
+\cf3 Func\cf0  QuickKey\cf7 (\cf8 $key\cf7 ,\cf0  \cf8 $window\cf7 ,\cf0  \cf8 $hold\cf7 )\cf0 \par
+   \cf4 ControlSend\cf7 (\cf8 $window\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf4 StringReplace\cf7 (\cf8 $key\cf7 ,\cf0  \cf6 "\}"\cf7 ,\cf0  \cf6 " down\}"\cf7 ))\cf0 \par
+   \cf4 Sleep\cf7 (\cf8 $hold\cf7 )\cf0 \par
+   \cf4 ControlSend\cf7 (\cf8 $window\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf4 StringReplace\cf7 (\cf8 $key\cf7 ,\cf0  \cf6 "\}"\cf7 ,\cf0  \cf6 " up\}"\cf7 ))\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>QuickKey\par
+\cf0\i0 \par
+\par
+\cf3 Func\cf0  TryBypass\cf7 ()\cf0 \par
+   \cf3 Global\cf0  \cf8 $WindowName\cf7 ,\cf0  \cf8 $hProcess\cf7 ,\cf0  \cf8 $PosXAddress\cf7 ,\cf0  \cf8 $PosYAddress\cf0 \par
+   \cf3 Global\cf0  \cf8 $lastX\cf7 ,\cf0  \cf8 $lastY\cf7 ,\cf0  \cf8 $aLocations\cf7 ,\cf0  \cf8 $iCurrentIndex\cf0 \par
+\par
+   \cf3 Local\cf0  \cf8 $cx\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $PosXAddress\cf7 )\cf0 \par
+   \cf3 Local\cf0  \cf8 $cy\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $PosYAddress\cf7 )\cf0 \par
+   \cf3 Local\cf0  \cf8 $tx\cf0  \cf7 =\cf0  \cf8 $aLocations\cf7 [\cf8 $iCurrentIndex\cf7 ][\cf3 0\cf7 ]\cf0 \par
+   \cf3 Local\cf0  \cf8 $ty\cf0  \cf7 =\cf0  \cf8 $aLocations\cf7 [\cf8 $iCurrentIndex\cf7 ][\cf3 1\cf7 ]\cf0 \par
+\par
+   \cf3 Local\cf0  \cf8 $dx\cf0  \cf7 =\cf0  \cf8 $tx\cf0  \cf7 -\cf0  \cf8 $cx\cf0 \par
+   \cf3 Local\cf0  \cf8 $dy\cf0  \cf7 =\cf0  \cf8 $ty\cf0  \cf7 -\cf0  \cf8 $cy\cf0 \par
+\par
+   \cf3 Local\cf0  \cf8 $main\cf0  \cf7 =\cf0  \cf6 ""\cf7 ,\cf0  \cf8 $side1\cf0  \cf7 =\cf0  \cf6 ""\cf7 ,\cf0  \cf8 $side2\cf0  \cf7 =\cf0  \cf6 ""\cf0 \par
+\par
+   \cf3 If\cf0  \cf4 Abs\cf7 (\cf8 $dx\cf7 )\cf0  \cf7 >=\cf0  \cf4 Abs\cf7 (\cf8 $dy\cf7 )\cf0  \cf3 Then\cf0 \par
+       \cf3 If\cf0  \cf8 $dx\cf0  \cf7 <\cf0  \cf3 0\cf0  \cf3 Then\cf0 \par
+           \cf8 $main\cf0  \cf7 =\cf0  \cf6 "\cf9 \{a\}\cf6 "\cf0 \par
+           \cf8 $side1\cf0  \cf7 =\cf0  \cf6 "\cf9 \{w\}\cf6 "\cf0 \par
+           \cf8 $side2\cf0  \cf7 =\cf0  \cf6 "\cf9 \{s\}\cf6 "\cf0 \par
+       \cf3 Else\cf0 \par
+           \cf8 $main\cf0  \cf7 =\cf0  \cf6 "\cf9 \{d\}\cf6 "\cf0 \par
+           \cf8 $side1\cf0  \cf7 =\cf0  \cf6 "\cf9 \{w\}\cf6 "\cf0 \par
+           \cf8 $side2\cf0  \cf7 =\cf0  \cf6 "\cf9 \{s\}\cf6 "\cf0 \par
+       \cf3 EndIf\cf0 \par
+   \cf3 Else\cf0 \par
+       \cf3 If\cf0  \cf8 $dy\cf0  \cf7 <\cf0  \cf3 0\cf0  \cf3 Then\cf0 \par
+           \cf8 $main\cf0  \cf7 =\cf0  \cf6 "\cf9 \{w\}\cf6 "\cf0 \par
+           \cf8 $side1\cf0  \cf7 =\cf0  \cf6 "\cf9 \{d\}\cf6 "\cf0 \par
+           \cf8 $side2\cf0  \cf7 =\cf0  \cf6 "\cf9 \{a\}\cf6 "\cf0 \par
+       \cf3 Else\cf0 \par
+           \cf8 $main\cf0  \cf7 =\cf0  \cf6 "\cf9 \{s\}\cf6 "\cf0 \par
+           \cf8 $side1\cf0  \cf7 =\cf0  \cf6 "\cf9 \{a\}\cf6 "\cf0 \par
+           \cf8 $side2\cf0  \cf7 =\cf0  \cf6 "\cf9 \{d\}\cf6 "\cf0 \par
+       \cf3 EndIf\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf3 Local\cf0  \cf8 $HoldTime\cf0  \cf7 =\cf0  \cf3 75\cf0 \par
+\par
+   QuickKey\cf7 (\cf8 $side1\cf7 ,\cf0  \cf8 $WindowName\cf7 ,\cf0  \cf8 $HoldTime\cf7 )\cf0 \par
+   QuickKey\cf7 (\cf8 $side1\cf7 ,\cf0  \cf8 $WindowName\cf7 ,\cf0  \cf8 $HoldTime\cf7 )\cf0 \par
+\par
+   \cf3 Local\cf0  \cf8 $nx\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $PosXAddress\cf7 )\cf0 \par
+   \cf3 Local\cf0  \cf8 $ny\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $PosYAddress\cf7 )\cf0 \par
+   \cf3 If\cf0  \cf8 $nx\cf0  \cf7 <>\cf0  \cf8 $cx\cf0  \cf3 Or\cf0  \cf8 $ny\cf0  \cf7 <>\cf0  \cf8 $cy\cf0  \cf3 Then\cf0 \par
+       \cf4 ConsoleWrite\cf7 (\cf6 "Bypass via "\cf0  \cf7 &\cf0  \cf8 $side1\cf0  \cf7 &\cf0  \cf6 " worked. Resuming: "\cf0  \cf7 &\cf0  \cf8 $main\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+       QuickKey\cf7 (\cf8 $main\cf7 ,\cf0  \cf8 $WindowName\cf7 ,\cf0  \cf8 $HoldTime\cf7 )\cf0 \par
+       \cf8 $lastX\cf0  \cf7 =\cf0  \cf8 $nx\cf0 \par
+       \cf8 $lastY\cf0  \cf7 =\cf0  \cf8 $ny\cf0 \par
+       \cf3 Return\cf0  \cf3 True\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   QuickKey\cf7 (\cf8 $side2\cf7 ,\cf0  \cf8 $WindowName\cf7 ,\cf0  \cf8 $HoldTime\cf7 )\cf0 \par
+   QuickKey\cf7 (\cf8 $side2\cf7 ,\cf0  \cf8 $WindowName\cf7 ,\cf0  \cf8 $HoldTime\cf7 )\cf0 \par
+\par
+   \cf8 $nx\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $PosXAddress\cf7 )\cf0 \par
+   \cf8 $ny\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $PosYAddress\cf7 )\cf0 \par
+   \cf3 If\cf0  \cf8 $nx\cf0  \cf7 <>\cf0  \cf8 $cx\cf0  \cf3 Or\cf0  \cf8 $ny\cf0  \cf7 <>\cf0  \cf8 $cy\cf0  \cf3 Then\cf0 \par
+       \cf4 ConsoleWrite\cf7 (\cf6 "Bypass via "\cf0  \cf7 &\cf0  \cf8 $side2\cf0  \cf7 &\cf0  \cf6 " worked. Resuming: "\cf0  \cf7 &\cf0  \cf8 $main\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+       QuickKey\cf7 (\cf8 $main\cf7 ,\cf0  \cf8 $WindowName\cf7 ,\cf0  \cf8 $HoldTime\cf7 )\cf0 \par
+       \cf8 $lastX\cf0  \cf7 =\cf0  \cf8 $nx\cf0 \par
+       \cf8 $lastY\cf0  \cf7 =\cf0  \cf8 $ny\cf0 \par
+       \cf3 Return\cf0  \cf3 True\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf4 ConsoleWrite\cf7 (\cf6 "Bypass failed: no movement after sidesteps."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+   \cf3 Return\cf0  \cf3 False\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>TryBypass\par
+\cf0\i0 \par
+\cf3 Func\cf0  FindClosestLocationIndex\cf7 (\cf8 $currentX\cf7 ,\cf0  \cf8 $currentY\cf7 ,\cf0  \cf8 $aLocations\cf7 )\cf0 \par
+   \cf3 If\cf0  \cf3 Not\cf0  \cf4 IsArray\cf7 (\cf8 $aLocations\cf7 )\cf0  \cf3 Or\cf0  \cf4 UBound\cf7 (\cf8 $aLocations\cf7 ,\cf0  \cf3 0\cf7 )\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Then\cf0 \par
+       \cf4 ConsoleWrite\cf7 (\cf6 "FindClosestLocationIndex => no valid array."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+       \cf3 Return\cf0  \cf7 -\cf3 1\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf3 Local\cf0  \cf8 $minDist\cf0  \cf7 =\cf0  \cf3 999999\cf0 \par
+   \cf3 Local\cf0  \cf8 $minIndex\cf0  \cf7 =\cf0  \cf7 -\cf3 1\cf0 \par
+   \cf3 For\cf0  \cf8 $i\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 To\cf0  \cf4 UBound\cf7 (\cf8 $aLocations\cf7 )\cf0  \cf7 -\cf0  \cf3 1\cf0 \par
+       \cf3 Local\cf0  \cf8 $dx\cf0  \cf7 =\cf0  \cf8 $currentX\cf0  \cf7 -\cf0  \cf8 $aLocations\cf7 [\cf8 $i\cf7 ][\cf3 0\cf7 ]\cf0 \par
+       \cf3 Local\cf0  \cf8 $dy\cf0  \cf7 =\cf0  \cf8 $currentY\cf0  \cf7 -\cf0  \cf8 $aLocations\cf7 [\cf8 $i\cf7 ][\cf3 1\cf7 ]\cf0 \par
+       \cf3 Local\cf0  \cf8 $dist\cf0  \cf7 =\cf0  \cf8 $dx\cf0  \cf7 *\cf0  \cf8 $dx\cf0  \cf7 +\cf0  \cf8 $dy\cf0  \cf7 *\cf0  \cf8 $dy\cf0 \par
+       \cf3 If\cf0  \cf8 $dist\cf0  \cf7 <\cf0  \cf8 $minDist\cf0  \cf3 Then\cf0 \par
+           \cf8 $minDist\cf0  \cf7 =\cf0  \cf8 $dist\cf0 \par
+           \cf8 $minIndex\cf0  \cf7 =\cf0  \cf8 $i\cf0 \par
+       \cf3 EndIf\cf0 \par
+   \cf3 Next\cf0 \par
+\par
+   \cf3 If\cf0  \cf8 $minIndex\cf0  \cf7 =\cf0  \cf7 -\cf3 1\cf0  \cf3 Then\cf0 \par
+       \cf4 ConsoleWrite\cf7 (\cf6 "FindClosestLocationIndex => No valid locations found."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+   \cf3 Else\cf0 \par
+       \cf4 ConsoleWrite\cf7 (\cf6 "FindClosestLocationIndex => Found index: "\cf0  \cf7 &\cf0  \cf8 $minIndex\cf0  \cf7 &\cf0  \cf6 " Dist="\cf0  \cf7 &\cf0  \cf8 $minDist\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+   \cf3 EndIf\cf0 \par
+   \cf3 Return\cf0  \cf8 $minIndex\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>FindClosestLocationIndex\par
+\cf0\i0 \par
+\cf2\i ; ------------------------------------------------------------------------------\par
+\cf0\i0 \cf2\i ;                                  CURE FUNCTION\par
+\cf0\i0 \cf2\i ; ------------------------------------------------------------------------------\par
+\cf0\i0 \cf3 Func\cf0  CureMe\cf7 ()\cf0 \par
+   \cf3 Global\cf0  \cf8 $Chat\cf7 ,\cf0  \cf8 $Checkbox\cf7 ,\cf0  \cf8 $Sickness\cf7 ,\cf0  \cf8 $sicknessArray\cf0 \par
+   \cf3 Global\cf0  \cf8 $HealDelay\cf7 ,\cf0  \cf8 $LastHealTime\cf7 ,\cf0  \cf8 $elapsedTimeSinceHeal\cf0 \par
+   \cf3 Global\cf0  \cf8 $MovmentSlider\cf7 ,\cf0  \cf8 $PosXLabel\cf7 ,\cf0  \cf8 $PosYLabel\cf0 \par
+\par
+   \cf3 If\cf0  \cf8 $Chat\cf0  \cf7 <>\cf0  \cf3 0\cf0  \cf3 Then\cf0  \cf3 Return\cf0 \par
+\par
+   \cf2\i ; Check if we have a sickness that is in the array\par
+\cf0\i0    \cf3 If\cf0  \cf12 _ArraySearch\cf7 (\cf8 $sicknessArray\cf7 ,\cf0  \cf8 $Sickness\cf7 )\cf0  \cf7 =\cf0  \cf7 -\cf3 1\cf0  \cf3 Then\cf0  \cf3 Return\cf0 \par
+\par
+   \cf3 Local\cf0  \cf8 $Healwait\cf0  \cf7 =\cf0  \cf4 GUICtrlRead\cf7 (\cf8 $MovmentSlider\cf7 )\cf0 \par
+\par
+   \cf3 Local\cf0  \cf8 $currentX\cf0  \cf7 =\cf0  \cf4 Number\cf7 (\cf4 StringRegExpReplace\cf7 (\cf4 GUICtrlRead\cf7 (\cf8 $PosXLabel\cf7 ),\cf0  \cf6 "[^\\d]"\cf7 ,\cf0  \cf6 ""\cf7 ))\cf0 \par
+   \cf3 Local\cf0  \cf8 $currentY\cf0  \cf7 =\cf0  \cf4 Number\cf7 (\cf4 StringRegExpReplace\cf7 (\cf4 GUICtrlRead\cf7 (\cf8 $PosYLabel\cf7 ),\cf0  \cf6 "[^\\d]"\cf7 ,\cf0  \cf6 ""\cf7 ))\cf0 \par
+   \cf3 Static\cf0  \cf8 $lastX\cf0  \cf7 =\cf0  \cf8 $currentX\cf7 ,\cf0  \cf8 $lastY\cf0  \cf7 =\cf0  \cf8 $currentY\cf0 \par
+   \cf3 Static\cf0  \cf8 $LastMovementTime\cf0  \cf7 =\cf0  \cf4 TimerInit\cf7 ()\cf0 \par
+\par
+   \cf8 $elapsedTimeSinceHeal\cf0  \cf7 =\cf0  \cf4 TimerDiff\cf7 (\cf8 $LastHealTime\cf7 )\cf0 \par
+\par
+   \cf2\i ; Detect movement\par
+\cf0\i0    \cf3 If\cf0  \cf8 $currentX\cf0  \cf7 <>\cf0  \cf8 $lastX\cf0  \cf3 Or\cf0  \cf8 $currentY\cf0  \cf7 <>\cf0  \cf8 $lastY\cf0  \cf3 Then\cf0 \par
+       \cf8 $lastX\cf0  \cf7 =\cf0  \cf8 $currentX\cf0 \par
+       \cf8 $lastY\cf0  \cf7 =\cf0  \cf8 $currentY\cf0 \par
+       \cf8 $LastMovementTime\cf0  \cf7 =\cf0  \cf4 TimerInit\cf7 ()\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf3 Local\cf0  \cf8 $TimeSinceLastMove\cf0  \cf7 =\cf0  \cf4 TimerDiff\cf7 (\cf8 $LastMovementTime\cf7 )\cf0 \par
+\par
+   \cf2\i ; Old style\par
+\cf0\i0    \cf3 If\cf0  \cf4 GUICtrlRead\cf7 (\cf8 $Checkbox\cf7 )\cf0  \cf7 =\cf0  \cf8 $GUI_CHECKED\cf0  \cf3 Then\cf0 \par
+       \cf3 If\cf0  \cf8 $elapsedTimeSinceHeal\cf0  \cf7 >=\cf0  \cf8 $HealDelay\cf0  \cf3 Then\cf0 \par
+           \cf4 ControlSend\cf7 (\cf6 "Project Rogue"\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 "\cf9 \{3\}\cf6 "\cf7 )\cf0 \par
+           \cf4 ConsoleWrite\cf7 (\cf6 "Cure triggered (old style)"\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+           \cf8 $LastHealTime\cf0  \cf7 =\cf0  \cf4 TimerInit\cf7 ()\cf0 \par
+       \cf3 EndIf\cf0 \par
+   \cf3 Else\cf0 \par
+       \cf3 If\cf0  \cf8 $elapsedTimeSinceHeal\cf0  \cf7 >=\cf0  \cf8 $HealDelay\cf0  \cf3 Then\cf0 \par
+           \cf3 If\cf0  \cf8 $TimeSinceLastMove\cf0  \cf7 >=\cf0  \cf8 $Healwait\cf0  \cf3 Then\cf0 \par
+               \cf4 ControlSend\cf7 (\cf6 "Project Rogue"\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 "\cf9 \{3\}\cf6 "\cf7 )\cf0 \par
+               \cf4 ConsoleWrite\cf7 (\cf6 "Cure triggered: Stationary for "\cf0  \cf7 &\cf0  \cf8 $TimeSinceLastMove\cf0  \cf7 &\cf0  \cf6 "ms."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+               \cf8 $LastHealTime\cf0  \cf7 =\cf0  \cf4 TimerInit\cf7 ()\cf0 \par
+           \cf3 Else\cf0 \par
+               \cf4 ConsoleWrite\cf7 (\cf6 "No cure: Only stationary for "\cf0  \cf7 &\cf0  \cf8 $TimeSinceLastMove\cf0  \cf7 &\cf0  \cf6 "ms."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+           \cf3 EndIf\cf0 \par
+       \cf3 EndIf\cf0 \par
+   \cf3 EndIf\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>CureMe\par
+\cf0\i0 \par
+\cf2\i ; ------------------------------------------------------------------------------\par
+\cf0\i0 \cf2\i ;                                   HEALER\par
+\cf0\i0 \cf2\i ; ------------------------------------------------------------------------------\par
+\cf0\i0 \cf3 Func\cf0  TimeToHeal\cf7 ()\cf0 \par
+   \cf3 Global\cf0  \cf8 $MovmentSlider\cf7 ,\cf0  \cf8 $PosXLabel\cf7 ,\cf0  \cf8 $PosYLabel\cf7 ,\cf0  \cf8 $Checkbox\cf7 ,\cf0  \cf8 $HPAddress\cf7 ,\cf0  \cf8 $MaxHPAddress\cf0 \par
+   \cf3 Global\cf0  \cf8 $HealerLabel\cf7 ,\cf0  \cf8 $HealDelay\cf7 ,\cf0  \cf8 $LastHealTime\cf7 ,\cf0  \cf8 $elapsedTimeSinceHeal\cf7 ,\cf0  \cf8 $sicknessArray\cf7 ,\cf0  \cf8 $Sickness\cf0 \par
+   \cf3 Global\cf0  \cf8 $Chat\cf7 ,\cf0  \cf8 $ChattOpenAddress\cf7 ,\cf0  \cf8 $healSlider\cf0 \par
+   \cf3 Global\cf0  \cf8 $hProcess\cf0 \par
+\par
+   \cf3 Local\cf0  \cf8 $Healwait\cf0  \cf7 =\cf0  \cf4 GUICtrlRead\cf7 (\cf8 $MovmentSlider\cf7 )\cf0 \par
+   \cf3 Local\cf0  \cf8 $HP\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $HPAddress\cf7 )\cf0 \par
+   \cf3 Local\cf0  \cf8 $RealHP\cf0  \cf7 =\cf0  \cf8 $HP\cf0  \cf7 /\cf0  \cf3 65536\cf0 \par
+   \cf3 Local\cf0  \cf8 $MaxHP\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $MaxHPAddress\cf7 )\cf0 \par
+   \cf3 Local\cf0  \cf8 $ChatVal\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $ChattOpenAddress\cf7 )\cf0 \par
+   \cf3 Local\cf0  \cf8 $HealThreshold\cf0  \cf7 =\cf0  \cf4 GUICtrlRead\cf7 (\cf8 $healSlider\cf7 )\cf0  \cf7 /\cf0  \cf3 100\cf0 \par
+\par
+   \cf3 Local\cf0  \cf8 $currentX\cf0  \cf7 =\cf0  \cf4 Number\cf7 (\cf4 StringRegExpReplace\cf7 (\cf4 GUICtrlRead\cf7 (\cf8 $PosXLabel\cf7 ),\cf0  \cf6 "[^\\d]"\cf7 ,\cf0  \cf6 ""\cf7 ))\cf0 \par
+   \cf3 Local\cf0  \cf8 $currentY\cf0  \cf7 =\cf0  \cf4 Number\cf7 (\cf4 StringRegExpReplace\cf7 (\cf4 GUICtrlRead\cf7 (\cf8 $PosYLabel\cf7 ),\cf0  \cf6 "[^\\d]"\cf7 ,\cf0  \cf6 ""\cf7 ))\cf0 \par
+   \cf3 Static\cf0  \cf8 $lastX\cf0  \cf7 =\cf0  \cf8 $currentX\cf7 ,\cf0  \cf8 $lastY\cf0  \cf7 =\cf0  \cf8 $currentY\cf0 \par
+   \cf3 Static\cf0  \cf8 $LastMovementTime\cf0  \cf7 =\cf0  \cf4 TimerInit\cf7 ()\cf0 \par
+\par
+   \cf8 $elapsedTimeSinceHeal\cf0  \cf7 =\cf0  \cf4 TimerDiff\cf7 (\cf8 $LastHealTime\cf7 )\cf0 \par
+\par
+   \cf2\i ; --- Detect movement ---\par
+\cf0\i0    \cf3 If\cf0  \cf8 $currentX\cf0  \cf7 <>\cf0  \cf8 $lastX\cf0  \cf3 Or\cf0  \cf8 $currentY\cf0  \cf7 <>\cf0  \cf8 $lastY\cf0  \cf3 Then\cf0 \par
+       \cf8 $lastX\cf0  \cf7 =\cf0  \cf8 $currentX\cf0 \par
+       \cf8 $lastY\cf0  \cf7 =\cf0  \cf8 $currentY\cf0 \par
+       \cf8 $LastMovementTime\cf0  \cf7 =\cf0  \cf4 TimerInit\cf7 ()\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf3 Local\cf0  \cf8 $TimeSinceLastMove\cf0  \cf7 =\cf0  \cf4 TimerDiff\cf7 (\cf8 $LastMovementTime\cf7 )\cf0 \par
+\par
+   \cf2\i ; --- Old style (checkbox) ---\par
+\cf0\i0    \cf3 If\cf0  \cf4 GUICtrlRead\cf7 (\cf8 $Checkbox\cf7 )\cf0  \cf7 =\cf0  \cf8 $GUI_CHECKED\cf0  \cf3 Then\cf0 \par
+       \cf3 If\cf0  \cf8 $ChatVal\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 And\cf0  \cf12 _ArraySearch\cf7 (\cf8 $sicknessArray\cf7 ,\cf0  \cf8 $Sickness\cf7 )\cf0  \cf7 =\cf0  \cf7 -\cf3 1\cf0  \cf3 Then\cf0 \par
+           \cf3 If\cf0  \cf8 $RealHP\cf0  \cf7 <\cf0  \cf7 (\cf8 $MaxHP\cf0  \cf7 *\cf0  \cf8 $HealThreshold\cf7 )\cf0  \cf3 And\cf0  \cf8 $elapsedTimeSinceHeal\cf0  \cf7 >\cf0  \cf8 $HealDelay\cf0  \cf3 Then\cf0 \par
+               \cf4 ControlSend\cf7 (\cf6 "Project Rogue"\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 "\cf9 \{2\}\cf6 "\cf7 )\cf0 \par
+               \cf4 ConsoleWrite\cf7 (\cf6 "Heal triggered (old style): HP < threshold"\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+               \cf8 $LastHealTime\cf0  \cf7 =\cf0  \cf4 TimerInit\cf7 ()\cf0 \par
+           \cf3 EndIf\cf0 \par
+       \cf3 EndIf\cf0 \par
+   \cf3 Else\cf0 \par
+       \cf2\i ; --- Normal logic (requires stationary) ---\par
+\cf0\i0        \cf3 If\cf0  \cf8 $ChatVal\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 And\cf0  \cf12 _ArraySearch\cf7 (\cf8 $sicknessArray\cf7 ,\cf0  \cf8 $Sickness\cf7 )\cf0  \cf7 =\cf0  \cf7 -\cf3 1\cf0  \cf3 Then\cf0 \par
+           \cf3 If\cf0  \cf8 $RealHP\cf0  \cf7 <\cf0  \cf7 (\cf8 $MaxHP\cf0  \cf7 *\cf0  \cf8 $HealThreshold\cf7 )\cf0  \cf3 And\cf0  \cf8 $elapsedTimeSinceHeal\cf0  \cf7 >\cf0  \cf8 $HealDelay\cf0  \cf3 Then\cf0 \par
+               \cf3 If\cf0  \cf8 $TimeSinceLastMove\cf0  \cf7 >=\cf0  \cf8 $Healwait\cf0  \cf3 Then\cf0 \par
+                   \cf4 ControlSend\cf7 (\cf6 "Project Rogue"\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 "\cf9 \{2\}\cf6 "\cf7 )\cf0 \par
+                   \cf4 ConsoleWrite\cf7 (\cf6 "Healed: Stationary for "\cf0  \cf7 &\cf0  \cf8 $TimeSinceLastMove\cf0  \cf7 &\cf0  \cf6 "ms | HP < threshold."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+                   \cf8 $LastHealTime\cf0  \cf7 =\cf0  \cf4 TimerInit\cf7 ()\cf0 \par
+               \cf3 Else\cf0 \par
+                   \cf4 ConsoleWrite\cf7 (\cf6 "No heal: Only stationary for "\cf0  \cf7 &\cf0  \cf8 $TimeSinceLastMove\cf0  \cf7 &\cf0  \cf6 "ms."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+               \cf3 EndIf\cf0 \par
+           \cf3 EndIf\cf0 \par
+       \cf3 EndIf\cf0 \par
+   \cf3 EndIf\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>TimeToHeal\par
+\cf0\i0 \par
+\cf2\i ; ------------------------------------------------------------------------------\par
+\cf0\i0 \cf2\i ;                                  TARGETING\par
+\cf0\i0 \cf2\i ; ------------------------------------------------------------------------------\par
+\cf0\i0 \cf3 Func\cf0  AttackModeReader\cf7 ()\cf0 \par
+   \cf3 Global\cf0  \cf8 $hProcess\cf7 ,\cf0  \cf8 $WindowName\cf0 \par
+   \cf3 Global\cf0  \cf8 $Type\cf7 ,\cf0  \cf8 $Chat\cf7 ,\cf0  \cf8 $AttackMode\cf0 \par
+   \cf3 Global\cf0  \cf8 $PosXAddress\cf7 ,\cf0  \cf8 $PosYAddress\cf0 \par
+   \cf3 Global\cf0  \cf8 $LootingCheckbox\cf7 ,\cf0  \cf8 $TargetStatus\cf0 \par
+   \cf3 Global\cf0  \cf8 $LootQueued\cf7 ,\cf0  \cf8 $LootCount\cf7 ,\cf0  \cf8 $LootReady\cf0 \par
+   \cf3 Global\cf0  \cf8 $LastPlayerX\cf7 ,\cf0  \cf8 $LastPlayerY\cf0 \par
+   \cf3 Global\cf0  \cf8 $HadTarget\cf7 ,\cf0  \cf8 $LastTargetHeld\cf0 \par
+   \cf3 Global\cf0  \cf8 $currentTime\cf7 ,\cf0  \cf8 $TargetDelay\cf0 \par
+   \cf3 Global\cf0  \cf8 $LootIdleTimer\cf7 ,\cf0  \cf8 $LootIdleWaiting\cf0 \par
+\par
+   \cf8 $Chat\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $ChattOpenAddress\cf7 )\cf0 \par
+   \cf8 $Type\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $TypeAddress\cf7 )\cf0 \par
+   \cf8 $AttackMode\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $AttackModeAddress\cf7 )\cf0 \par
+\par
+   \cf3 Local\cf0  \cf8 $PlayerX\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $PosXAddress\cf7 )\cf0 \par
+   \cf3 Local\cf0  \cf8 $PlayerY\cf0  \cf7 =\cf0  _ReadMemory\cf7 (\cf8 $hProcess\cf7 ,\cf0  \cf8 $PosYAddress\cf7 )\cf0 \par
+\par
+   \cf2\i ; Cancel loot if player moves\par
+\cf0\i0    \cf3 If\cf0  \cf8 $LastPlayerX\cf0  \cf7 <>\cf0  \cf3 0\cf0  \cf3 And\cf0  \cf8 $LastPlayerY\cf0  \cf7 <>\cf0  \cf3 0\cf0  \cf3 Then\cf0 \par
+       \cf3 If\cf0  \cf8 $PlayerX\cf0  \cf7 <>\cf0  \cf8 $LastPlayerX\cf0  \cf3 Or\cf0  \cf8 $PlayerY\cf0  \cf7 <>\cf0  \cf8 $LastPlayerY\cf0  \cf3 Then\cf0 \par
+           \cf4 ConsoleWrite\cf7 (\cf6 "[Loot] Player moved manually, cancelling loot queue."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+           \cf8 $LootQueued\cf0  \cf7 =\cf0  \cf3 False\cf0 \par
+           \cf8 $LootCount\cf0  \cf7 =\cf0  \cf3 0\cf0 \par
+           \cf8 $LootReady\cf0  \cf7 =\cf0  \cf3 False\cf0 \par
+           \cf8 $LootIdleWaiting\cf0  \cf7 =\cf0  \cf3 False\cf0 \par
+       \cf3 EndIf\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf8 $LastPlayerX\cf0  \cf7 =\cf0  \cf8 $PlayerX\cf0 \par
+   \cf8 $LastPlayerY\cf0  \cf7 =\cf0  \cf8 $PlayerY\cf0 \par
+\par
+   \cf2\i ; --- Loot kill detection ---\par
+\cf0\i0    \cf3 If\cf0  \cf4 GUICtrlRead\cf7 (\cf8 $LootingCheckbox\cf7 )\cf0  \cf7 =\cf0  \cf8 $GUI_CHECKED\cf0  \cf3 Then\cf0 \par
+       \cf3 If\cf0  \cf8 $Type\cf0  \cf7 =\cf0  \cf3 1\cf0  \cf3 Then\cf0  \cf2\i ; Monster targeted\par
+\cf0\i0            \cf3 If\cf0  \cf3 Not\cf0  \cf8 $HadTarget\cf0  \cf3 Then\cf0 \par
+               \cf8 $HadTarget\cf0  \cf7 =\cf0  \cf3 True\cf0 \par
+               \cf8 $LastTargetHeld\cf0  \cf7 =\cf0  \cf4 TimerInit\cf7 ()\cf0 \par
+\par
+               \cf2\i ; If new monster targeted, cancel loot idle wait\par
+\cf0\i0                \cf3 If\cf0  \cf8 $LootIdleWaiting\cf0  \cf3 Then\cf0 \par
+                   \cf4 ConsoleWrite\cf7 (\cf6 "[Loot] New target acquired. Cancelling idle wait."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+                   \cf8 $LootIdleWaiting\cf0  \cf7 =\cf0  \cf3 False\cf0 \par
+               \cf3 EndIf\cf0 \par
+           \cf3 ElseIf\cf0  \cf4 TimerDiff\cf7 (\cf8 $LastTargetHeld\cf7 )\cf0  \cf7 >=\cf0  \cf3 100\cf0  \cf3 Then\cf0 \par
+               \cf2\i ; Held >100ms, stable target\par
+\cf0\i0            \cf3 EndIf\cf0 \par
+       \cf3 ElseIf\cf0  \cf8 $Type\cf0  \cf7 =\cf0  \cf3 65535\cf0  \cf3 Then\cf0  \cf2\i ; No target (possible kill)\par
+\cf0\i0            \cf3 If\cf0  \cf8 $HadTarget\cf0  \cf3 Then\cf0 \par
+               \cf3 If\cf0  \cf4 TimerDiff\cf7 (\cf8 $LastTargetHeld\cf7 )\cf0  \cf7 >=\cf0  \cf3 100\cf0  \cf3 Then\cf0 \par
+                   \cf8 $LootCount\cf0  \cf7 +=\cf0  \cf3 1\cf0 \par
+                   \cf8 $LootQueued\cf0  \cf7 =\cf0  \cf3 True\cf0 \par
+                   \cf4 ConsoleWrite\cf7 (\cf6 "[Loot] Monster kill detected. Loot count now: "\cf0  \cf7 &\cf0  \cf8 $LootCount\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+               \cf3 EndIf\cf0 \par
+               \cf8 $HadTarget\cf0  \cf7 =\cf0  \cf3 False\cf0 \par
+               \cf8 $LootIdleTimer\cf0  \cf7 =\cf0  \cf4 TimerInit\cf7 ()\cf0 \par
+               \cf8 $LootIdleWaiting\cf0  \cf7 =\cf0  \cf3 True\cf0 \par
+           \cf3 EndIf\cf0 \par
+       \cf3 EndIf\cf0 \par
+   \cf3 EndIf\cf0 \par
+\par
+   \cf2\i ; --- Targeter Retarget ---\par
+\cf0\i0    \cf3 If\cf0  \cf8 $TargetStatus\cf0  \cf7 =\cf0  \cf3 1\cf0  \cf3 And\cf0  \cf8 $Type\cf0  \cf7 =\cf0  \cf3 65535\cf0  \cf3 And\cf0  \cf8 $Chat\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 Then\cf0 \par
+       \cf3 If\cf0  \cf4 TimerDiff\cf7 (\cf8 $currentTime\cf7 )\cf0  \cf7 >=\cf0  \cf8 $TargetDelay\cf0  \cf3 Then\cf0 \par
+           \cf4 ControlSend\cf7 (\cf8 $WindowName\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 ""\cf7 ,\cf0  \cf6 "\cf9 \{TAB\}\cf6 "\cf7 )\cf0 \par
+           \cf4 ConsoleWrite\cf7 (\cf6 "[Target] Retargeting with TAB..."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+           \cf8 $currentTime\cf0  \cf7 =\cf0  \cf4 TimerInit\cf7 ()\cf0 \par
+       \cf3 EndIf\cf0 \par
+   \cf3 EndIf\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>AttackModeReader\par
+\cf0\i0 \par
+\par
+\cf3 Func\cf0  IsBlockedCoord\cf7 (\cf8 $x\cf7 ,\cf0  \cf8 $y\cf7 )\cf0 \par
+   \cf3 For\cf0  \cf8 $i\cf0  \cf7 =\cf0  \cf3 0\cf0  \cf3 To\cf0  \cf4 UBound\cf7 (\cf8 $aTempBlocked\cf7 )\cf0  \cf7 -\cf0  \cf3 1\cf0 \par
+       \cf3 If\cf0  \cf8 $aTempBlocked\cf7 [\cf8 $i\cf7 ][\cf3 0\cf7 ]\cf0  \cf7 =\cf0  \cf8 $x\cf0  \cf3 And\cf0  \cf8 $aTempBlocked\cf7 [\cf8 $i\cf7 ][\cf3 1\cf7 ]\cf0  \cf7 =\cf0  \cf8 $y\cf0  \cf3 Then\cf0 \par
+           \cf3 Return\cf0  \cf3 True\cf0 \par
+       \cf3 EndIf\cf0 \par
+   \cf3 Next\cf0 \par
+   \cf3 Return\cf0  \cf3 False\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>IsBlockedCoord\par
+\cf0\i0 \par
+\cf3 Func\cf0  MarkCoordAsBlocked\cf7 (\cf8 $x\cf7 ,\cf0  \cf8 $y\cf7 )\cf0 \par
+   \cf3 ReDim\cf0  \cf8 $aTempBlocked\cf7 [\cf4 UBound\cf7 (\cf8 $aTempBlocked\cf7 )\cf0  \cf7 +\cf0  \cf3 1\cf7 ][\cf3 2\cf7 ]\cf0 \par
+   \cf8 $aTempBlocked\cf7 [\cf4 UBound\cf7 (\cf8 $aTempBlocked\cf7 )\cf0  \cf7 -\cf0  \cf3 1\cf7 ][\cf3 0\cf7 ]\cf0  \cf7 =\cf0  \cf8 $x\cf0 \par
+   \cf8 $aTempBlocked\cf7 [\cf4 UBound\cf7 (\cf8 $aTempBlocked\cf7 )\cf0  \cf7 -\cf0  \cf3 1\cf7 ][\cf3 1\cf7 ]\cf0  \cf7 =\cf0  \cf8 $y\cf0 \par
+   \cf4 ConsoleWrite\cf7 (\cf6 "Marked ("\cf0  \cf7 &\cf0  \cf8 $x\cf0  \cf7 &\cf0  \cf6 ", "\cf0  \cf7 &\cf0  \cf8 $y\cf0  \cf7 &\cf0  \cf6 ") as blocked."\cf0  \cf7 &\cf0  \cf5 @CRLF\cf7 )\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>MarkCoordAsBlocked\par
+\cf0\i0 \par
+\cf3 Func\cf0  _WriteMemory\cf7 (\cf8 $hProc\cf7 ,\cf0  \cf8 $pAddress\cf7 ,\cf0  \cf8 $value\cf7 )\cf0 \par
+   \cf3 Local\cf0  \cf8 $tBuffer\cf0  \cf7 =\cf0  \cf4 DllStructCreate\cf7 (\cf6 "dword"\cf7 )\cf0 \par
+   \cf4 DllStructSetData\cf7 (\cf8 $tBuffer\cf7 ,\cf0  \cf3 1\cf7 ,\cf0  \cf8 $value\cf7 )\cf0 \par
+   \cf4 DllCall\cf7 (\cf6 "kernel32.dll"\cf7 ,\cf0  \cf6 "bool"\cf7 ,\cf0  \cf6 "WriteProcessMemory"\cf7 ,\cf0  \cf7 _\cf0 \par
+           \cf6 "handle"\cf7 ,\cf0  \cf8 $hProc\cf7 ,\cf0  \cf7 _\cf0 \par
+           \cf6 "ptr"\cf7 ,\cf0  \cf8 $pAddress\cf7 ,\cf0  \cf7 _\cf0 \par
+           \cf6 "ptr"\cf7 ,\cf0  \cf4 DllStructGetPtr\cf7 (\cf8 $tBuffer\cf7 ),\cf0  \cf7 _\cf0 \par
+           \cf6 "dword"\cf7 ,\cf0  \cf4 DllStructGetSize\cf7 (\cf8 $tBuffer\cf7 ),\cf0  \cf7 _\cf0 \par
+           \cf6 "ptr"\cf7 ,\cf0  \cf3 0\cf7 )\cf0 \par
+\cf3 EndFunc\cf0    \cf2\i ;==>_WriteMemory\par
+\cf0\i0 }

@@ -1,0 +1,1416 @@
+\documentclass[a4paper]{article}
+\usepackage[a4paper,margin=2cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{color}
+\usepackage{alltt}
+\usepackage{times}
+\setlength{\fboxsep}{0pt}
+\newcommand{\scitea}[1]{\noindent{\ttfamily{\textcolor[rgb]{0.0, 0.0, 0.0}{\colorbox[rgb]{1.0, 1.0, 1.0}{#1}}}}}
+\newcommand{\sciteb}[1]{\noindent{\ttfamily{\textit{\textcolor[rgb]{0.0, 0.5, 0.0}{\colorbox[rgb]{1.0, 1.0, 1.0}{#1}}}}}}
+\newcommand{\scited}[1]{\noindent{\ttfamily{\textcolor[rgb]{0.0, 0.0, 1.0}{\colorbox[rgb]{1.0, 1.0, 1.0}{#1}}}}}
+\newcommand{\scitee}[1]{\noindent{\ttfamily{\textcolor[rgb]{0.0, 0.0, 0.6}{\colorbox[rgb]{1.0, 1.0, 1.0}{#1}}}}}
+\newcommand{\scitef}[1]{\noindent{\ttfamily{\textcolor[rgb]{0.0, 0.0, 1.0}{\colorbox[rgb]{1.0, 1.0, 1.0}{#1}}}}}
+\newcommand{\sciteg}[1]{\noindent{\ttfamily{\textcolor[rgb]{0.5, 0.5, 0.0}{\colorbox[rgb]{1.0, 1.0, 1.0}{#1}}}}}
+\newcommand{\sciteh}[1]{\noindent{\ttfamily{\textcolor[rgb]{1.0, 0.0, 0.0}{\colorbox[rgb]{1.0, 1.0, 1.0}{#1}}}}}
+\newcommand{\scitei}[1]{\noindent{\ttfamily{\textcolor[rgb]{1.0, 0.5, 0.0}{\colorbox[rgb]{1.0, 1.0, 1.0}{#1}}}}}
+\newcommand{\scitej}[1]{\noindent{\ttfamily{\textcolor[rgb]{0.4, 0.4, 0.4}{\colorbox[rgb]{1.0, 1.0, 1.0}{#1}}}}}
+\newcommand{\scitek}[1]{\noindent{\ttfamily{\textcolor[rgb]{0.5, 0.5, 0.5}{\colorbox[rgb]{1.0, 1.0, 1.0}{#1}}}}}
+\newcommand{\scitel}[1]{\noindent{\ttfamily{\textcolor[rgb]{0.5, 0.5, 0.0}{\colorbox[rgb]{1.0, 1.0, 1.0}{#1}}}}}
+\newcommand{\scitem}[1]{\noindent{\ttfamily{\textcolor[rgb]{0.9, 0.1, 0.2}{\colorbox[rgb]{1.0, 1.0, 1.0}{#1}}}}}
+\newcommand{\scitep}[1]{\noindent{\ttfamily{\textcolor[rgb]{0.0, 0.5, 1.0}{\colorbox[rgb]{1.0, 1.0, 1.0}{#1}}}}}
+\newcommand{\sciteib}[1]{\noindent{\ttfamily{\textcolor[rgb]{0.0, 0.0, 0.0}{\colorbox[rgb]{0.9, 1.0, 1.0}{#1}}}}}
+\begin{document}
+
+Source File: RogueReader.au3
+
+\noindent
+\small{
+\scitem{\#Region}\sciteb{ ;**** Directives created by AutoIt3Wrapper\_GUI ****} \\
+\scitem{\#AutoIt3Wrapper\_Icon=Include{\textbackslash}RogueReader.ico} \\
+\scitem{\#AutoIt3Wrapper\_Compression=4} \\
+\scitem{\#AutoIt3Wrapper\_UseX64=y} \\
+\scitem{\#AutoIt3Wrapper\_Res\_Description=Trainer for ProjectRogue} \\
+\scitem{\#AutoIt3Wrapper\_Res\_Fileversion=5.0.0.37} \\
+\scitem{\#AutoIt3Wrapper\_Res\_Fileversion\_AutoIncrement=y} \\
+\scitem{\#AutoIt3Wrapper\_Res\_ProductName=Rogue Reader} \\
+\scitem{\#AutoIt3Wrapper\_Res\_ProductVersion=4} \\
+\scitem{\#AutoIt3Wrapper\_Res\_CompanyName=Training Trainers.LLC} \\
+\scitem{\#AutoIt3Wrapper\_Res\_LegalCopyright=Use only for authorized security testing.} \\
+\scitem{\#AutoIt3Wrapper\_Res\_LegalTradeMarks=TrainingTrainersLLC} \\
+\scitem{\#AutoIt3Wrapper\_Res\_Language=1033} \\
+\scitem{\#AutoIt3Wrapper\_Run\_AU3Check=n} \\
+\scitem{\#AutoIt3Wrapper\_Run\_Tidy=y} \\
+\scitem{\#AutoIt3Wrapper\_Tidy\_Stop\_OnError=n} \\
+\scitem{\#EndRegion}\sciteb{ ;**** Directives created by AutoIt3Wrapper\_GUI ****} \\
+\scitem{\#Region}\sciteb{ ;**** Directives created by AutoIt3Wrapper\_GUI ****} \\
+\scitem{\#AutoIt3Wrapper\_Icon=Include{\textbackslash}RogueReader.ico} \\
+\scitem{\#AutoIt3Wrapper\_Compression=4} \\
+\scitem{\#AutoIt3Wrapper\_UseX64=y} \\
+\scitem{\#AutoIt3Wrapper\_Res\_Description=Trainer for ProjectRogue} \\
+\scitem{\#AutoIt3Wrapper\_Res\_Fileversion=5.0.0.37} \\
+\scitem{\#AutoIt3Wrapper\_Res\_Fileversion\_AutoIncrement=y} \\
+\scitem{\#AutoIt3Wrapper\_Res\_ProductName=Rogue Reader} \\
+\scitem{\#AutoIt3Wrapper\_Res\_ProductVersion=4} \\
+\scitem{\#AutoIt3Wrapper\_Res\_CompanyName=Training Trainers.LLC} \\
+\scitem{\#AutoIt3Wrapper\_Res\_LegalCopyright=Use only for authorized security testing.} \\
+\scitem{\#AutoIt3Wrapper\_Res\_LegalTradeMarks=TrainingTrainersLLC} \\
+\scitem{\#AutoIt3Wrapper\_Res\_Language=1033} \\
+\scitem{\#AutoIt3Wrapper\_Run\_AU3Check=n} \\
+\scitem{\#AutoIt3Wrapper\_Tidy\_Stop\_OnError=n} \\
+\scitem{\#EndRegion}\sciteb{ ;**** Directives created by AutoIt3Wrapper\_GUI ****} \\
+\scitea{} \\
+\scitel{\#include}\scitea{ }\sciteh{$<$GUIConstantsEx.au3$>$}\scitea{} \\
+\scitel{\#include}\scitea{ }\sciteh{$<$File.au3$>$}\scitea{} \\
+\scitel{\#include}\scitea{ }\sciteh{$<$WindowsConstants.au3$>$}\scitea{} \\
+\scitel{\#include}\scitea{ }\sciteh{$<$WinAPI.au3$>$}\scitea{} \\
+\scitel{\#include}\scitea{ }\sciteh{$<$Process.au3$>$}\scitea{} \\
+\scitel{\#include}\scitea{ }\sciteh{$<$Array.au3$>$}\scitea{ }\sciteb{; For \_ArraySearch} \\
+\scitea{} \\
+\sciteb{; ---------------------------------------------------------------------------------} \\
+\sciteb{; 1) Define fallback constants for Lock/Unlock if your AutoIt version doesn't have them} \\
+\sciteb{; ---------------------------------------------------------------------------------} \\
+\scitef{If}\scitea{ }\scitef{Not}\scitea{ }\scitee{IsDeclared}\scitei{(}\sciteh{"SW\_LOCKDRAW"}\scitei{)}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitef{Const}\scitea{ }\scitej{\$SW\_LOCKDRAW}\scitea{ }\scitei{=}\scitea{ }\scited{133}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{; numeric values introduced in v3.3.17} \\
+\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitef{If}\scitea{ }\scitef{Not}\scitea{ }\scitee{IsDeclared}\scitei{(}\sciteh{"SW\_UNLOCKDRAW"}\scitei{)}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitef{Const}\scitea{ }\scitej{\$SW\_UNLOCKDRAW}\scitea{ }\scitei{=}\scitea{ }\scited{134}\scitea{} \\
+\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitee{Opt}\scitei{(}\sciteh{"MouseCoordMode"}\scitei{,}\scitea{ }\scited{2}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$version}\scitea{ }\scitei{=}\scitea{ }\scitee{FileGetVersion}\scitei{(}\sciteg{$@$ScriptFullPath}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitef{Const}\scitea{ }\scitej{\$locationFile}\scitea{ }\scitei{=}\scitea{ }\sciteg{$@$ScriptDir}\scitea{ }\scitei{\&}\scitea{ }\sciteh{"{\textbackslash}Locations.ini"}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$currentLocations}\scitea{ }\scitei{=}\scitea{ }\scited{1}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$maxLocations}\scitea{ }\scitei{=}\scitea{ }\scited{20000}\scitea{} \\
+\scitef{Global}\scitea{ }\scitef{Const}\scitea{ }\scitej{\$sButtonConfigFile}\scitea{ }\scitei{=}\scitea{ }\sciteg{$@$ScriptDir}\scitea{ }\scitei{\&}\scitea{ }\sciteh{"{\textbackslash}NewButtonConfig.ini"}\scitea{} \\
+\scitea{} \\
+\scitee{ConsoleWrite}\scitei{(}\sciteh{"Script Version: "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$version}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{} \\
+\sciteb{; --- Load Config Settings ---} \\
+\scitef{Global}\scitea{ }\scitej{\$aTempBlocked}\scitei{[}\scited{0}\scitei{][}\scited{2}\scitei{]}\scitea{} \\
+\scitea{} \\
+\scitef{If}\scitea{ }\scitef{Not}\scitea{ }\scitee{FileExists}\scitei{(}\scitej{\$sButtonConfigFile}\scitei{)}\scitea{ }\scitef{Then}\scitea{ CreateButtonDefaultConfig}\scitei{()}\scitea{} \\
+\scitea{LoadButtonConfig}\scitei{()}\scitea{} \\
+\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$iCurrentIndex}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$aLocations}\scitea{ }\scitei{=}\scitea{ LoadLocations}\scitei{()}\scitea{{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}} }\sciteb{; This may show error if the file is missing} \\
+\scitef{Global}\scitea{ }\scitej{\$Debug}\scitea{ }\scitei{=}\scitea{ }\scitef{False}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$LootIdleTimer}\scitea{ }\scitei{=}\scitea{ }\scitee{TimerInit}\scitei{()}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$LootIdleWaiting}\scitea{ }\scitei{=}\scitea{ }\scitef{False}\scitea{} \\
+\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$LootQueued}\scitea{ }\scitei{=}\scitea{ }\scitef{False}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$LootCount}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$LootReady}\scitea{ }\scitei{=}\scitea{ }\scitef{False}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$LootTimer}\scitea{ }\scitei{=}\scitea{ }\scitee{TimerInit}\scitei{()}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$PausedWalkerForLoot}\scitea{ }\scitei{=}\scitea{ }\scitef{False}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$LastPlayerX}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$LastPlayerY}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$HadTarget}\scitea{ }\scitei{=}\scitea{ }\scitef{False}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$LastTargetHeld}\scitea{ }\scitei{=}\scitea{ }\scitee{TimerInit}\scitei{()}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$LastTargetTime}\scitea{ }\scitei{=}\scitea{ }\scitee{TimerInit}\scitei{()}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$LootingCheckbox}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$LootCheckX}\scitea{ }\scitei{=}\scitea{ }\scitei{-}\scited{1}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$LootCheckY}\scitea{ }\scitei{=}\scitea{ }\scitei{-}\scited{1}\scitea{} \\
+\scitea{} \\
+\sciteb{; Define the game process and memory offsets} \\
+\scitef{Global}\scitea{ }\scitej{\$ProcessName}\scitea{ }\scitei{=}\scitea{ }\sciteh{"Project Rogue Client.exe"}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$WindowName}\scitea{ }\scitei{=}\scitea{ }\sciteh{"Project Rogue"}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$TypeOffset}\scitea{ }\scitei{=}\scitea{ }\scited{0xBE7974}\scitea{{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}} }\sciteb{; ; 0=Player, 1=Monster, etc} \\
+\scitef{Global}\scitea{ }\scitej{\$AttackModeOffset}\scitea{ }\scitei{=}\scitea{ }\scited{0xB5BC00}\scitea{{\hspace*{1em}} }\sciteb{;} \\
+\scitef{Global}\scitea{ }\scitej{\$PosYOffset}\scitea{ }\scitei{=}\scitea{ }\scited{0xBF9E08}\scitea{{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;} \\
+\scitef{Global}\scitea{ }\scitej{\$PosXOffset}\scitea{ }\scitei{=}\scitea{ }\scited{0xBF9E10}\scitea{{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;} \\
+\scitef{Global}\scitea{ }\scitej{\$HPOffset}\scitea{ }\scitei{=}\scitea{ }\scited{0x7C400}\scitea{{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;} \\
+\scitef{Global}\scitea{ }\scitej{\$MaxHPOffset}\scitea{ }\scitei{=}\scitea{ }\scited{0x7C404}\scitea{{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;} \\
+\scitef{Global}\scitea{ }\scitej{\$ChattOpenOffset}\scitea{ }\scitei{=}\scitea{ }\scited{0xB678D8}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;} \\
+\scitef{Global}\scitea{ }\scitej{\$SicknessOffset}\scitea{ }\scitei{=}\scitea{ }\scited{0x7C5E4}\scitea{{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;} \\
+\scitef{Global}\scitea{ }\scitej{\$BackPack}\scitea{ }\scitei{=}\scitea{ }\scited{0x731A8}\scitea{{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;} \\
+\scitef{Global}\scitea{ }\scitej{\$BackPackMax}\scitea{ }\scitei{=}\scitea{ }\scited{0x731AC}\scitea{{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;} \\
+\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$MovmentSlider}\scitea{ }\scitei{=}\scitea{ }\scited{200}\scitea{ }\sciteb{;walk after removed from gui turned to solid state,} \\
+\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$currentTime}\scitea{ }\scitei{=}\scitea{ }\scitee{TimerInit}\scitei{()}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$LastHealTime}\scitea{ }\scitei{=}\scitea{ }\scitee{TimerInit}\scitei{()}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$lastX}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$lastY}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$Running}\scitea{ }\scitei{=}\scitea{ }\scitef{True}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$HealerStatus}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$CureStatus}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$TargetStatus}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$MoveToLocationsStatus}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$iPrevValue}\scitea{ }\scitei{=}\scitea{ }\scited{95}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$MPrevValue}\scitea{ }\scitei{=}\scitea{ }\sciteh{" "}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$hProcess}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$BaseAddress}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$TypeAddress}\scitei{,}\scitea{ }\scitej{\$AttackModeAddress}\scitei{,}\scitea{ }\scitej{\$PosXAddress}\scitei{,}\scitea{ }\scitej{\$PosYAddress}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$HPAddress}\scitei{,}\scitea{ }\scitej{\$MaxHPAddress}\scitei{,}\scitea{ }\scitej{\$ChattOpenAddress}\scitei{,}\scitea{ }\scitej{\$SicknessAddress}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$Type}\scitei{,}\scitea{ }\scitej{\$Chat}\scitei{,}\scitea{ }\scitej{\$Sickness}\scitei{,}\scitea{ }\scitej{\$AttackMode}\scitea{} \\
+\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$sicknessArray}\scitea{ }\scitei{=}\scitea{ }\scitei{[}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scited{1}\scitei{,}\scitea{ }\scited{2}\scitei{,}\scitea{ }\scited{65}\scitei{,}\scitea{ }\scited{66}\scitei{,}\scitea{ }\scited{67}\scitei{,}\scitea{ }\scited{68}\scitei{,}\scitea{ }\scited{69}\scitei{,}\scitea{ }\scited{72}\scitei{,}\scitea{ }\scited{73}\scitei{,}\scitea{ }\scited{81}\scitei{,}\scitea{ }\scited{97}\scitei{,}\scitea{ }\scited{98}\scitei{,}\scitea{ }\scited{99}\scitei{,}\scitea{ }\scited{257}\scitei{,}\scitea{ }\scited{258}\scitei{,}\scitea{ }\scited{513}\scitei{,}\scitea{ }\scited{514}\scitei{,}\scitea{ }\scited{515}\scitei{,}\scitea{ }\scited{577}\scitei{,}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scited{8193}\scitei{,}\scitea{ }\scited{8194}\scitei{,}\scitea{ }\scited{8195}\scitei{,}\scitea{ }\scited{8257}\scitei{,}\scitea{ }\scited{8258}\scitei{,}\scitea{ }\scited{8705}\scitei{,}\scitea{ }\scited{8706}\scitei{,}\scitea{ }\scited{8707}\scitei{,}\scitea{ }\scited{8708}\scitei{,}\scitea{ }\scited{8709}\scitei{,}\scitea{ }\scited{8712}\scitei{,}\scitea{ }\scited{8713}\scitei{,}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scited{8721}\scitei{,}\scitea{ }\scited{8737}\scitei{,}\scitea{ }\scited{8769}\scitei{,}\scitea{ }\scited{8770}\scitei{,}\scitea{ }\scited{16385}\scitei{,}\scitea{ }\scited{16386}\scitei{,}\scitea{ }\scited{16449}\scitei{,}\scitea{ }\scited{16450}\scitei{,}\scitea{ }\scited{16451}\scitei{,}\scitea{ }\scited{16452}\scitei{,}\scitea{ }\scited{16897}\scitei{,}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scited{16898}\scitei{,}\scitea{ }\scited{24577}\scitei{,}\scitea{ }\scited{24578}\scitei{,}\scitea{ }\scited{24579}\scitei{,}\scitea{ }\scited{24581}\scitei{,}\scitea{ }\scited{24582}\scitei{,}\scitea{ }\scited{24583}\scitei{,}\scitea{ }\scited{24585}\scitei{,}\scitea{ }\scited{24609}\scitei{,}\scitea{ }\scited{24641}\scitei{,}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scited{24642}\scitei{,}\scitea{ }\scited{24643}\scitei{,}\scitea{ }\scited{24645}\scitei{,}\scitea{ }\scited{24646}\scitei{,}\scitea{ }\scited{24647}\scitei{,}\scitea{ }\scited{24649}\scitei{,}\scitea{ }\scited{25089}\scitei{,}\scitea{ }\scited{25090}\scitei{,}\scitea{ }\scited{25091}\scitei{,}\scitea{ }\scited{25093}\scitei{,}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scited{25094}\scitei{,}\scitea{ }\scited{25095}\scitei{,}\scitea{ }\scited{25097}\scitei{,}\scitea{ }\scited{25121}\scitei{,}\scitea{ }\scited{33283}\scitei{,}\scitea{ }\scited{33284}\scitei{,}\scitea{ }\scited{33285}\scitei{,}\scitea{ }\scited{33286}\scitei{,}\scitea{ }\scited{33287}\scitei{,}\scitea{ }\scited{33288}\scitei{,}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scited{33289}\scitei{,}\scitea{ }\scited{33291}\scitei{,}\scitea{ }\scited{33293}\scitei{,}\scitea{ }\scited{33294}\scitei{,}\scitea{ }\scited{33295}\scitei{,}\scitea{ }\scited{33793}\scitei{,}\scitea{ }\scited{41985}\scitei{,}\scitea{ }\scited{41986}\scitei{,}\scitea{ }\scited{41987}\scitei{,}\scitea{ }\scited{41988}\scitei{,}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scited{41989}\scitei{,}\scitea{ }\scited{41990}\scitei{,}\scitea{ }\scited{41991}\scitei{,}\scitea{ }\scited{41993}\scitei{,}\scitea{ }\scited{41995}\scitei{]}\scitea{} \\
+\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$TargetDelay}\scitea{ }\scitei{=}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$HealDelay}\scitea{ }\scitei{=}\scitea{ }\scited{1700}\scitea{} \\
+\scitea{} \\
+\sciteb{; -------------------} \\
+\sciteb{; Create the GUI} \\
+\sciteb{; -------------------} \\
+\sciteb{;...;} \\
+\scitef{Global}\scitea{ }\scitej{\$Gui}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICreate}\scitei{(}\scitej{\$version}\scitei{,}\scitea{ }\scited{248}\scitei{,}\scitea{ }\scited{360}\scitei{,}\scitea{ }\scited{15}\scitei{,}\scitea{ }\scited{15}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$TypeLabel}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateLabel}\scitei{(}\sciteh{"Target: N/A"}\scitei{,}\scitea{ }\scited{105}\scitei{,}\scitea{ }\scited{21}\scitei{,}\scitea{ }\scited{115}\scitei{,}\scitea{ }\scited{15}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetBkColor}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{0xBEBEBE}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$AttackModeLabel}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateLabel}\scitei{(}\sciteh{"Attack: N/A"}\scitei{,}\scitea{ }\scited{105}\scitei{,}\scitea{ }\scited{37}\scitei{,}\scitea{ }\scited{115}\scitei{,}\scitea{ }\scited{15}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetBkColor}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{0xBEBEBE}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$PosXLabel}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateLabel}\scitei{(}\sciteh{"X: N/A"}\scitei{,}\scitea{ }\scited{11}\scitei{,}\scitea{ }\scited{23}\scitei{,}\scitea{ }\scited{75}\scitei{,}\scitea{ }\scited{15}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetBkColor}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{0xBEBEBE}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$PosYLabel}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateLabel}\scitei{(}\sciteh{"Y: N/A"}\scitei{,}\scitea{ }\scited{11}\scitei{,}\scitea{ }\scited{39}\scitei{,}\scitea{ }\scited{75}\scitei{,}\scitea{ }\scited{15}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetBkColor}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{0xBEBEBE}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$HPLabel}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateLabel}\scitei{(}\sciteh{"HP: N/A /"}\scitei{,}\scitea{ }\scited{10}\scitei{,}\scitea{ }\scited{187}\scitei{,}\scitea{ }\scited{45}\scitei{,}\scitea{ }\scited{15}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetBkColor}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{0xBEBEBE}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$ChatLabel}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateLabel}\scitei{(}\sciteh{"Chat: N/A"}\scitei{,}\scitea{ }\scited{105}\scitei{,}\scitea{ }\scited{69}\scitei{,}\scitea{ }\scited{115}\scitei{,}\scitea{ }\scited{15}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetBkColor}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{0xBEBEBE}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$SicknessLabel}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateLabel}\scitei{(}\sciteh{"Sickness: N/A"}\scitei{,}\scitea{ }\scited{105}\scitei{,}\scitea{ }\scited{53}\scitei{,}\scitea{ }\scited{115}\scitei{,}\scitea{ }\scited{15}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetBkColor}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{0xBEBEBE}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$MaxHPLabel}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateLabel}\scitei{(}\sciteh{"N/A"}\scitei{,}\scitea{ }\scited{55}\scitei{,}\scitea{ }\scited{187}\scitei{,}\scitea{ }\scited{30}\scitei{,}\scitea{ }\scited{15}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetBkColor}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{0xBEBEBE}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$TargetLabel}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateLabel}\scitei{(}\sciteh{"Target: Off"}\scitei{,}\scitea{ }\scited{10}\scitei{,}\scitea{ }\scited{124}\scitei{,}\scitea{ }\scited{75}\scitei{,}\scitea{ }\scited{15}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetBkColor}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{0xBEBEBE}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$HealerLabel}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateLabel}\scitei{(}\sciteh{"Healer: Off"}\scitei{,}\scitea{ }\scited{10}\scitei{,}\scitea{ }\scited{92}\scitei{,}\scitea{ }\scited{75}\scitei{,}\scitea{ }\scited{15}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetBkColor}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{0xBEBEBE}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$WalkerLabel}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateLabel}\scitei{(}\sciteh{"Walker: Off"}\scitei{,}\scitea{ }\scited{10}\scitei{,}\scitea{ }\scited{140}\scitei{,}\scitea{ }\scited{75}\scitei{,}\scitea{ }\scited{15}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetBkColor}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{0xBEBEBE}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$BackPackLabel}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateLabel}\scitei{(}\sciteh{"Weight: N/A"}\scitei{,}\scitea{ }\scited{10}\scitei{,}\scitea{ }\scited{203}\scitei{,}\scitea{ }\scited{75}\scitei{,}\scitea{ }\scited{15}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetBkColor}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{0xBEBEBE}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$CureLabel}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateLabel}\scitei{(}\sciteh{"Cure: Off"}\scitei{,}\scitea{ }\scited{10}\scitei{,}\scitea{ }\scited{108}\scitei{,}\scitea{ }\scited{75}\scitei{,}\scitea{ }\scited{15}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetBkColor}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{0xBEBEBE}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$KillButton}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateButton}\scitei{(}\sciteh{"Kill Rogue"}\scitei{,}\scitea{ }\scited{10}\scitei{,}\scitea{ }\scited{315}\scitei{,}\scitea{ }\scited{110}\scitei{,}\scitea{ }\scited{30}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$ExitButton}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateButton}\scitei{(}\sciteh{"Exit"}\scitei{,}\scitea{ }\scited{120}\scitei{,}\scitea{ }\scited{315}\scitei{,}\scitea{ }\scited{110}\scitei{,}\scitea{ }\scited{30}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$ReverseLoopCheckbox}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateCheckbox}\scitei{(}\sciteh{"Reversed Walker"}\scitei{,}\scitea{ }\scited{105}\scitei{,}\scitea{ }\scited{205}\scitei{,}\scitea{ }\scited{115}\scitei{,}\scitea{ }\scited{20}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetBkColor}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{0xBEBEBE}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$LootingCheckbox}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateCheckbox}\scitei{(}\sciteh{"Autoloot"}\scitei{,}\scitea{ }\scited{107}\scitei{,}\scitea{ }\scited{185}\scitei{,}\scitea{ }\scited{115}\scitei{,}\scitea{ }\scited{20}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetBkColor}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{0xBEBEBE}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$Checkbox}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateCheckbox}\scitei{(}\sciteh{"Old Style Pothack"}\scitei{,}\scitea{ }\scited{105}\scitei{,}\scitea{ }\scited{225}\scitei{,}\scitea{ }\scited{115}\scitei{,}\scitea{ }\scited{20}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetBkColor}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{0xBEBEBE}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$Helpers}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateLabel}\scitei{(}\sciteh{"HELPERS"}\scitei{,}\scitea{ }\scited{8}\scitei{,}\scitea{ }\scited{75}\scitei{,}\scitea{ }\scited{80}\scitei{,}\scitea{ }\scited{15}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetBkColor}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{0x808080}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$Character}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateLabel}\scitei{(}\sciteh{"CHARACTER"}\scitei{,}\scitea{ }\scited{8}\scitei{,}\scitea{ }\scited{170}\scitei{,}\scitea{ }\scited{80}\scitei{,}\scitea{ }\scited{15}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetBkColor}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{0x808080}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$Position}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateLabel}\scitei{(}\sciteh{"POSITION"}\scitei{,}\scitea{ }\scited{8}\scitei{,}\scitea{ }\scited{5}\scitei{,}\scitea{ }\scited{80}\scitei{,}\scitea{ }\scited{15}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetBkColor}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{0x808080}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$Information}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateLabel}\scitei{(}\sciteh{"INFORMATION"}\scitei{,}\scitea{ }\scited{103}\scitei{,}\scitea{ }\scited{4}\scitei{,}\scitea{ }\scited{120}\scitei{,}\scitea{ }\scited{15}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetBkColor}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{0x808080}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$Options}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateLabel}\scitei{(}\sciteh{"OPTIONS"}\scitei{,}\scitea{ }\scited{103}\scitei{,}\scitea{ }\scited{169}\scitei{,}\scitea{ }\scited{120}\scitei{,}\scitea{ }\scited{11}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetBkColor}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{0x808080}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$HealToggle}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateButton}\scitei{(}\sciteh{"HEAL"}\scitei{,}\scitea{ }\scited{95}\scitei{,}\scitea{ }\scited{92}\scitei{,}\scitea{ }\scited{60}\scitei{,}\scitea{ }\scited{15}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$CureToggle}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateButton}\scitei{(}\sciteh{"CURE"}\scitei{,}\scitea{ }\scited{95}\scitei{,}\scitea{ }\scited{108}\scitei{,}\scitea{ }\scited{60}\scitei{,}\scitea{ }\scited{15}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$TargetToggle}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateButton}\scitei{(}\sciteh{"TARGET"}\scitei{,}\scitea{ }\scited{95}\scitei{,}\scitea{ }\scited{124}\scitei{,}\scitea{ }\scited{60}\scitei{,}\scitea{ }\scited{15}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$WalkerToggle}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateButton}\scitei{(}\sciteh{"WALKER"}\scitei{,}\scitea{ }\scited{95}\scitei{,}\scitea{ }\scited{140}\scitei{,}\scitea{ }\scited{60}\scitei{,}\scitea{ }\scited{15}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$ToggleAll}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateButton}\scitei{(}\sciteh{"ToggleAll"}\scitei{,}\scitea{ }\scited{155}\scitei{,}\scitea{ }\scited{94}\scitei{,}\scitea{ }\scited{71}\scitei{,}\scitea{ }\scited{60}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetFont}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{8.5}\scitei{,}\scitea{ }\scited{400}\scitei{,}\scitea{ }\scitej{\$GUI\_FONTNORMAL}\scitei{,}\scitea{ }\sciteh{"\$GUI\_FONTNORMAL"}\scitei{)}\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$HP2Label}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateLabel}\scitei{(}\sciteh{"RealHp: N/A"}\scitei{,}\scitea{ }\scited{11}\scitei{,}\scitea{ }\scited{224}\scitei{,}\scitea{ }\scited{76}\scitei{,}\scitea{ }\scited{21}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetBkColor}\scitei{(-}\scited{1}\scitei{,}\scitea{ }\scited{0x9D9597}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitef{Global}\scitea{ }\scitej{\$healSlider}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlCreateSlider}\scitei{(}\scited{10}\scitei{,}\scitea{ }\scited{270}\scitei{,}\scitea{ }\scited{226}\scitei{,}\scitea{ }\scited{36}\scitei{)}\scitea{} \\
+\scitee{GUICtrlSetData}\scitei{(}\scitej{\$healSlider}\scitei{,}\scitea{ }\scited{85}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{} \\
+\scitea{} \\
+\scitea{} \\
+\scitee{GUISetState}\scitei{(}\sciteg{$@$SW\_SHOW}\scitei{)}\scitea{} \\
+\scitea{} \\
+\sciteb{; --------------------------------------------------------------------------} \\
+\sciteb{;{\hspace*{1em}}{\hspace*{1em}} :{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}} STREAMLINED MAIN LOOP} \\
+\sciteb{; --------------------------------------------------------------------------} \\
+\scitef{While}\scitea{ }\scitej{\$Running}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$msg}\scitea{ }\scitei{=}\scitea{ }\scitee{GUIGetMsg}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; ---- Handle GUI messages first ----} \\
+\scitea{\hspace*{4em}}\scitef{Switch}\scitea{ }\scitej{\$msg}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Case}\scitea{ }\scitej{\$ExitButton}\scitei{,}\scitea{ }\scitej{\$GUI\_EVENT\_CLOSE}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitep{\_WinAPI\_CloseHandle}\scitei{(}\scitej{\$hProcess}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{GUIDelete}\scitei{(}\scitej{\$Gui}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{Exit}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Case}\scitea{ }\scitej{\$KillButton}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$pidCheck}\scitea{ }\scitei{=}\scitea{ }\scitee{ProcessExists}\scitei{(}\scitej{\$ProcessName}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$pidCheck}\scitea{ }\scitef{Then}\scitea{ }\scitee{ProcessClose}\scitei{(}\scitej{\$pidCheck}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Case}\scitea{ }\scitej{\$HealToggle}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}ToggleHealer}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Case}\scitea{ }\scitej{\$CureToggle}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}ToggleCure}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Case}\scitea{ }\scitej{\$TargetToggle}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}ToggleTarget}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Case}\scitea{ }\scitej{\$WalkerToggle}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}ToggleWalker}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Case}\scitea{ }\scitej{\$ToggleAll}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}ToggleAllHelpers}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndSwitch}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; ---- Now background work ----} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$ProcessID}\scitea{ }\scitei{=}\scitea{ }\scitee{ProcessExists}\scitei{(}\scitej{\$ProcessName}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitef{Not}\scitea{ }\scitej{\$ProcessID}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$hProcess}\scitea{ }\scitei{$<$$>$}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{ }\scitep{\_WinAPI\_CloseHandle}\scitei{(}\scitej{\$hProcess}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$hProcess}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$BaseAddress}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{Sleep}\scitei{(}\scited{10}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{ContinueLoop}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$hProcess}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}ConnectToBaseAddress}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$BaseAddress}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Or}\scitea{ }\scitej{\$hProcess}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{Sleep}\scitei{(}\scited{10}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{ContinueLoop}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}ChangeAddressToBase}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}GUIReadMemory}\scitei{()}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$Chat}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$CureStatus}\scitea{ }\scitei{=}\scitea{ }\scited{1}\scitea{ }\scitef{And}\scitea{ }\scitej{\$Chat}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{ CureMe}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$HealerStatus}\scitea{ }\scitei{=}\scitea{ }\scited{1}\scitea{ }\scitef{And}\scitea{ }\scitej{\$Chat}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{ TimeToHeal}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$TargetStatus}\scitea{ }\scitei{=}\scitea{ }\scited{1}\scitea{ }\scitef{Then}\scitea{ AttackModeReader}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitee{GUICtrlRead}\scitei{(}\scitej{\$LootingCheckbox}\scitei{)}\scitea{ }\scitei{=}\scitea{ }\scitej{\$GUI\_CHECKED}\scitea{ }\scitef{Then}\scitea{ HandleLootQueue}\scitei{()}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$MoveToLocationsStatus}\scitea{ }\scitei{=}\scitea{ }\scited{1}\scitea{ }\scitef{And}\scitea{ }\scitef{Not}\scitea{ }\scitej{\$LootQueued}\scitea{ }\scitef{And}\scitea{ }\scitej{\$Chat}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$result}\scitea{ }\scitei{=}\scitea{ MoveToLocationsStep}\scitei{(}\scitej{\$aLocations}\scitei{,}\scitea{ }\scitej{\$iCurrentIndex}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\sciteg{$@$error}\scitea{ }\scitef{Then}\scitea{ }\scitej{\$MoveToLocationsStatus}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{Sleep}\scitei{(}\scited{50}\scitei{)}\scitea{ }\sciteb{; lighter sleep, much more responsive} \\
+\scitef{WEnd}\scitea{} \\
+\scitea{} \\
+\scitee{GUIDelete}\scitei{(}\scitej{\$Gui}\scitei{)}\scitea{} \\
+\scitep{\_WinAPI\_CloseHandle}\scitei{(}\scitej{\$hProcess}\scitei{)}\scitea{} \\
+\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Debug] Trainer closed by script end"}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitef{Exit}\scitea{} \\
+\scitea{} \\
+\sciteb{; ------------------------------------------------------------------------------} \\
+\sciteb{;{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}} LOAD CONFIG} \\
+\sciteb{; ------------------------------------------------------------------------------} \\
+\scitef{Func}\scitea{ LoadButtonConfig}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$sButtonConfigFile}\scitea{ }\scitei{=}\scitea{ }\sciteg{$@$ScriptDir}\scitea{ }\scitei{\&}\scitea{ }\sciteh{"{\textbackslash}NewButtonConfig.ini"}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; Remove old/unused entries} \\
+\scitea{\hspace*{4em}}\scitee{IniDelete}\scitei{(}\scitej{\$sButtonConfigFile}\scitei{,}\scitea{ }\sciteh{"Hotkeys"}\scitei{,}\scitea{ }\sciteh{"TogglePauseHotkey"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{IniDelete}\scitei{(}\scitej{\$sButtonConfigFile}\scitei{,}\scitea{ }\sciteh{"Hotkeys"}\scitei{,}\scitea{ }\sciteh{"PlayLocationsHotkey"}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; Define the hotkeys and default values} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$aKeys}\scitei{[}\scited{7}\scitei{][}\scited{2}\scitei{]}\scitea{ }\scitei{=}\scitea{ }\scitei{[}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitei{[}\sciteh{"HealHotkey"}\scitei{,}\scitea{ }\sciteh{"\{"}\scitea{ }\scitei{\&}\scitea{ }\scitee{Chr}\scitei{(}\scited{96}\scitei{)}\scitea{ }\scitei{\&}\scitea{ }\sciteh{"\}"}\scitei{],}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitei{[}\sciteh{"CureHotkey"}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{-\}}\sciteh{"}\scitei{],}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitei{[}\sciteh{"TargetHotkey"}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{=\}}\sciteh{"}\scitei{],}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitei{[}\sciteh{"ExitHotkey"}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{\#\}}\sciteh{"}\scitei{],}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitei{[}\sciteh{"SaveLocationHotkey"}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{F7\}}\sciteh{"}\scitei{],}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitei{[}\sciteh{"EraseLocationsHotkey"}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{F8\}}\sciteh{"}\scitei{],}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitei{[}\sciteh{"MoveToLocationsHotkey"}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{!\}}\sciteh{"}\scitei{]}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitei{]}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$bMissingKeys}\scitea{ }\scitei{=}\scitea{ }\scitef{False}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{For}\scitea{ }\scitej{\$i}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{To}\scitea{ }\scitee{UBound}\scitei{(}\scitej{\$aKeys}\scitei{)}\scitea{ }\scitei{-}\scitea{ }\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$sKey}\scitea{ }\scitei{=}\scitea{ }\scitee{IniRead}\scitei{(}\scitej{\$sButtonConfigFile}\scitei{,}\scitea{ }\sciteh{"Hotkeys"}\scitei{,}\scitea{ }\scitej{\$aKeys}\scitei{[}\scitej{\$i}\scitei{][}\scited{0}\scitei{],}\scitea{ }\sciteh{""}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$sKey}\scitea{ }\scitei{=}\scitea{ }\sciteh{""}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Warning] Missing key: "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$aKeys}\scitei{[}\scitej{\$i}\scitei{][}\scited{0}\scitei{]}\scitea{ }\scitei{\&}\scitea{ }\sciteh{". Will create default config."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$bMissingKeys}\scitea{ }\scitei{=}\scitea{ }\scitef{True}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{ExitLoop}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Next}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; If any key was missing, recreate the default configuration} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$bMissingKeys}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}CreateButtonDefaultConfig}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; Re-read keys} \\
+\scitea{\hspace*{4em}}\scitef{For}\scitea{ }\scitej{\$i}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{To}\scitea{ }\scitee{UBound}\scitei{(}\scitej{\$aKeys}\scitei{)}\scitea{ }\scitei{-}\scitea{ }\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$sKey}\scitea{ }\scitei{=}\scitea{ }\scitee{IniRead}\scitei{(}\scitej{\$sButtonConfigFile}\scitei{,}\scitea{ }\sciteh{"Hotkeys"}\scitei{,}\scitea{ }\scitej{\$aKeys}\scitei{[}\scitej{\$i}\scitei{][}\scited{0}\scitei{],}\scitea{ }\scitej{\$aKeys}\scitei{[}\scitej{\$i}\scitei{][}\scited{1}\scitei{])}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Switch}\scitea{ }\scitej{\$aKeys}\scitei{[}\scitej{\$i}\scitei{][}\scited{0}\scitei{]}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{Case}\scitea{ }\sciteh{"HealHotkey"}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{HotKeySet}\scitei{(}\scitej{\$sKey}\scitei{,}\scitea{ }\sciteh{"Hotkeyshit"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{Case}\scitea{ }\sciteh{"CureHotkey"}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{HotKeySet}\scitei{(}\scitej{\$sKey}\scitei{,}\scitea{ }\sciteh{"CureKeyShit"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{Case}\scitea{ }\sciteh{"TargetHotkey"}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{HotKeySet}\scitei{(}\scitej{\$sKey}\scitei{,}\scitea{ }\sciteh{"TargetKeyShit"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{Case}\scitea{ }\sciteh{"ExitHotkey"}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{HotKeySet}\scitei{(}\scitej{\$sKey}\scitei{,}\scitea{ }\sciteh{"KilledWithFire"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{Case}\scitea{ }\sciteh{"SaveLocationHotkey"}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{HotKeySet}\scitei{(}\scitej{\$sKey}\scitei{,}\scitea{ }\sciteh{"SaveLocation"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{Case}\scitea{ }\sciteh{"EraseLocationsHotkey"}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{HotKeySet}\scitei{(}\scitej{\$sKey}\scitei{,}\scitea{ }\sciteh{"EraseLocations"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{Case}\scitea{ }\sciteh{"MoveToLocationsHotkey"}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{HotKeySet}\scitei{(}\scitej{\$sKey}\scitei{,}\scitea{ }\sciteh{"MoveToLocations"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{EndSwitch}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Info] Hotkey for "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$aKeys}\scitei{[}\scitej{\$i}\scitei{][}\scited{0}\scitei{]}\scitea{ }\scitei{\&}\scitea{ }\sciteh{" set to "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$sKey}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Next}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$LoadButtonConfig} \\
+\scitea{} \\
+\scitef{Func}\scitea{ Min}\scitei{(}\scitej{\$a}\scitei{,}\scitea{ }\scitej{\$b}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$a}\scitea{ }\scitei{$<$}\scitea{ }\scitej{\$b}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{ }\scitej{\$a}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{ }\scitej{\$b}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$Min} \\
+\scitea{} \\
+\scitef{Func}\scitea{ QueueLootPattern}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$LootQueue}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; Screen click coordinates} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$rawX}\scitei{[}\scited{8}\scitei{]}\scitea{ }\scitei{=}\scitea{ }\scitei{[}\scited{320}\scitei{,}\scitea{ }\scited{350}\scitei{,}\scitea{ }\scited{385}\scitei{,}\scitea{ }\scited{325}\scitei{,}\scitea{ }\scited{385}\scitei{,}\scitea{ }\scited{325}\scitei{,}\scitea{ }\scited{350}\scitei{,}\scitea{ }\scited{385}\scitei{]}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$rawY}\scitei{[}\scited{8}\scitei{]}\scitea{ }\scitei{=}\scitea{ }\scitei{[}\scited{325}\scitei{,}\scitea{ }\scited{320}\scitei{,}\scitea{ }\scited{325}\scitei{,}\scitea{ }\scited{355}\scitei{,}\scitea{ }\scited{355}\scitei{,}\scitea{ }\scited{385}\scitei{,}\scitea{ }\scited{390}\scitei{,}\scitea{ }\scited{385}\scitei{]}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; Shuffle logic} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$used}\scitei{[}\scited{8}\scitei{]}\scitea{ }\scitei{=}\scitea{ }\scitei{[}\scitef{False}\scitei{,}\scitea{ }\scitef{False}\scitei{,}\scitea{ }\scitef{False}\scitei{,}\scitea{ }\scitef{False}\scitei{,}\scitea{ }\scitef{False}\scitei{,}\scitea{ }\scitef{False}\scitei{,}\scitea{ }\scitef{False}\scitei{,}\scitea{ }\scitef{False}\scitei{]}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{For}\scitea{ }\scitej{\$i}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{To}\scitea{ }\scited{7}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Do}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$rand}\scitea{ }\scitei{=}\scitea{ }\scitee{Random}\scitei{(}\scited{0}\scitei{,}\scitea{ }\scited{7}\scitei{,}\scitea{ }\scited{1}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Until}\scitea{ }\scitef{Not}\scitea{ }\scitej{\$used}\scitei{[}\scitej{\$rand}\scitei{]}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$LootQueue}\scitei{[}\scitej{\$i}\scitei{][}\scited{0}\scitei{]}\scitea{ }\scitei{=}\scitea{ }\scitej{\$rawX}\scitei{[}\scitej{\$rand}\scitei{]}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$LootQueue}\scitei{[}\scitej{\$i}\scitei{][}\scited{1}\scitei{]}\scitea{ }\scitei{=}\scitea{ }\scitej{\$rawY}\scitei{[}\scitej{\$rand}\scitei{]}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$used}\scitei{[}\scitej{\$rand}\scitei{]}\scitea{ }\scitei{=}\scitea{ }\scitef{True}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Next}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Loot] New loot pattern queued."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$QueueLootPattern} \\
+\scitea{} \\
+\sciteb{; ------------------------------------------------------------------------------} \\
+\sciteb{;{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}} HANDLE LOOT QUEUE} \\
+\sciteb{; ------------------------------------------------------------------------------} \\
+\scitef{Func}\scitea{ HandleLootQueue}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$BaseAddress}\scitei{,}\scitea{ }\scitej{\$WindowName}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$LootQueued}\scitei{,}\scitea{ }\scitej{\$LootCount}\scitei{,}\scitea{ }\scitej{\$LootReady}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$MoveToLocationsStatus}\scitei{,}\scitea{ }\scitej{\$PausedWalkerForLoot}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$PosXAddress}\scitei{,}\scitea{ }\scitej{\$PosYAddress}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$LastPlayerX}\scitei{,}\scitea{ }\scitej{\$LastPlayerY}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$LootIdleTimer}\scitei{,}\scitea{ }\scitej{\$LootIdleWaiting}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; No loot queued? Skip} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitef{Not}\scitea{ }\scitej{\$LootQueued}\scitea{ }\scitef{Or}\scitea{ }\scitej{\$LootCount}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{ }\scitef{Return}\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; Not finished waiting for idle? Skip} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitef{Not}\scitea{ }\scitej{\$LootIdleWaiting}\scitea{ }\scitef{Then}\scitea{ }\scitef{Return}\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; 750ms idle time check} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitee{TimerDiff}\scitei{(}\scitej{\$LootIdleTimer}\scitei{)}\scitea{ }\scitei{$<$}\scitea{ }\scited{750}\scitea{ }\scitef{Then}\scitea{ }\scitef{Return}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; Check movement} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$PlayerX}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$PosXAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$PlayerY}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$PosYAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$PlayerX}\scitea{ }\scitei{$<$$>$}\scitea{ }\scitej{\$LastPlayerX}\scitea{ }\scitef{Or}\scitea{ }\scitej{\$PlayerY}\scitea{ }\scitei{$<$$>$}\scitea{ }\scitej{\$LastPlayerY}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Loot] Player moved before looting. Cancelling."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$LootQueued}\scitea{ }\scitei{=}\scitea{ }\scitef{False}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$LootCount}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$LootReady}\scitea{ }\scitei{=}\scitea{ }\scitef{False}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$LootIdleWaiting}\scitea{ }\scitei{=}\scitea{ }\scitef{False}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; Pause walker} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$MoveToLocationsStatus}\scitea{ }\scitei{=}\scitea{ }\scited{1}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$MoveToLocationsStatus}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$PausedWalkerForLoot}\scitea{ }\scitei{=}\scitea{ }\scitef{True}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Loot] Walker paused for looting."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; Looting starts} \\
+\scitea{\hspace*{4em}}\sciteb{; Calculate clicks per tile based on kill count} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$clicksPerTile}\scitea{ }\scitei{=}\scitea{ CalculateLootClicks}\scitei{(}\scitej{\$LootCount}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Loot] Looting now with "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$clicksPerTile}\scitea{ }\scitei{\&}\scitea{ }\sciteh{" clicks per tile."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$memX}\scitei{[}\scited{8}\scitei{]}\scitea{ }\scitei{=}\scitea{ }\scitei{[}\scited{192}\scitei{,}\scitea{ }\scited{175}\scitei{,}\scitea{ }\scited{160}\scitei{,}\scitea{ }\scited{162}\scitei{,}\scitea{ }\scited{162}\scitei{,}\scitea{ }\scited{175}\scitei{,}\scitea{ }\scited{192}\scitei{,}\scitea{ }\scited{192}\scitei{]}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$memY}\scitei{[}\scited{8}\scitei{]}\scitea{ }\scitei{=}\scitea{ }\scitei{[}\scited{161}\scitei{,}\scitea{ }\scited{159}\scitei{,}\scitea{ }\scited{161}\scitei{,}\scitea{ }\scited{176}\scitei{,}\scitea{ }\scited{191}\scitei{,}\scitea{ }\scited{194}\scitei{,}\scitea{ }\scited{191}\scitei{,}\scitea{ }\scited{176}\scitei{]}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$clickX}\scitei{[}\scited{8}\scitei{]}\scitea{ }\scitei{=}\scitea{ }\scitei{[}\scited{385}\scitei{,}\scitea{ }\scited{350}\scitei{,}\scitea{ }\scited{320}\scitei{,}\scitea{ }\scited{325}\scitei{,}\scitea{ }\scited{325}\scitei{,}\scitea{ }\scited{350}\scitei{,}\scitea{ }\scited{385}\scitei{,}\scitea{ }\scited{385}\scitei{]}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$clickY}\scitei{[}\scited{8}\scitei{]}\scitea{ }\scitei{=}\scitea{ }\scitei{[}\scited{325}\scitei{,}\scitea{ }\scited{320}\scitei{,}\scitea{ }\scited{325}\scitei{,}\scitea{ }\scited{355}\scitei{,}\scitea{ }\scited{385}\scitei{,}\scitea{ }\scited{390}\scitei{,}\scitea{ }\scited{385}\scitei{,}\scitea{ }\scited{355}\scitei{]}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$used}\scitei{[}\scited{8}\scitei{]}\scitea{ }\scitei{=}\scitea{ }\scitei{[}\scitef{False}\scitei{,}\scitea{ }\scitef{False}\scitei{,}\scitea{ }\scitef{False}\scitei{,}\scitea{ }\scitef{False}\scitei{,}\scitea{ }\scitef{False}\scitei{,}\scitea{ }\scitef{False}\scitei{,}\scitea{ }\scitef{False}\scitei{,}\scitea{ }\scitef{False}\scitei{]}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{For}\scitea{ }\scitej{\$i}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{To}\scitea{ }\scited{7}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Do}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$rand}\scitea{ }\scitei{=}\scitea{ }\scitee{Random}\scitei{(}\scited{0}\scitei{,}\scitea{ }\scited{7}\scitei{,}\scitea{ }\scited{1}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Until}\scitea{ }\scitef{Not}\scitea{ }\scitej{\$used}\scitei{[}\scitej{\$rand}\scitei{]}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$used}\scitei{[}\scitej{\$rand}\scitei{]}\scitea{ }\scitei{=}\scitea{ }\scitef{True}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\_WriteMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$BaseAddress}\scitea{ }\scitei{+}\scitea{ }\scited{0xA669F0}\scitei{,}\scitea{ }\scitej{\$memX}\scitei{[}\scitej{\$rand}\scitei{])}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\_WriteMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$BaseAddress}\scitea{ }\scitei{+}\scitea{ }\scited{0xB5BC0C}\scitei{,}\scitea{ }\scitej{\$memY}\scitei{[}\scitej{\$rand}\scitei{])}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{For}\scitea{ }\scitej{\$j}\scitea{ }\scitei{=}\scitea{ }\scited{1}\scitea{ }\scitef{To}\scitea{ }\scitej{\$clicksPerTile}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ControlClick}\scitei{(}\scitej{\$WindowName}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{"right"}\scitei{,}\scitea{ }\scited{1}\scitei{,}\scitea{ }\scitej{\$clickX}\scitei{[}\scitej{\$rand}\scitei{],}\scitea{ }\scitej{\$clickY}\scitei{[}\scitej{\$rand}\scitei{])}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{Sleep}\scitei{(}\scited{1}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Next}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Loot] Clicked ("}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$clickX}\scitei{[}\scitej{\$rand}\scitei{]}\scitea{ }\scitei{\&}\scitea{ }\sciteh{","}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$clickY}\scitei{[}\scitej{\$rand}\scitei{]}\scitea{ }\scitei{\&}\scitea{ }\sciteh{") x"}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$clicksPerTile}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Next}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; Reset state} \\
+\scitea{\hspace*{4em}}\scitej{\$LootQueued}\scitea{ }\scitei{=}\scitea{ }\scitef{False}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$LootCount}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$LootReady}\scitea{ }\scitei{=}\scitea{ }\scitef{False}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$LootIdleWaiting}\scitea{ }\scitei{=}\scitea{ }\scitef{False}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; Resume walker} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$PausedWalkerForLoot}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$MoveToLocationsStatus}\scitea{ }\scitei{=}\scitea{ }\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$PausedWalkerForLoot}\scitea{ }\scitei{=}\scitea{ }\scitef{False}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Loot] Walker resumed after looting."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$HandleLootQueue} \\
+\scitea{} \\
+\scitef{Func}\scitea{ CalculateLootClicks}\scitei{(}\scitej{\$kills}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$kills}\scitea{ }\scitei{$<$=}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{ }\scited{0}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{ElseIf}\scitea{ }\scitej{\$kills}\scitea{ }\scitei{$<$=}\scitea{ }\scited{3}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{ }\scited{4}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{ElseIf}\scitea{ }\scitej{\$kills}\scitea{ }\scitei{$<$=}\scitea{ }\scited{6}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{ }\scited{6}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{ElseIf}\scitea{ }\scitej{\$kills}\scitea{ }\scitei{$<$=}\scitea{ }\scited{9}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{ }\scited{8}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{ElseIf}\scitea{ }\scitej{\$kills}\scitea{ }\scitei{$<$=}\scitea{ }\scited{12}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{ }\scited{10}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{ElseIf}\scitea{ }\scitej{\$kills}\scitea{ }\scitei{$<$=}\scitea{ }\scited{15}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{ }\scited{12}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{ElseIf}\scitea{ }\scitej{\$kills}\scitea{ }\scitei{$<$=}\scitea{ }\scited{18}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{ }\scited{14}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{ }\scited{16}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$CalculateLootClicks} \\
+\scitea{} \\
+\scitef{Func}\scitea{ ClickTile}\scitei{(}\scitej{\$x}\scitei{,}\scitea{ }\scitej{\$y}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{MouseClick}\scitei{(}\sciteh{"right"}\scitei{,}\scitea{ }\scitej{\$x}\scitei{,}\scitea{ }\scitej{\$y}\scitei{,}\scitea{ }\scited{1}\scitei{,}\scitea{ }\scited{0}\scitei{)}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$ClickTile} \\
+\scitea{} \\
+\scitea{} \\
+\scitef{Func}\scitea{ CreateButtonDefaultConfig}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$sButtonConfigFile}\scitea{ }\scitei{=}\scitea{ }\sciteg{$@$ScriptDir}\scitea{ }\scitei{\&}\scitea{ }\sciteh{"{\textbackslash}NewButtonConfig.ini"}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$aKeys}\scitei{[}\scited{7}\scitei{][}\scited{2}\scitei{]}\scitea{ }\scitei{=}\scitea{ }\scitei{[}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitei{[}\sciteh{"HealHotkey"}\scitei{,}\scitea{ }\sciteh{"\{"}\scitea{ }\scitei{\&}\scitea{ }\scitee{Chr}\scitei{(}\scited{96}\scitei{)}\scitea{ }\scitei{\&}\scitea{ }\sciteh{"\}"}\scitei{],}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitei{[}\sciteh{"CureHotkey"}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{-\}}\sciteh{"}\scitei{],}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitei{[}\sciteh{"TargetHotkey"}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{=\}}\sciteh{"}\scitei{],}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitei{[}\sciteh{"ExitHotkey"}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{\#\}}\sciteh{"}\scitei{],}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitei{[}\sciteh{"SaveLocationHotkey"}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{F7\}}\sciteh{"}\scitei{],}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitei{[}\sciteh{"EraseLocationsHotkey"}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{F8\}}\sciteh{"}\scitei{],}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitei{[}\sciteh{"MoveToLocationsHotkey"}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{!\}}\sciteh{"}\scitei{]}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitei{]}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{For}\scitea{ }\scitej{\$i}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{To}\scitea{ }\scitee{UBound}\scitei{(}\scitej{\$aKeys}\scitei{)}\scitea{ }\scitei{-}\scitea{ }\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{IniWrite}\scitei{(}\scitej{\$sButtonConfigFile}\scitei{,}\scitea{ }\sciteh{"Hotkeys"}\scitei{,}\scitea{ }\scitej{\$aKeys}\scitei{[}\scitej{\$i}\scitei{][}\scited{0}\scitei{],}\scitea{ }\scitej{\$aKeys}\scitei{[}\scitej{\$i}\scitei{][}\scited{1}\scitei{])}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Next}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Info] Default ButtonConfig.ini created with hotkeys."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$CreateButtonDefaultConfig} \\
+\scitea{} \\
+\sciteb{; ------------------------------------------------------------------------------} \\
+\sciteb{;{\hspace*{1em}}{\hspace*{1em}} Function to Open Process \& Retrieve Base Address} \\
+\sciteb{; ------------------------------------------------------------------------------} \\
+\scitef{Func}\scitea{ ConnectToBaseAddress}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$hProcess}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$ProcessID}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$BaseAddress}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$hProcess}\scitea{ }\scitei{=}\scitea{ }\scitep{\_WinAPI\_OpenProcess}\scitei{(}\scited{0x1F0FFF}\scitei{,}\scitea{ }\scitef{False}\scitei{,}\scitea{ }\scitej{\$ProcessID}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$hProcess}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Error] Failed to open process! Try running as administrator."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$BaseAddress}\scitea{ }\scitei{=}\scitea{ \_GetModuleBase\_EnumModules}\scitei{(}\scitej{\$hProcess}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$BaseAddress}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Error] Failed to obtain a valid base address!"}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$ConnectToBaseAddress} \\
+\scitea{} \\
+\sciteb{; ------------------------------------------------------------------------------} \\
+\sciteb{;{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}} READ AND UPDATE GUI FROM MEMORY} \\
+\sciteb{; ------------------------------------------------------------------------------} \\
+\scitef{Func}\scitea{ GUIReadMemory}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$hProcess}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$Type}\scitei{,}\scitea{ }\scitej{\$TypeAddress}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$WalkerLabel}\scitei{,}\scitea{ }\scitej{\$MoveToLocationsStatus}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$AttackMode}\scitei{,}\scitea{ }\scitej{\$AttackModeAddress}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$PosXAddress}\scitei{,}\scitea{ }\scitej{\$PosYAddress}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$HPAddress}\scitei{,}\scitea{ }\scitej{\$MaxHPAddress}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$ChattOpenAddress}\scitei{,}\scitea{ }\scitej{\$Chat}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$SicknessAddress}\scitei{,}\scitea{ }\scitej{\$Sickness}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$BackPack}\scitei{,}\scitea{ }\scitej{\$BackPackMax}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$BackPackAddress}\scitei{,}\scitea{ }\scitej{\$BackPackMaxAddress}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$HealerStatus}\scitei{,}\scitea{ }\scitej{\$CureStatus}\scitei{,}\scitea{ }\scitej{\$TargetStatus}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$HealerLabel}\scitei{,}\scitea{ }\scitej{\$CureLabel}\scitei{,}\scitea{ }\scitej{\$TargetLabel}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$LootQueued}\scitei{,}\scitea{ }\scitej{\$LootCount}\scitei{,}\scitea{ }\scitej{\$LootReady}\scitei{,}\scitea{ }\scitej{\$LootIdleWaiting}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$hProcess}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{ }\scitef{Return}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; Read Type} \\
+\scitea{\hspace*{4em}}\scitej{\$Type}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$TypeAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$Type}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$TypeLabel}\scitei{,}\scitea{ }\sciteh{"Type: Player"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{ElseIf}\scitea{ }\scitej{\$Type}\scitea{ }\scitei{=}\scitea{ }\scited{1}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$TypeLabel}\scitei{,}\scitea{ }\sciteh{"Type: Monster"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{ElseIf}\scitea{ }\scitej{\$Type}\scitea{ }\scitei{=}\scitea{ }\scited{2}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$TypeLabel}\scitei{,}\scitea{ }\sciteh{"Type: NPC"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{ElseIf}\scitea{ }\scitej{\$Type}\scitea{ }\scitei{=}\scitea{ }\scited{65535}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$TypeLabel}\scitei{,}\scitea{ }\sciteh{"Type: No Target"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$TypeLabel}\scitei{,}\scitea{ }\sciteh{"Type: Unknown ("}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$Type}\scitea{ }\scitei{\&}\scitea{ }\sciteh{")"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; Walker On/Off} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$MoveToLocationsStatus}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$WalkerLabel}\scitei{,}\scitea{ }\sciteh{"Walker: Off"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{ElseIf}\scitea{ }\scitej{\$MoveToLocationsStatus}\scitea{ }\scitei{=}\scitea{ }\scited{1}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$WalkerLabel}\scitei{,}\scitea{ }\sciteh{"Walker: On"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$WalkerLabel}\scitei{,}\scitea{ }\sciteh{"Error: Broken"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; Attack Mode} \\
+\scitea{\hspace*{4em}}\scitej{\$AttackMode}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$AttackModeAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$AttackMode}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$AttackModeLabel}\scitei{,}\scitea{ }\sciteh{"Attack Mode: Safe"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{ElseIf}\scitea{ }\scitej{\$AttackMode}\scitea{ }\scitei{=}\scitea{ }\scited{1}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$AttackModeLabel}\scitei{,}\scitea{ }\sciteh{"Attack Mode: Attack"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$AttackModeLabel}\scitei{,}\scitea{ }\sciteh{"Attack Mode: No Target"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; Position} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$PosX}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$PosXAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$PosY}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$PosYAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$PosXLabel}\scitei{,}\scitea{ }\sciteh{"Pos X: "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$PosX}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$PosYLabel}\scitei{,}\scitea{ }\sciteh{"Pos Y: "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$PosY}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; HP} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$HP}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$HPAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$HPLabel}\scitei{,}\scitea{ }\sciteh{"HP: "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$HP}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$HP2Label}\scitei{,}\scitea{ }\sciteh{"RealHp: "}\scitea{ }\scitei{\&}\scitea{ }\scitei{(}\scitej{\$HP}\scitea{ }\scitei{/}\scitea{ }\scited{65536}\scitei{))}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; MaxHP} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$MaxHP}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$MaxHPAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$MaxHPLabel}\scitei{,}\scitea{ }\sciteh{"MaxHP: "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$MaxHP}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; Chat} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$ChatVal}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$ChattOpenAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$Chat}\scitea{ }\scitei{=}\scitea{ }\scitej{\$ChatVal}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$ChatLabel}\scitei{,}\scitea{ }\sciteh{"Chat: "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$ChatVal}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; Sickness} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$SickVal}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$SicknessAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$Sickness}\scitea{ }\scitei{=}\scitea{ }\scitej{\$SickVal}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$SicknessDescription}\scitea{ }\scitei{=}\scitea{ GetSicknessDescription}\scitei{(}\scitej{\$SickVal}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$SicknessLabel}\scitei{,}\scitea{ }\sciteh{"Sickness: "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$SicknessDescription}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; Backpack Weight} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$bpWeight}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$BackPackAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$bpMax}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$BackPackMaxAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$BackPackLabel}\scitei{,}\scitea{ }\sciteh{"Weight "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$bpWeight}\scitea{ }\scitei{\&}\scitea{ }\sciteh{" / "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$bpMax}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; --- Death Detection via sudden teleport ---} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitef{Static}\scitea{ }\scitej{\$lastX}\scitea{ }\scitei{=}\scitea{ }\scitei{-}\scited{1}\scitei{,}\scitea{ }\scitej{\$lastY}\scitea{ }\scitei{=}\scitea{ }\scitei{-}\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$lastX}\scitea{ }\scitei{$<$$>$}\scitea{ }\scitei{-}\scited{1}\scitea{ }\scitef{And}\scitea{ }\scitej{\$lastY}\scitea{ }\scitei{$<$$>$}\scitea{ }\scitei{-}\scited{1}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$dx}\scitea{ }\scitei{=}\scitea{ }\scitee{Abs}\scitei{(}\scitej{\$PosX}\scitea{ }\scitei{-}\scitea{ }\scitej{\$lastX}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$dy}\scitea{ }\scitei{=}\scitea{ }\scitee{Abs}\scitei{(}\scitej{\$PosY}\scitea{ }\scitei{-}\scitea{ }\scitej{\$lastY}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$dx}\scitea{ }\scitei{$>$}\scitea{ }\scited{25}\scitea{ }\scitef{Or}\scitea{ }\scitej{\$dy}\scitea{ }\scitei{$>$}\scitea{ }\scited{25}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[DeathDetect] Large movement detected: ΔX="}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$dx}\scitea{ }\scitei{\&}\scitea{ }\sciteh{", ΔY="}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$dy}\scitea{ }\scitei{\&}\scitea{ }\sciteh{". Assuming death."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteb{; Disable all helpers} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$MoveToLocationsStatus}\scitea{ }\scitei{=}\scitea{ }\scited{1}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$MoveToLocationsStatus}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$WalkerLabel}\scitei{,}\scitea{ }\sciteh{"Walker: Off"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[DeathDetect] Walker disabled."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteb{;} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteb{;\hspace*{3em}\hspace*{4em}\hspace*{4em}If \$TargetStatus = 1 Then} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteb{;\hspace*{3em}\hspace*{4em}\hspace*{4em}\hspace*{4em}\$TargetStatus = 0} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteb{;\hspace*{3em}\hspace*{4em}\hspace*{4em}\hspace*{4em}GUICtrlSetData(\$TargetLabel, "Target: Off")} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteb{;\hspace*{3em}\hspace*{4em}\hspace*{4em}\hspace*{4em}ConsoleWrite("[DeathDetect] Targeting disabled." \& $@$CRLF)} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteb{;\hspace*{3em}\hspace*{4em}\hspace*{4em}EndIf} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteb{;} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteb{;\hspace*{3em}\hspace*{4em}\hspace*{4em}If \$HealerStatus = 1 Then} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteb{;\hspace*{3em}\hspace*{4em}\hspace*{4em}\hspace*{4em}\$HealerStatus = 0} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteb{;\hspace*{3em}\hspace*{4em}\hspace*{4em}\hspace*{4em}GUICtrlSetData(\$HealerLabel, "Healer: Off")} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteb{;\hspace*{3em}\hspace*{4em}\hspace*{4em}\hspace*{4em}ConsoleWrite("[DeathDetect] Healer disabled." \& $@$CRLF)} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteb{;\hspace*{3em}\hspace*{4em}\hspace*{4em}EndIf} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteb{;} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteb{;\hspace*{3em}\hspace*{4em}\hspace*{4em}If \$CureStatus = 1 Then} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteb{;\hspace*{3em}\hspace*{4em}\hspace*{4em}\hspace*{4em}\$CureStatus = 0} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteb{;\hspace*{3em}\hspace*{4em}\hspace*{4em}\hspace*{4em}GUICtrlSetData(\$CureLabel, "Cure: Off")} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteb{;\hspace*{3em}\hspace*{4em}\hspace*{4em}\hspace*{4em}ConsoleWrite("[DeathDetect] Cure disabled." \& $@$CRLF)} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteb{;\hspace*{3em}\hspace*{4em}\hspace*{4em}EndIf} \\
+\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteb{; Clear any loot} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$LootQueued}\scitea{ }\scitei{=}\scitea{ }\scitef{False}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$LootCount}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$LootReady}\scitea{ }\scitei{=}\scitea{ }\scitef{False}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$LootIdleWaiting}\scitea{ }\scitei{=}\scitea{ }\scitef{False}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$lastX}\scitea{ }\scitei{=}\scitea{ }\scitej{\$PosX}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$lastY}\scitea{ }\scitei{=}\scitea{ }\scitej{\$PosY}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$GUIReadMemory} \\
+\scitea{} \\
+\scitef{Func}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProc}\scitei{,}\scitea{ }\scitej{\$pAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$hProc}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Or}\scitea{ }\scitej{\$pAddress}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{ }\scitef{Return}\scitea{ }\scited{0}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$tBuffer}\scitea{ }\scitei{=}\scitea{ }\scitee{DllStructCreate}\scitei{(}\sciteh{"dword"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$aRead}\scitea{ }\scitei{=}\scitea{ }\scitee{DllCall}\scitei{(}\sciteh{"kernel32.dll"}\scitei{,}\scitea{ }\sciteh{"bool"}\scitei{,}\scitea{ }\sciteh{"ReadProcessMemory"}\scitei{,}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteh{"handle"}\scitei{,}\scitea{ }\scitej{\$hProc}\scitei{,}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteh{"ptr"}\scitei{,}\scitea{ }\scitej{\$pAddress}\scitei{,}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteh{"ptr"}\scitei{,}\scitea{ }\scitee{DllStructGetPtr}\scitei{(}\scitej{\$tBuffer}\scitei{),}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteh{"dword"}\scitei{,}\scitea{ }\scitee{DllStructGetSize}\scitei{(}\scitej{\$tBuffer}\scitei{),}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteh{"ptr"}\scitei{,}\scitea{ }\scited{0}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\sciteg{$@$error}\scitea{ }\scitef{Or}\scitea{ }\scitef{Not}\scitea{ }\scitej{\$aRead}\scitei{[}\scited{0}\scitei{]}\scitea{ }\scitef{Then}\scitea{ }\scitef{Return}\scitea{ }\scited{0}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Return}\scitea{ }\scitee{DllStructGetData}\scitei{(}\scitej{\$tBuffer}\scitei{,}\scitea{ }\scited{1}\scitei{)}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$\_ReadMemory} \\
+\scitea{} \\
+\scitef{Func}\scitea{ \_GetModuleBase\_EnumModules}\scitei{(}\scitej{\$hProc}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$hPsapi}\scitea{ }\scitei{=}\scitea{ }\scitee{DllOpen}\scitei{(}\sciteh{"psapi.dll"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$hPsapi}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{ }\scitef{Return}\scitea{ }\scited{0}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$tModules}\scitea{ }\scitei{=}\scitea{ }\scitee{DllStructCreate}\scitei{(}\sciteh{"ptr[1024]"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$tBytesNeeded}\scitea{ }\scitei{=}\scitea{ }\scitee{DllStructCreate}\scitei{(}\sciteh{"dword"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$aCall}\scitea{ }\scitei{=}\scitea{ }\scitee{DllCall}\scitei{(}\sciteh{"psapi.dll"}\scitei{,}\scitea{ }\sciteh{"bool"}\scitei{,}\scitea{ }\sciteh{"EnumProcessModules"}\scitei{,}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteh{"handle"}\scitei{,}\scitea{ }\scitej{\$hProc}\scitei{,}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteh{"ptr"}\scitei{,}\scitea{ }\scitee{DllStructGetPtr}\scitei{(}\scitej{\$tModules}\scitei{),}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteh{"dword"}\scitei{,}\scitea{ }\scitee{DllStructGetSize}\scitei{(}\scitej{\$tModules}\scitei{),}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteh{"ptr"}\scitei{,}\scitea{ }\scitee{DllStructGetPtr}\scitei{(}\scitej{\$tBytesNeeded}\scitei{))}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\sciteg{$@$error}\scitea{ }\scitef{Or}\scitea{ }\scitef{Not}\scitea{ }\scitej{\$aCall}\scitei{[}\scited{0}\scitei{]}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{DllClose}\scitei{(}\scitej{\$hPsapi}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{ }\scited{0}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; The first module in the list is usually the main EXE} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$pBaseAddress}\scitea{ }\scitei{=}\scitea{ }\scitee{DllStructGetData}\scitei{(}\scitej{\$tModules}\scitei{,}\scitea{ }\scited{1}\scitei{,}\scitea{ }\scited{1}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{DllClose}\scitei{(}\scitej{\$hPsapi}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Return}\scitea{ }\scitej{\$pBaseAddress}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$\_GetModuleBase\_EnumModules} \\
+\scitea{} \\
+\scitef{Func}\scitea{ ChangeAddressToBase}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$BaseAddress}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$TypeOffset}\scitei{,}\scitea{ }\scitej{\$AttackModeOffset}\scitei{,}\scitea{ }\scitej{\$PosXOffset}\scitei{,}\scitea{ }\scitej{\$PosYOffset}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$HPOffset}\scitei{,}\scitea{ }\scitej{\$MaxHPOffset}\scitei{,}\scitea{ }\scitej{\$ChattOpenOffset}\scitei{,}\scitea{ }\scitej{\$SicknessOffset}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$BackPack}\scitei{,}\scitea{ }\scitej{\$BackPackMax}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$TypeAddress}\scitei{,}\scitea{ }\scitej{\$AttackModeAddress}\scitei{,}\scitea{ }\scitej{\$PosXAddress}\scitei{,}\scitea{ }\scitej{\$PosYAddress}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$HPAddress}\scitei{,}\scitea{ }\scitej{\$MaxHPAddress}\scitei{,}\scitea{ }\scitej{\$ChattOpenAddress}\scitei{,}\scitea{ }\scitej{\$SicknessAddress}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$BackPackAddress}\scitei{,}\scitea{ }\scitej{\$BackPackMaxAddress}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$TypeAddress}\scitea{ }\scitei{=}\scitea{ }\scitej{\$BaseAddress}\scitea{ }\scitei{+}\scitea{ }\scitej{\$TypeOffset}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$AttackModeAddress}\scitea{ }\scitei{=}\scitea{ }\scitej{\$BaseAddress}\scitea{ }\scitei{+}\scitea{ }\scitej{\$AttackModeOffset}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$PosXAddress}\scitea{ }\scitei{=}\scitea{ }\scitej{\$BaseAddress}\scitea{ }\scitei{+}\scitea{ }\scitej{\$PosXOffset}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$PosYAddress}\scitea{ }\scitei{=}\scitea{ }\scitej{\$BaseAddress}\scitea{ }\scitei{+}\scitea{ }\scitej{\$PosYOffset}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$HPAddress}\scitea{ }\scitei{=}\scitea{ }\scitej{\$BaseAddress}\scitea{ }\scitei{+}\scitea{ }\scitej{\$HPOffset}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$MaxHPAddress}\scitea{ }\scitei{=}\scitea{ }\scitej{\$BaseAddress}\scitea{ }\scitei{+}\scitea{ }\scitej{\$MaxHPOffset}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$ChattOpenAddress}\scitea{ }\scitei{=}\scitea{ }\scitej{\$BaseAddress}\scitea{ }\scitei{+}\scitea{ }\scitej{\$ChattOpenOffset}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$SicknessAddress}\scitea{ }\scitei{=}\scitea{ }\scitej{\$BaseAddress}\scitea{ }\scitei{+}\scitea{ }\scitej{\$SicknessOffset}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$BackPackAddress}\scitea{ }\scitei{=}\scitea{ }\scitej{\$BaseAddress}\scitea{ }\scitei{+}\scitea{ }\scitej{\$BackPack}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$BackPackMaxAddress}\scitea{ }\scitei{=}\scitea{ }\scitej{\$BaseAddress}\scitea{ }\scitei{+}\scitea{ }\scitej{\$BackPackMax}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$ChangeAddressToBase} \\
+\scitea{} \\
+\scitea{} \\
+\sciteb{; --------------------------------------------------------------------------} \\
+\sciteb{;{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}} Hotkey Toggle Functions} \\
+\sciteb{; --------------------------------------------------------------------------} \\
+\scitem{\#Region}\sciteb{ ;toggles;} \\
+\scitef{Func}\scitea{ Hotkeyshit}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$HealerStatus}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$HealerStatus}\scitea{ }\scitei{=}\scitea{ }\scitef{Not}\scitea{ }\scitej{\$HealerStatus}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$HealerLabel}\scitei{,}\scitea{ }\sciteh{"Healer: "}\scitea{ }\scitei{\&}\scitea{ }\scitei{(}\scitej{\$HealerStatus}\scitea{ }\scitei{?}\scitea{ }\sciteh{"On"}\scitea{ }\scitei{:}\scitea{ }\sciteh{"Off"}\scitei{))}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$Hotkeyshit} \\
+\scitea{} \\
+\scitef{Func}\scitea{ CureKeyShit}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$CureStatus}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$CureStatus}\scitea{ }\scitei{=}\scitea{ }\scitef{Not}\scitea{ }\scitej{\$CureStatus}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$CureLabel}\scitei{,}\scitea{ }\sciteh{"Cure: "}\scitea{ }\scitei{\&}\scitea{ }\scitei{(}\scitej{\$CureStatus}\scitea{ }\scitei{?}\scitea{ }\sciteh{"On"}\scitea{ }\scitei{:}\scitea{ }\sciteh{"Off"}\scitei{))}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$CureKeyShit} \\
+\scitea{} \\
+\scitef{Func}\scitea{ TargetKeyShit}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$TargetStatus}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$TargetStatus}\scitea{ }\scitei{=}\scitea{ }\scitef{Not}\scitea{ }\scitej{\$TargetStatus}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$TargetLabel}\scitei{,}\scitea{ }\sciteh{"Target: "}\scitea{ }\scitei{\&}\scitea{ }\scitei{(}\scitej{\$TargetStatus}\scitea{ }\scitei{?}\scitea{ }\sciteh{"On"}\scitea{ }\scitei{:}\scitea{ }\sciteh{"Off"}\scitei{))}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$TargetKeyShit} \\
+\scitea{} \\
+\scitef{Func}\scitea{ KilledWithFire}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$Debug}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$Debug}\scitea{ }\scitef{Then}\scitea{ }\scitee{ConsoleWrite}\scitei{(}\sciteh{"Killed with fire"}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Exit}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$KilledWithFire} \\
+\scitea{} \\
+\scitea{} \\
+\scitef{Func}\scitea{ ToggleHealer}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$HealerStatus}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$HealerStatus}\scitea{ }\scitei{=}\scitea{ }\scitef{Not}\scitea{ }\scitej{\$HealerStatus}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$HealerLabel}\scitei{,}\scitea{ }\sciteh{"Healer: "}\scitea{ }\scitei{\&}\scitea{ }\scitei{(}\scitej{\$HealerStatus}\scitea{ }\scitei{?}\scitea{ }\sciteh{"On"}\scitea{ }\scitei{:}\scitea{ }\sciteh{"Off"}\scitei{))}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[GUI] Healer toggled to: "}\scitea{ }\scitei{\&}\scitea{ }\scitei{(}\scitej{\$HealerStatus}\scitea{ }\scitei{?}\scitea{ }\sciteh{"On"}\scitea{ }\scitei{:}\scitea{ }\sciteh{"Off"}\scitei{)}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$ToggleHealer} \\
+\scitea{} \\
+\scitef{Func}\scitea{ ToggleCure}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$CureStatus}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$CureStatus}\scitea{ }\scitei{=}\scitea{ }\scitef{Not}\scitea{ }\scitej{\$CureStatus}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$CureLabel}\scitei{,}\scitea{ }\sciteh{"Cure: "}\scitea{ }\scitei{\&}\scitea{ }\scitei{(}\scitej{\$CureStatus}\scitea{ }\scitei{?}\scitea{ }\sciteh{"On"}\scitea{ }\scitei{:}\scitea{ }\sciteh{"Off"}\scitei{))}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[GUI] Cure toggled to: "}\scitea{ }\scitei{\&}\scitea{ }\scitei{(}\scitej{\$CureStatus}\scitea{ }\scitei{?}\scitea{ }\sciteh{"On"}\scitea{ }\scitei{:}\scitea{ }\sciteh{"Off"}\scitei{)}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$ToggleCure} \\
+\scitea{} \\
+\scitef{Func}\scitea{ ToggleTarget}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$TargetStatus}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$TargetStatus}\scitea{ }\scitei{=}\scitea{ }\scitef{Not}\scitea{ }\scitej{\$TargetStatus}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$TargetLabel}\scitei{,}\scitea{ }\sciteh{"Target: "}\scitea{ }\scitei{\&}\scitea{ }\scitei{(}\scitej{\$TargetStatus}\scitea{ }\scitei{?}\scitea{ }\sciteh{"On"}\scitea{ }\scitei{:}\scitea{ }\sciteh{"Off"}\scitei{))}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[GUI] Target toggled to: "}\scitea{ }\scitei{\&}\scitea{ }\scitei{(}\scitej{\$TargetStatus}\scitea{ }\scitei{?}\scitea{ }\sciteh{"On"}\scitea{ }\scitei{:}\scitea{ }\sciteh{"Off"}\scitei{)}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$ToggleTarget} \\
+\scitea{} \\
+\scitef{Func}\scitea{ ToggleWalker}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$MoveToLocationsStatus}\scitei{,}\scitea{ }\scitej{\$aLocations}\scitei{,}\scitea{ }\scitej{\$iCurrentIndex}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$MoveToLocationsStatus}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}MoveToLocations}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}MoveToLocationsStep}\scitei{(}\scitej{\$aLocations}\scitei{,}\scitea{ }\scitej{\$iCurrentIndex}\scitei{)}\scitea{ }\sciteb{; $<$$<$$<$ NEW LINE!} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$WalkerLabel}\scitei{,}\scitea{ }\sciteh{"Walker: On"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[GUI] Walker toggled to: On"}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$MoveToLocationsStatus}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$WalkerLabel}\scitei{,}\scitea{ }\sciteh{"Walker: Off"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[GUI] Walker toggled to: Off"}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$ToggleWalker} \\
+\scitea{} \\
+\scitef{Func}\scitea{ ToggleAllHelpers}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$HealerStatus}\scitei{,}\scitea{ }\scitej{\$CureStatus}\scitei{,}\scitea{ }\scitej{\$TargetStatus}\scitei{,}\scitea{ }\scitej{\$MoveToLocationsStatus}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$TotalOn}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$HealerStatus}\scitea{ }\scitef{Then}\scitea{ }\scitej{\$TotalOn}\scitea{ }\scitei{+=}\scitea{ }\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$CureStatus}\scitea{ }\scitef{Then}\scitea{ }\scitej{\$TotalOn}\scitea{ }\scitei{+=}\scitea{ }\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$TargetStatus}\scitea{ }\scitef{Then}\scitea{ }\scitej{\$TotalOn}\scitea{ }\scitei{+=}\scitea{ }\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$MoveToLocationsStatus}\scitea{ }\scitei{=}\scitea{ }\scited{1}\scitea{ }\scitef{Then}\scitea{ }\scitej{\$TotalOn}\scitea{ }\scitei{+=}\scitea{ }\scited{1}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$TotalOn}\scitea{ }\scitei{$>$=}\scitea{ }\scited{1}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\sciteb{; Turn all OFF} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$HealerStatus}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$CureStatus}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$TargetStatus}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$MoveToLocationsStatus}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$HealerLabel}\scitei{,}\scitea{ }\sciteh{"Healer: Off"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$CureLabel}\scitei{,}\scitea{ }\sciteh{"Cure: Off"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$TargetLabel}\scitei{,}\scitea{ }\sciteh{"Target: Off"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$WalkerLabel}\scitei{,}\scitea{ }\sciteh{"Walker: Off"}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[GUI] ToggleAll: All turned OFF"}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\sciteb{; Turn all ON} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$HealerStatus}\scitea{ }\scitei{=}\scitea{ }\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$CureStatus}\scitea{ }\scitei{=}\scitea{ }\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$TargetStatus}\scitea{ }\scitei{=}\scitea{ }\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$MoveToLocationsStatus}\scitea{ }\scitei{=}\scitea{ }\scited{1}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$HealerLabel}\scitei{,}\scitea{ }\sciteh{"Healer: On"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$CureLabel}\scitei{,}\scitea{ }\sciteh{"Cure: On"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$TargetLabel}\scitei{,}\scitea{ }\sciteh{"Target: On"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{GUICtrlSetData}\scitei{(}\scitej{\$WalkerLabel}\scitei{,}\scitea{ }\sciteh{"Walker: On"}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[GUI] ToggleAll: All turned ON"}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$ToggleAllHelpers} \\
+\scitem{\#EndRegion}\sciteb{ ;toggles;} \\
+\sciteb{; ------------------------------------------------------------------------------} \\
+\sciteb{; Optional: Return a more human label for some “Sick” codes} \\
+\sciteb{; ------------------------------------------------------------------------------} \\
+\scitef{Func}\scitea{ GetSicknessDescription}\scitei{(}\scitej{\$Sick}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$SicknessDescription}\scitea{ }\scitei{=}\scitea{ }\sciteh{"Unknown"}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Switch}\scitea{ }\scitej{\$Sick}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Case}\scitea{ }\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$SicknessDescription}\scitea{ }\scitei{=}\scitea{ }\sciteh{"Poison1 ("}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$Sick}\scitea{ }\scitei{\&}\scitea{ }\sciteh{")"}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Case}\scitea{ }\scited{2}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$SicknessDescription}\scitea{ }\scitei{=}\scitea{ }\sciteh{"Disease1 ("}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$Sick}\scitea{ }\scitei{\&}\scitea{ }\sciteh{")"}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteb{; ...} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Case}\scitea{ }\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$SicknessDescription}\scitea{ }\scitei{=}\scitea{ }\scitej{\$Sick}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndSwitch}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Return}\scitea{ }\scitej{\$SicknessDescription}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$GetSicknessDescription} \\
+\scitea{} \\
+\sciteb{; ------------------------------------------------------------------------------} \\
+\sciteb{;{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}} LOCATION LOADING} \\
+\sciteb{; ------------------------------------------------------------------------------} \\
+\scitef{Func}\scitea{ LoadLocations}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitef{Not}\scitea{ }\scitee{FileExists}\scitei{(}\scitej{\$locationFile}\scitei{)}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Error] Location file not found: "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$locationFile}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{ }\scitee{SetError}\scitei{(}\scited{1}\scitei{,}\scitea{ }\scited{0}\scitei{,}\scitea{ }\scited{0}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$aLines}\scitea{ }\scitei{=}\scitea{ }\scitee{FileReadToArray}\scitei{(}\scitej{\$locationFile}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\sciteg{$@$error}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Error] Failed to read file: "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$locationFile}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{ }\scitee{SetError}\scitei{(}\scited{2}\scitei{,}\scitea{ }\scited{0}\scitei{,}\scitea{ }\scited{0}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$iLocationCount}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Dim}\scitea{ }\scitej{\$aTempLocations}\scitei{[}\scitee{UBound}\scitei{(}\scitej{\$aLines}\scitei{)][}\scited{2}\scitei{]}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{For}\scitea{ }\scitej{\$i}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{To}\scitea{ }\scitee{UBound}\scitei{(}\scitej{\$aLines}\scitei{)}\scitea{ }\scitei{-}\scitea{ }\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$aMatches}\scitea{ }\scitei{=}\scitea{ }\scitee{StringRegExp}\scitei{(}\scitej{\$aLines}\scitei{[}\scitej{\$i}\scitei{],}\scitea{ }\sciteh{"X:({\textbackslash}d+);Y:({\textbackslash}d+)"}\scitei{,}\scitea{ }\scited{3}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitef{Not}\scitea{ }\sciteg{$@$error}\scitea{ }\scitef{And}\scitea{ }\scitee{UBound}\scitei{(}\scitej{\$aMatches}\scitei{)}\scitea{ }\scitei{=}\scitea{ }\scited{2}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$aTempLocations}\scitei{[}\scitej{\$iLocationCount}\scitei{][}\scited{0}\scitei{]}\scitea{ }\scitei{=}\scitea{ }\scitee{Int}\scitei{(}\scitej{\$aMatches}\scitei{[}\scited{0}\scitei{])}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$aTempLocations}\scitei{[}\scitej{\$iLocationCount}\scitei{][}\scited{1}\scitei{]}\scitea{ }\scitei{=}\scitea{ }\scitee{Int}\scitei{(}\scitej{\$aMatches}\scitei{[}\scited{1}\scitei{])}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$iLocationCount}\scitea{ }\scitei{+=}\scitea{ }\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Warning] Failed to parse line "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$i}\scitea{ }\scitei{\&}\scitea{ }\sciteh{": "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$aLines}\scitei{[}\scitej{\$i}\scitei{]}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Next}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$iLocationCount}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Warning] No valid locations found in "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$locationFile}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{ }\scitee{SetError}\scitei{(}\scited{3}\scitei{,}\scitea{ }\scited{0}\scitei{,}\scitea{ }\scited{0}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{ReDim}\scitea{ }\scitej{\$aTempLocations}\scitei{[}\scitej{\$iLocationCount}\scitei{][}\scited{2}\scitei{]}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Success] Loaded "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$iLocationCount}\scitea{ }\scitei{\&}\scitea{ }\sciteh{" locations."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Return}\scitea{ }\scitej{\$aTempLocations}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$LoadLocations} \\
+\scitea{} \\
+\scitef{Func}\scitea{ SaveLocation}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$PosXAddress}\scitei{,}\scitea{ }\scitej{\$PosYAddress}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$currentLocations}\scitei{,}\scitea{ }\scitej{\$maxLocations}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$aLocations}\scitea{{\hspace*{1em}} }\sciteb{; $<$$<$$<$ Need this to reload} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$x}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$PosXAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$y}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$PosYAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"Attempting to read X: "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$x}\scitea{ }\scitei{\&}\scitea{ }\sciteh{" Y: "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$y}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\sciteg{$@$error}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Error] Failed to read memory. Error code: "}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$error}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$x}\scitea{ }\scitei{==}\scitea{ }\scited{0}\scitea{ }\scitef{And}\scitea{ }\scitej{\$y}\scitea{ }\scitei{==}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Warning] Read zero for both coordinates. Possibly a bad read."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitef{Not}\scitea{ }\scitee{FileExists}\scitei{(}\scitej{\$locationFile}\scitei{)}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$file}\scitea{ }\scitei{=}\scitea{ }\scitee{FileOpen}\scitei{(}\scitej{\$locationFile}\scitei{,}\scitea{ }\scitej{\$FO\_CREATEPATH}\scitea{ }\scitei{+}\scitea{ }\scitej{\$FO\_OVERWRITE}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$file}\scitea{ }\scitei{==}\scitea{ }\scitei{-}\scited{1}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Error] Failed to create file: "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$locationFile}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{FileClose}\scitei{(}\scitej{\$file}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Info] File created: "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$locationFile}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$data}\scitea{ }\scitei{=}\scitea{ }\sciteh{" : Location"}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$currentLocations}\scitea{ }\scitei{\&}\scitea{ }\sciteh{"=X:"}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$x}\scitea{ }\scitei{\&}\scitea{ }\sciteh{";Y:"}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$y}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$currentLocations}\scitea{ }\scitei{$<$}\scitea{ }\scitej{\$maxLocations}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitep{\_FileWriteLog}\scitei{(}\scitej{\$locationFile}\scitei{,}\scitea{ }\scitej{\$data}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\sciteg{$@$error}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Error] Failed to write to file: "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$locationFile}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Info] Data written: "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$data}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$currentLocations}\scitea{ }\scitei{+=}\scitea{ }\scited{1}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteb{; ===== FIX: Reload locations after save =====} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$aLocations}\scitea{ }\scitei{=}\scitea{ LoadLocations}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\sciteg{$@$error}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Error] Failed to reload locations after save!"}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Info] Locations reloaded successfully after save."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Info] Maximum locations reached. Stop pressing the button!"}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$SaveLocation} \\
+\scitea{} \\
+\scitef{Func}\scitea{ EraseLocations}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{FileDelete}\scitei{(}\scitej{\$locationFile}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$currentLocations}\scitea{ }\scitei{=}\scitea{ }\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"Success - All locations erased."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$EraseLocations} \\
+\scitea{} \\
+\sciteb{; ------------------------------------------------------------------------------} \\
+\sciteb{;{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}} LOCATION WALKING} \\
+\sciteb{; ------------------------------------------------------------------------------} \\
+\scitef{Func}\scitea{ MoveToLocations}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$MoveToLocationsStatus}\scitei{,}\scitea{ }\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$PosXAddress}\scitei{,}\scitea{ }\scitej{\$PosYAddress}\scitei{,}\scitea{ }\scitej{\$iCurrentIndex}\scitei{,}\scitea{ }\scitej{\$aLocations}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$MoveToLocationsStatus}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$currentX}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$PosXAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$currentY}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$PosYAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$iCurrentIndex}\scitea{ }\scitei{=}\scitea{ FindClosestLocationIndex}\scitei{(}\scitej{\$currentX}\scitei{,}\scitea{ }\scitej{\$currentY}\scitei{,}\scitea{ }\scitej{\$aLocations}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$iCurrentIndex}\scitea{ }\scitei{=}\scitea{ }\scitei{-}\scited{1}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Error] Could not find a closest location index (no valid data?)."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$MoveToLocationsStatus}\scitea{ }\scitei{=}\scitea{ }\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"move on"}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{ElseIf}\scitea{ }\scitej{\$MoveToLocationsStatus}\scitea{ }\scitei{=}\scitea{ }\scited{1}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$MoveToLocationsStatus}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"move off"}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{MsgBox}\scitei{(}\scited{0}\scitei{,}\scitea{ }\sciteh{"Error"}\scitei{,}\scitea{ }\sciteh{"You shouldn't have gotten this error"}\scitei{,}\scitea{ }\scited{5}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$MoveToLocations} \\
+\scitea{} \\
+\scitef{Func}\scitea{ MoveToLocationsStep}\scitei{(}\scitej{\$aLocations}\scitei{,}\scitea{ }\scitef{ByRef}\scitea{ }\scitej{\$iCurrentIndex}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$PosXAddress}\scitei{,}\scitea{ }\scitej{\$PosYAddress}\scitei{,}\scitea{ }\scitej{\$TypeAddress}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$WindowName}\scitei{,}\scitea{ }\scitej{\$lastX}\scitei{,}\scitea{ }\scitej{\$lastY}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$aTempBlocked}\scitei{[}\scited{0}\scitei{][}\scited{2}\scitei{],}\scitea{ }\scitej{\$ReverseLoopCheckbox}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$MoveToLocationsStatus}\scitea{ }\sciteb{; $<$--- ADD THIS LINE to have access to the live status} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Static}\scitea{ }\scitej{\$lastMoveTime}\scitea{ }\scitei{=}\scitea{ }\scitee{TimerInit}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Static}\scitea{ }\scitej{\$stuckCount}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Static}\scitea{ }\scitej{\$lastTargetX}\scitea{ }\scitei{=}\scitea{ }\scitei{-}\scited{1}\scitei{,}\scitea{ }\scitej{\$lastTargetY}\scitea{ }\scitei{=}\scitea{ }\scitei{-}\scited{1}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; EARLY EXIT: if toggled off during movement} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$MoveToLocationsStatus}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{ }\scitef{Return}\scitea{ }\scitee{SetError}\scitei{(}\scited{1}\scitei{,}\scitea{ }\scited{0}\scitei{,}\scitea{ }\sciteh{"Walker turned off mid-step"}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitef{Not}\scitea{ }\scitee{IsArray}\scitei{(}\scitej{\$aLocations}\scitei{)}\scitea{ }\scitef{Then}\scitea{ }\scitef{Return}\scitea{ }\scitee{SetError}\scitei{(}\scited{2}\scitei{,}\scitea{ }\scited{0}\scitei{,}\scitea{ }\sciteh{"Invalid input"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$iCurrentIndex}\scitea{ }\scitei{$<$}\scitea{ }\scited{0}\scitea{ }\scitef{Or}\scitea{ }\scitej{\$iCurrentIndex}\scitea{ }\scitei{$>$=}\scitea{ }\scitee{UBound}\scitei{(}\scitej{\$aLocations}\scitei{)}\scitea{ }\scitef{Then}\scitea{ }\scitef{Return}\scitea{ }\scitee{SetError}\scitei{(}\scited{3}\scitei{,}\scitea{ }\scited{0}\scitei{,}\scitea{ }\sciteh{"Index out of range"}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$reverse}\scitea{ }\scitei{=}\scitea{ }\scitei{(}\scitee{GUICtrlRead}\scitei{(}\scitej{\$ReverseLoopCheckbox}\scitei{)}\scitea{ }\scitei{=}\scitea{ }\scitej{\$GUI\_CHECKED}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$targetX}\scitea{ }\scitei{=}\scitea{ }\scitej{\$aLocations}\scitei{[}\scitej{\$iCurrentIndex}\scitei{][}\scited{0}\scitei{]}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$targetY}\scitea{ }\scitei{=}\scitea{ }\scitej{\$aLocations}\scitei{[}\scitej{\$iCurrentIndex}\scitei{][}\scited{1}\scitei{]}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$lastTargetX}\scitea{ }\scitei{$<$$>$}\scitea{ }\scitej{\$targetX}\scitea{ }\scitef{Or}\scitea{ }\scitej{\$lastTargetY}\scitea{ }\scitei{$<$$>$}\scitea{ }\scitej{\$targetY}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$stuckCount}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$lastTargetX}\scitea{ }\scitei{=}\scitea{ }\scitej{\$targetX}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$lastTargetY}\scitea{ }\scitei{=}\scitea{ }\scitej{\$targetY}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ IsBlockedCoord}\scitei{(}\scitej{\$targetX}\scitei{,}\scitea{ }\scitej{\$targetY}\scitei{)}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"Skipping known blocked coordinate ("}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$targetX}\scitea{ }\scitei{\&}\scitea{ }\sciteh{", "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$targetY}\scitea{ }\scitei{\&}\scitea{ }\sciteh{")"}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$iCurrentIndex}\scitea{ }\scitei{=}\scitea{ NextIndex}\scitei{(}\scitej{\$iCurrentIndex}\scitei{,}\scitea{ }\scitee{UBound}\scitei{(}\scitej{\$aLocations}\scitei{),}\scitea{ }\scitej{\$reverse}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{ }\scitef{True}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$currentX}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$PosXAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$currentY}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$PosYAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$Type}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$TypeAddress}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; EARLY EXIT: again before move attempt} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$MoveToLocationsStatus}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{ }\scitef{Return}\scitea{ }\scitee{SetError}\scitei{(}\scited{4}\scitei{,}\scitea{ }\scited{0}\scitei{,}\scitea{ }\sciteh{"Walker turned off mid-step"}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$Type}\scitea{ }\scitei{$<$$>$}\scitea{ }\scited{65535}\scitea{ }\scitef{Then}\scitea{ }\scitef{Return}\scitea{ }\scitef{False}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$currentX}\scitea{ }\scitei{=}\scitea{ }\scitej{\$lastX}\scitea{ }\scitef{And}\scitea{ }\scitej{\$currentY}\scitea{ }\scitei{=}\scitea{ }\scitej{\$lastY}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitee{TimerDiff}\scitei{(}\scitej{\$lastMoveTime}\scitei{)}\scitea{ }\scitei{$>$}\scitea{ }\scited{1000}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"Detected stuck, trying bypass."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$beforeX}\scitea{ }\scitei{=}\scitea{ }\scitej{\$currentX}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$beforeY}\scitea{ }\scitei{=}\scitea{ }\scitej{\$currentY}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$bypassSuccess}\scitea{ }\scitei{=}\scitea{ TryBypass}\scitei{()}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$currentX}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$PosXAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$currentY}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$PosYAddress}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$bypassSuccess}\scitea{ }\scitef{And}\scitea{ }\scitei{(}\scitej{\$currentX}\scitea{ }\scitei{$<$$>$}\scitea{ }\scitej{\$beforeX}\scitea{ }\scitef{Or}\scitea{ }\scitej{\$currentY}\scitea{ }\scitei{$<$$>$}\scitea{ }\scitej{\$beforeY}\scitei{)}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"Bypass moved us away. Marking previous target blocked and skipping."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}MarkCoordAsBlocked}\scitei{(}\scitej{\$lastTargetX}\scitei{,}\scitea{ }\scitej{\$lastTargetY}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$iCurrentIndex}\scitea{ }\scitei{=}\scitea{ NextIndex}\scitei{(}\scitej{\$iCurrentIndex}\scitei{,}\scitea{ }\scitee{UBound}\scitei{(}\scitej{\$aLocations}\scitei{),}\scitea{ }\scitej{\$reverse}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$lastMoveTime}\scitea{ }\scitei{=}\scitea{ }\scitee{TimerInit}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$lastX}\scitea{ }\scitei{=}\scitea{ }\scitej{\$currentX}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$lastY}\scitea{ }\scitei{=}\scitea{ }\scitej{\$currentY}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{ }\scitef{True}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$stuckCount}\scitea{ }\scitei{+=}\scitea{ }\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$stuckCount}\scitea{ }\scitei{$>$=}\scitea{ }\scited{3}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}MarkCoordAsBlocked}\scitei{(}\scitej{\$targetX}\scitei{,}\scitea{ }\scitej{\$targetY}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"Skipping stubborn target at ("}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$targetX}\scitea{ }\scitei{\&}\scitea{ }\sciteh{", "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$targetY}\scitea{ }\scitei{\&}\scitea{ }\sciteh{")"}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$iCurrentIndex}\scitea{ }\scitei{=}\scitea{ NextIndex}\scitei{(}\scitej{\$iCurrentIndex}\scitei{,}\scitea{ }\scitee{UBound}\scitei{(}\scitej{\$aLocations}\scitei{),}\scitea{ }\scitej{\$reverse}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$stuckCount}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{ }\scitef{True}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$lastMoveTime}\scitea{ }\scitei{=}\scitea{ }\scitee{TimerInit}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$lastX}\scitea{ }\scitei{=}\scitea{ }\scitej{\$currentX}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$lastY}\scitea{ }\scitei{=}\scitea{ }\scitej{\$currentY}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$currentX}\scitea{ }\scitei{=}\scitea{ }\scitej{\$targetX}\scitea{ }\scitef{And}\scitea{ }\scitej{\$currentY}\scitea{ }\scitei{=}\scitea{ }\scitej{\$targetY}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"Arrived at target index: "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$iCurrentIndex}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$iCurrentIndex}\scitea{ }\scitei{=}\scitea{ NextIndex}\scitei{(}\scitej{\$iCurrentIndex}\scitei{,}\scitea{ }\scitee{UBound}\scitei{(}\scitej{\$aLocations}\scitei{),}\scitea{ }\scitej{\$reverse}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{ }\scitef{True}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; FINAL EARLY EXIT check before sending any keys} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$MoveToLocationsStatus}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{ }\scitef{Return}\scitea{ }\scitee{SetError}\scitei{(}\scited{5}\scitei{,}\scitea{ }\scited{0}\scitei{,}\scitea{ }\sciteh{"Walker turned off mid-step"}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$currentX}\scitea{ }\scitei{$<$}\scitea{ }\scitej{\$targetX}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ControlSend}\scitei{(}\scitej{\$WindowName}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{d down\}}\sciteh{"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{Sleep}\scitei{(}\scited{30}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ControlSend}\scitei{(}\scitej{\$WindowName}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{d up\}}\sciteh{"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{ElseIf}\scitea{ }\scitej{\$currentX}\scitea{ }\scitei{$>$}\scitea{ }\scitej{\$targetX}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ControlSend}\scitei{(}\scitej{\$WindowName}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{a down\}}\sciteh{"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{Sleep}\scitei{(}\scited{30}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ControlSend}\scitei{(}\scitej{\$WindowName}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{a up\}}\sciteh{"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$currentY}\scitea{ }\scitei{$<$}\scitea{ }\scitej{\$targetY}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ControlSend}\scitei{(}\scitej{\$WindowName}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{s down\}}\sciteh{"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{Sleep}\scitei{(}\scited{30}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ControlSend}\scitei{(}\scitej{\$WindowName}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{s up\}}\sciteh{"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{ElseIf}\scitea{ }\scitej{\$currentY}\scitea{ }\scitei{$>$}\scitea{ }\scitej{\$targetY}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ControlSend}\scitei{(}\scitej{\$WindowName}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{w down\}}\sciteh{"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{Sleep}\scitei{(}\scited{30}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ControlSend}\scitei{(}\scitej{\$WindowName}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{w up\}}\sciteh{"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Return}\scitea{ }\scitef{True}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$MoveToLocationsStep} \\
+\scitea{} \\
+\scitef{Func}\scitea{ NextIndex}\scitei{(}\scitej{\$iCurrent}\scitei{,}\scitea{ }\scitej{\$iBound}\scitei{,}\scitea{ }\scitej{\$reverse}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$reverse}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$iCurrent}\scitea{ }\scitei{-=}\scitea{ }\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$iCurrent}\scitea{ }\scitei{$<$}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{ }\scitej{\$iCurrent}\scitea{ }\scitei{=}\scitea{ }\scitej{\$iBound}\scitea{ }\scitei{-}\scitea{ }\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$iCurrent}\scitea{ }\scitei{+=}\scitea{ }\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$iCurrent}\scitea{ }\scitei{$>$=}\scitea{ }\scitej{\$iBound}\scitea{ }\scitef{Then}\scitea{ }\scitej{\$iCurrent}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Return}\scitea{ }\scitej{\$iCurrent}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$NextIndex} \\
+\scitea{} \\
+\scitef{Func}\scitea{ QuickKey}\scitei{(}\scitej{\$key}\scitei{,}\scitea{ }\scitej{\$window}\scitei{,}\scitea{ }\scitej{\$hold}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{ControlSend}\scitei{(}\scitej{\$window}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\scitee{StringReplace}\scitei{(}\scitej{\$key}\scitei{,}\scitea{ }\sciteh{"\}"}\scitei{,}\scitea{ }\sciteh{" down\}"}\scitei{))}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{Sleep}\scitei{(}\scitej{\$hold}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{ControlSend}\scitei{(}\scitej{\$window}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\scitee{StringReplace}\scitei{(}\scitej{\$key}\scitei{,}\scitea{ }\sciteh{"\}"}\scitei{,}\scitea{ }\sciteh{" up\}"}\scitei{))}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$QuickKey} \\
+\scitea{} \\
+\scitea{} \\
+\scitef{Func}\scitea{ TryBypass}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$WindowName}\scitei{,}\scitea{ }\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$PosXAddress}\scitei{,}\scitea{ }\scitej{\$PosYAddress}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$lastX}\scitei{,}\scitea{ }\scitej{\$lastY}\scitei{,}\scitea{ }\scitej{\$aLocations}\scitei{,}\scitea{ }\scitej{\$iCurrentIndex}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$cx}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$PosXAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$cy}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$PosYAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$tx}\scitea{ }\scitei{=}\scitea{ }\scitej{\$aLocations}\scitei{[}\scitej{\$iCurrentIndex}\scitei{][}\scited{0}\scitei{]}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$ty}\scitea{ }\scitei{=}\scitea{ }\scitej{\$aLocations}\scitei{[}\scitej{\$iCurrentIndex}\scitei{][}\scited{1}\scitei{]}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$dx}\scitea{ }\scitei{=}\scitea{ }\scitej{\$tx}\scitea{ }\scitei{-}\scitea{ }\scitej{\$cx}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$dy}\scitea{ }\scitei{=}\scitea{ }\scitej{\$ty}\scitea{ }\scitei{-}\scitea{ }\scitej{\$cy}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$main}\scitea{ }\scitei{=}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\scitej{\$side1}\scitea{ }\scitei{=}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\scitej{\$side2}\scitea{ }\scitei{=}\scitea{ }\sciteh{""}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitee{Abs}\scitei{(}\scitej{\$dx}\scitei{)}\scitea{ }\scitei{$>$=}\scitea{ }\scitee{Abs}\scitei{(}\scitej{\$dy}\scitei{)}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$dx}\scitea{ }\scitei{$<$}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$main}\scitea{ }\scitei{=}\scitea{ }\sciteh{"}\scitek{\{a\}}\sciteh{"}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$side1}\scitea{ }\scitei{=}\scitea{ }\sciteh{"}\scitek{\{w\}}\sciteh{"}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$side2}\scitea{ }\scitei{=}\scitea{ }\sciteh{"}\scitek{\{s\}}\sciteh{"}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$main}\scitea{ }\scitei{=}\scitea{ }\sciteh{"}\scitek{\{d\}}\sciteh{"}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$side1}\scitea{ }\scitei{=}\scitea{ }\sciteh{"}\scitek{\{w\}}\sciteh{"}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$side2}\scitea{ }\scitei{=}\scitea{ }\sciteh{"}\scitek{\{s\}}\sciteh{"}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$dy}\scitea{ }\scitei{$<$}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$main}\scitea{ }\scitei{=}\scitea{ }\sciteh{"}\scitek{\{w\}}\sciteh{"}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$side1}\scitea{ }\scitei{=}\scitea{ }\sciteh{"}\scitek{\{d\}}\sciteh{"}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$side2}\scitea{ }\scitei{=}\scitea{ }\sciteh{"}\scitek{\{a\}}\sciteh{"}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$main}\scitea{ }\scitei{=}\scitea{ }\sciteh{"}\scitek{\{s\}}\sciteh{"}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$side1}\scitea{ }\scitei{=}\scitea{ }\sciteh{"}\scitek{\{a\}}\sciteh{"}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$side2}\scitea{ }\scitei{=}\scitea{ }\sciteh{"}\scitek{\{d\}}\sciteh{"}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$HoldTime}\scitea{ }\scitei{=}\scitea{ }\scited{75}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}QuickKey}\scitei{(}\scitej{\$side1}\scitei{,}\scitea{ }\scitej{\$WindowName}\scitei{,}\scitea{ }\scitej{\$HoldTime}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}QuickKey}\scitei{(}\scitej{\$side1}\scitei{,}\scitea{ }\scitej{\$WindowName}\scitei{,}\scitea{ }\scitej{\$HoldTime}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$nx}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$PosXAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$ny}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$PosYAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$nx}\scitea{ }\scitei{$<$$>$}\scitea{ }\scitej{\$cx}\scitea{ }\scitef{Or}\scitea{ }\scitej{\$ny}\scitea{ }\scitei{$<$$>$}\scitea{ }\scitej{\$cy}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"Bypass via "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$side1}\scitea{ }\scitei{\&}\scitea{ }\sciteh{" worked. Resuming: "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$main}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}QuickKey}\scitei{(}\scitej{\$main}\scitei{,}\scitea{ }\scitej{\$WindowName}\scitei{,}\scitea{ }\scitej{\$HoldTime}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$lastX}\scitea{ }\scitei{=}\scitea{ }\scitej{\$nx}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$lastY}\scitea{ }\scitei{=}\scitea{ }\scitej{\$ny}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{ }\scitef{True}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}QuickKey}\scitei{(}\scitej{\$side2}\scitei{,}\scitea{ }\scitej{\$WindowName}\scitei{,}\scitea{ }\scitej{\$HoldTime}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}QuickKey}\scitei{(}\scitej{\$side2}\scitei{,}\scitea{ }\scitej{\$WindowName}\scitei{,}\scitea{ }\scitej{\$HoldTime}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$nx}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$PosXAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$ny}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$PosYAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$nx}\scitea{ }\scitei{$<$$>$}\scitea{ }\scitej{\$cx}\scitea{ }\scitef{Or}\scitea{ }\scitej{\$ny}\scitea{ }\scitei{$<$$>$}\scitea{ }\scitej{\$cy}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"Bypass via "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$side2}\scitea{ }\scitei{\&}\scitea{ }\sciteh{" worked. Resuming: "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$main}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}QuickKey}\scitei{(}\scitej{\$main}\scitei{,}\scitea{ }\scitej{\$WindowName}\scitei{,}\scitea{ }\scitej{\$HoldTime}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$lastX}\scitea{ }\scitei{=}\scitea{ }\scitej{\$nx}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$lastY}\scitea{ }\scitei{=}\scitea{ }\scitej{\$ny}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{ }\scitef{True}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"Bypass failed: no movement after sidesteps."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Return}\scitea{ }\scitef{False}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$TryBypass} \\
+\scitea{} \\
+\scitef{Func}\scitea{ FindClosestLocationIndex}\scitei{(}\scitej{\$currentX}\scitei{,}\scitea{ }\scitej{\$currentY}\scitei{,}\scitea{ }\scitej{\$aLocations}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitef{Not}\scitea{ }\scitee{IsArray}\scitei{(}\scitej{\$aLocations}\scitei{)}\scitea{ }\scitef{Or}\scitea{ }\scitee{UBound}\scitei{(}\scitej{\$aLocations}\scitei{,}\scitea{ }\scited{0}\scitei{)}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"FindClosestLocationIndex =$>$ no valid array."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{ }\scitei{-}\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$minDist}\scitea{ }\scitei{=}\scitea{ }\scited{999999}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$minIndex}\scitea{ }\scitei{=}\scitea{ }\scitei{-}\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{For}\scitea{ }\scitej{\$i}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{To}\scitea{ }\scitee{UBound}\scitei{(}\scitej{\$aLocations}\scitei{)}\scitea{ }\scitei{-}\scitea{ }\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$dx}\scitea{ }\scitei{=}\scitea{ }\scitej{\$currentX}\scitea{ }\scitei{-}\scitea{ }\scitej{\$aLocations}\scitei{[}\scitej{\$i}\scitei{][}\scited{0}\scitei{]}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$dy}\scitea{ }\scitei{=}\scitea{ }\scitej{\$currentY}\scitea{ }\scitei{-}\scitea{ }\scitej{\$aLocations}\scitei{[}\scitej{\$i}\scitei{][}\scited{1}\scitei{]}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$dist}\scitea{ }\scitei{=}\scitea{ }\scitej{\$dx}\scitea{ }\scitei{*}\scitea{ }\scitej{\$dx}\scitea{ }\scitei{+}\scitea{ }\scitej{\$dy}\scitea{ }\scitei{*}\scitea{ }\scitej{\$dy}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$dist}\scitea{ }\scitei{$<$}\scitea{ }\scitej{\$minDist}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$minDist}\scitea{ }\scitei{=}\scitea{ }\scitej{\$dist}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$minIndex}\scitea{ }\scitei{=}\scitea{ }\scitej{\$i}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Next}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$minIndex}\scitea{ }\scitei{=}\scitea{ }\scitei{-}\scited{1}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"FindClosestLocationIndex =$>$ No valid locations found."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"FindClosestLocationIndex =$>$ Found index: "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$minIndex}\scitea{ }\scitei{\&}\scitea{ }\sciteh{" Dist="}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$minDist}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Return}\scitea{ }\scitej{\$minIndex}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$FindClosestLocationIndex} \\
+\scitea{} \\
+\sciteb{; ------------------------------------------------------------------------------} \\
+\sciteb{;{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}} CURE FUNCTION} \\
+\sciteb{; ------------------------------------------------------------------------------} \\
+\scitef{Func}\scitea{ CureMe}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$Chat}\scitei{,}\scitea{ }\scitej{\$Checkbox}\scitei{,}\scitea{ }\scitej{\$Sickness}\scitei{,}\scitea{ }\scitej{\$sicknessArray}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$HealDelay}\scitei{,}\scitea{ }\scitej{\$LastHealTime}\scitei{,}\scitea{ }\scitej{\$elapsedTimeSinceHeal}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$MovmentSlider}\scitei{,}\scitea{ }\scitej{\$PosXLabel}\scitei{,}\scitea{ }\scitej{\$PosYLabel}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$Chat}\scitea{ }\scitei{$<$$>$}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{ }\scitef{Return}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; Check if we have a sickness that is in the array} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitep{\_ArraySearch}\scitei{(}\scitej{\$sicknessArray}\scitei{,}\scitea{ }\scitej{\$Sickness}\scitei{)}\scitea{ }\scitei{=}\scitea{ }\scitei{-}\scited{1}\scitea{ }\scitef{Then}\scitea{ }\scitef{Return}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$Healwait}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlRead}\scitei{(}\scitej{\$MovmentSlider}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$currentX}\scitea{ }\scitei{=}\scitea{ }\scitee{Number}\scitei{(}\scitee{StringRegExpReplace}\scitei{(}\scitee{GUICtrlRead}\scitei{(}\scitej{\$PosXLabel}\scitei{),}\scitea{ }\sciteh{"[\^{\textbackslash}d]"}\scitei{,}\scitea{ }\sciteh{""}\scitei{))}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$currentY}\scitea{ }\scitei{=}\scitea{ }\scitee{Number}\scitei{(}\scitee{StringRegExpReplace}\scitei{(}\scitee{GUICtrlRead}\scitei{(}\scitej{\$PosYLabel}\scitei{),}\scitea{ }\sciteh{"[\^{\textbackslash}d]"}\scitei{,}\scitea{ }\sciteh{""}\scitei{))}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Static}\scitea{ }\scitej{\$lastX}\scitea{ }\scitei{=}\scitea{ }\scitej{\$currentX}\scitei{,}\scitea{ }\scitej{\$lastY}\scitea{ }\scitei{=}\scitea{ }\scitej{\$currentY}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Static}\scitea{ }\scitej{\$LastMovementTime}\scitea{ }\scitei{=}\scitea{ }\scitee{TimerInit}\scitei{()}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$elapsedTimeSinceHeal}\scitea{ }\scitei{=}\scitea{ }\scitee{TimerDiff}\scitei{(}\scitej{\$LastHealTime}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; Detect movement} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$currentX}\scitea{ }\scitei{$<$$>$}\scitea{ }\scitej{\$lastX}\scitea{ }\scitef{Or}\scitea{ }\scitej{\$currentY}\scitea{ }\scitei{$<$$>$}\scitea{ }\scitej{\$lastY}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$lastX}\scitea{ }\scitei{=}\scitea{ }\scitej{\$currentX}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$lastY}\scitea{ }\scitei{=}\scitea{ }\scitej{\$currentY}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$LastMovementTime}\scitea{ }\scitei{=}\scitea{ }\scitee{TimerInit}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$TimeSinceLastMove}\scitea{ }\scitei{=}\scitea{ }\scitee{TimerDiff}\scitei{(}\scitej{\$LastMovementTime}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; Old style} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitee{GUICtrlRead}\scitei{(}\scitej{\$Checkbox}\scitei{)}\scitea{ }\scitei{=}\scitea{ }\scitej{\$GUI\_CHECKED}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$elapsedTimeSinceHeal}\scitea{ }\scitei{$>$=}\scitea{ }\scitej{\$HealDelay}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ControlSend}\scitei{(}\sciteh{"Project Rogue"}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{3\}}\sciteh{"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"Cure triggered (old style)"}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$LastHealTime}\scitea{ }\scitei{=}\scitea{ }\scitee{TimerInit}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$elapsedTimeSinceHeal}\scitea{ }\scitei{$>$=}\scitea{ }\scitej{\$HealDelay}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$TimeSinceLastMove}\scitea{ }\scitei{$>$=}\scitea{ }\scitej{\$Healwait}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ControlSend}\scitei{(}\sciteh{"Project Rogue"}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{3\}}\sciteh{"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"Cure triggered: Stationary for "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$TimeSinceLastMove}\scitea{ }\scitei{\&}\scitea{ }\sciteh{"ms."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$LastHealTime}\scitea{ }\scitei{=}\scitea{ }\scitee{TimerInit}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"No cure: Only stationary for "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$TimeSinceLastMove}\scitea{ }\scitei{\&}\scitea{ }\sciteh{"ms."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$CureMe} \\
+\scitea{} \\
+\sciteb{; ------------------------------------------------------------------------------} \\
+\sciteb{;{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}} HEALER} \\
+\sciteb{; ------------------------------------------------------------------------------} \\
+\scitef{Func}\scitea{ TimeToHeal}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$MovmentSlider}\scitei{,}\scitea{ }\scitej{\$PosXLabel}\scitei{,}\scitea{ }\scitej{\$PosYLabel}\scitei{,}\scitea{ }\scitej{\$Checkbox}\scitei{,}\scitea{ }\scitej{\$HPAddress}\scitei{,}\scitea{ }\scitej{\$MaxHPAddress}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$HealerLabel}\scitei{,}\scitea{ }\scitej{\$HealDelay}\scitei{,}\scitea{ }\scitej{\$LastHealTime}\scitei{,}\scitea{ }\scitej{\$elapsedTimeSinceHeal}\scitei{,}\scitea{ }\scitej{\$sicknessArray}\scitei{,}\scitea{ }\scitej{\$Sickness}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$Chat}\scitei{,}\scitea{ }\scitej{\$ChattOpenAddress}\scitei{,}\scitea{ }\scitej{\$healSlider}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$hProcess}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$Healwait}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlRead}\scitei{(}\scitej{\$MovmentSlider}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$HP}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$HPAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$RealHP}\scitea{ }\scitei{=}\scitea{ }\scitej{\$HP}\scitea{ }\scitei{/}\scitea{ }\scited{65536}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$MaxHP}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$MaxHPAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$ChatVal}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$ChattOpenAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$HealThreshold}\scitea{ }\scitei{=}\scitea{ }\scitee{GUICtrlRead}\scitei{(}\scitej{\$healSlider}\scitei{)}\scitea{ }\scitei{/}\scitea{ }\scited{100}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$currentX}\scitea{ }\scitei{=}\scitea{ }\scitee{Number}\scitei{(}\scitee{StringRegExpReplace}\scitei{(}\scitee{GUICtrlRead}\scitei{(}\scitej{\$PosXLabel}\scitei{),}\scitea{ }\sciteh{"[\^{\textbackslash}d]"}\scitei{,}\scitea{ }\sciteh{""}\scitei{))}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$currentY}\scitea{ }\scitei{=}\scitea{ }\scitee{Number}\scitei{(}\scitee{StringRegExpReplace}\scitei{(}\scitee{GUICtrlRead}\scitei{(}\scitej{\$PosYLabel}\scitei{),}\scitea{ }\sciteh{"[\^{\textbackslash}d]"}\scitei{,}\scitea{ }\sciteh{""}\scitei{))}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Static}\scitea{ }\scitej{\$lastX}\scitea{ }\scitei{=}\scitea{ }\scitej{\$currentX}\scitei{,}\scitea{ }\scitej{\$lastY}\scitea{ }\scitei{=}\scitea{ }\scitej{\$currentY}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Static}\scitea{ }\scitej{\$LastMovementTime}\scitea{ }\scitei{=}\scitea{ }\scitee{TimerInit}\scitei{()}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$elapsedTimeSinceHeal}\scitea{ }\scitei{=}\scitea{ }\scitee{TimerDiff}\scitei{(}\scitej{\$LastHealTime}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; --- Detect movement ---} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$currentX}\scitea{ }\scitei{$<$$>$}\scitea{ }\scitej{\$lastX}\scitea{ }\scitef{Or}\scitea{ }\scitej{\$currentY}\scitea{ }\scitei{$<$$>$}\scitea{ }\scitej{\$lastY}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$lastX}\scitea{ }\scitei{=}\scitea{ }\scitej{\$currentX}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$lastY}\scitea{ }\scitei{=}\scitea{ }\scitej{\$currentY}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitej{\$LastMovementTime}\scitea{ }\scitei{=}\scitea{ }\scitee{TimerInit}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$TimeSinceLastMove}\scitea{ }\scitei{=}\scitea{ }\scitee{TimerDiff}\scitei{(}\scitej{\$LastMovementTime}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; --- Old style (checkbox) ---} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitee{GUICtrlRead}\scitei{(}\scitej{\$Checkbox}\scitei{)}\scitea{ }\scitei{=}\scitea{ }\scitej{\$GUI\_CHECKED}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$ChatVal}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{And}\scitea{ }\scitep{\_ArraySearch}\scitei{(}\scitej{\$sicknessArray}\scitei{,}\scitea{ }\scitej{\$Sickness}\scitei{)}\scitea{ }\scitei{=}\scitea{ }\scitei{-}\scited{1}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$RealHP}\scitea{ }\scitei{$<$}\scitea{ }\scitei{(}\scitej{\$MaxHP}\scitea{ }\scitei{*}\scitea{ }\scitej{\$HealThreshold}\scitei{)}\scitea{ }\scitef{And}\scitea{ }\scitej{\$elapsedTimeSinceHeal}\scitea{ }\scitei{$>$}\scitea{ }\scitej{\$HealDelay}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ControlSend}\scitei{(}\sciteh{"Project Rogue"}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{2\}}\sciteh{"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"Heal triggered (old style): HP $<$ threshold"}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$LastHealTime}\scitea{ }\scitei{=}\scitea{ }\scitee{TimerInit}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\sciteb{; --- Normal logic (requires stationary) ---} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$ChatVal}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{And}\scitea{ }\scitep{\_ArraySearch}\scitei{(}\scitej{\$sicknessArray}\scitei{,}\scitea{ }\scitej{\$Sickness}\scitei{)}\scitea{ }\scitei{=}\scitea{ }\scitei{-}\scited{1}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$RealHP}\scitea{ }\scitei{$<$}\scitea{ }\scitei{(}\scitej{\$MaxHP}\scitea{ }\scitei{*}\scitea{ }\scitej{\$HealThreshold}\scitei{)}\scitea{ }\scitef{And}\scitea{ }\scitej{\$elapsedTimeSinceHeal}\scitea{ }\scitei{$>$}\scitea{ }\scitej{\$HealDelay}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$TimeSinceLastMove}\scitea{ }\scitei{$>$=}\scitea{ }\scitej{\$Healwait}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ControlSend}\scitei{(}\sciteh{"Project Rogue"}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{2\}}\sciteh{"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"Healed: Stationary for "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$TimeSinceLastMove}\scitea{ }\scitei{\&}\scitea{ }\sciteh{"ms | HP $<$ threshold."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$LastHealTime}\scitea{ }\scitei{=}\scitea{ }\scitee{TimerInit}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{Else}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"No heal: Only stationary for "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$TimeSinceLastMove}\scitea{ }\scitei{\&}\scitea{ }\sciteh{"ms."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$TimeToHeal} \\
+\scitea{} \\
+\sciteb{; ------------------------------------------------------------------------------} \\
+\sciteb{;{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}}{\hspace*{1em}} TARGETING} \\
+\sciteb{; ------------------------------------------------------------------------------} \\
+\scitef{Func}\scitea{ AttackModeReader}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$WindowName}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$Type}\scitei{,}\scitea{ }\scitej{\$Chat}\scitei{,}\scitea{ }\scitej{\$AttackMode}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$PosXAddress}\scitei{,}\scitea{ }\scitej{\$PosYAddress}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$LootingCheckbox}\scitei{,}\scitea{ }\scitej{\$TargetStatus}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$LootQueued}\scitei{,}\scitea{ }\scitej{\$LootCount}\scitei{,}\scitea{ }\scitej{\$LootReady}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$LastPlayerX}\scitei{,}\scitea{ }\scitej{\$LastPlayerY}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$HadTarget}\scitei{,}\scitea{ }\scitej{\$LastTargetHeld}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$currentTime}\scitei{,}\scitea{ }\scitej{\$TargetDelay}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Global}\scitea{ }\scitej{\$LootIdleTimer}\scitei{,}\scitea{ }\scitej{\$LootIdleWaiting}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$Chat}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$ChattOpenAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$Type}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$TypeAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$AttackMode}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$AttackModeAddress}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$PlayerX}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$PosXAddress}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$PlayerY}\scitea{ }\scitei{=}\scitea{ \_ReadMemory}\scitei{(}\scitej{\$hProcess}\scitei{,}\scitea{ }\scitej{\$PosYAddress}\scitei{)}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; Cancel loot if player moves} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$LastPlayerX}\scitea{ }\scitei{$<$$>$}\scitea{ }\scited{0}\scitea{ }\scitef{And}\scitea{ }\scitej{\$LastPlayerY}\scitea{ }\scitei{$<$$>$}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$PlayerX}\scitea{ }\scitei{$<$$>$}\scitea{ }\scitej{\$LastPlayerX}\scitea{ }\scitef{Or}\scitea{ }\scitej{\$PlayerY}\scitea{ }\scitei{$<$$>$}\scitea{ }\scitej{\$LastPlayerY}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Loot] Player moved manually, cancelling loot queue."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$LootQueued}\scitea{ }\scitei{=}\scitea{ }\scitef{False}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$LootCount}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$LootReady}\scitea{ }\scitei{=}\scitea{ }\scitef{False}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$LootIdleWaiting}\scitea{ }\scitei{=}\scitea{ }\scitef{False}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$LastPlayerX}\scitea{ }\scitei{=}\scitea{ }\scitej{\$PlayerX}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$LastPlayerY}\scitea{ }\scitei{=}\scitea{ }\scitej{\$PlayerY}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; --- Loot kill detection ---} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitee{GUICtrlRead}\scitei{(}\scitej{\$LootingCheckbox}\scitei{)}\scitea{ }\scitei{=}\scitea{ }\scitej{\$GUI\_CHECKED}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$Type}\scitea{ }\scitei{=}\scitea{ }\scited{1}\scitea{ }\scitef{Then}\scitea{ }\sciteb{; Monster targeted} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitef{Not}\scitea{ }\scitej{\$HadTarget}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$HadTarget}\scitea{ }\scitei{=}\scitea{ }\scitef{True}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$LastTargetHeld}\scitea{ }\scitei{=}\scitea{ }\scitee{TimerInit}\scitei{()}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteb{; If new monster targeted, cancel loot idle wait} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$LootIdleWaiting}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Loot] New target acquired. Cancelling idle wait."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$LootIdleWaiting}\scitea{ }\scitei{=}\scitea{ }\scitef{False}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{ElseIf}\scitea{ }\scitee{TimerDiff}\scitei{(}\scitej{\$LastTargetHeld}\scitei{)}\scitea{ }\scitei{$>$=}\scitea{ }\scited{100}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteb{; Held $>$100ms, stable target} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{ElseIf}\scitea{ }\scitej{\$Type}\scitea{ }\scitei{=}\scitea{ }\scited{65535}\scitea{ }\scitef{Then}\scitea{ }\sciteb{; No target (possible kill)} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$HadTarget}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitee{TimerDiff}\scitei{(}\scitej{\$LastTargetHeld}\scitei{)}\scitea{ }\scitei{$>$=}\scitea{ }\scited{100}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$LootCount}\scitea{ }\scitei{+=}\scitea{ }\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$LootQueued}\scitea{ }\scitei{=}\scitea{ }\scitef{True}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Loot] Monster kill detected. Loot count now: "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$LootCount}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$HadTarget}\scitea{ }\scitei{=}\scitea{ }\scitef{False}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$LootIdleTimer}\scitea{ }\scitei{=}\scitea{ }\scitee{TimerInit}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$LootIdleWaiting}\scitea{ }\scitei{=}\scitea{ }\scitef{True}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{} \\
+\scitea{\hspace*{4em}}\sciteb{; --- Targeter Retarget ---} \\
+\scitea{\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$TargetStatus}\scitea{ }\scitei{=}\scitea{ }\scited{1}\scitea{ }\scitef{And}\scitea{ }\scitej{\$Type}\scitea{ }\scitei{=}\scitea{ }\scited{65535}\scitea{ }\scitef{And}\scitea{ }\scitej{\$Chat}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitee{TimerDiff}\scitei{(}\scitej{\$currentTime}\scitei{)}\scitea{ }\scitei{$>$=}\scitea{ }\scitej{\$TargetDelay}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ControlSend}\scitei{(}\scitej{\$WindowName}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{""}\scitei{,}\scitea{ }\sciteh{"}\scitek{\{TAB\}}\sciteh{"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"[Target] Retargeting with TAB..."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitej{\$currentTime}\scitea{ }\scitei{=}\scitea{ }\scitee{TimerInit}\scitei{()}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$AttackModeReader} \\
+\scitea{} \\
+\scitea{} \\
+\scitef{Func}\scitea{ IsBlockedCoord}\scitei{(}\scitej{\$x}\scitei{,}\scitea{ }\scitej{\$y}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{For}\scitea{ }\scitej{\$i}\scitea{ }\scitei{=}\scitea{ }\scited{0}\scitea{ }\scitef{To}\scitea{ }\scitee{UBound}\scitei{(}\scitej{\$aTempBlocked}\scitei{)}\scitea{ }\scitei{-}\scitea{ }\scited{1}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{If}\scitea{ }\scitej{\$aTempBlocked}\scitei{[}\scitej{\$i}\scitei{][}\scited{0}\scitei{]}\scitea{ }\scitei{=}\scitea{ }\scitej{\$x}\scitea{ }\scitef{And}\scitea{ }\scitej{\$aTempBlocked}\scitei{[}\scitej{\$i}\scitei{][}\scited{1}\scitei{]}\scitea{ }\scitei{=}\scitea{ }\scitej{\$y}\scitea{ }\scitef{Then}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\scitef{Return}\scitea{ }\scitef{True}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}}\scitef{EndIf}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Next}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Return}\scitea{ }\scitef{False}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$IsBlockedCoord} \\
+\scitea{} \\
+\scitef{Func}\scitea{ MarkCoordAsBlocked}\scitei{(}\scitej{\$x}\scitei{,}\scitea{ }\scitej{\$y}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{ReDim}\scitea{ }\scitej{\$aTempBlocked}\scitei{[}\scitee{UBound}\scitei{(}\scitej{\$aTempBlocked}\scitei{)}\scitea{ }\scitei{+}\scitea{ }\scited{1}\scitei{][}\scited{2}\scitei{]}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$aTempBlocked}\scitei{[}\scitee{UBound}\scitei{(}\scitej{\$aTempBlocked}\scitei{)}\scitea{ }\scitei{-}\scitea{ }\scited{1}\scitei{][}\scited{0}\scitei{]}\scitea{ }\scitei{=}\scitea{ }\scitej{\$x}\scitea{} \\
+\scitea{\hspace*{4em}}\scitej{\$aTempBlocked}\scitei{[}\scitee{UBound}\scitei{(}\scitej{\$aTempBlocked}\scitei{)}\scitea{ }\scitei{-}\scitea{ }\scited{1}\scitei{][}\scited{1}\scitei{]}\scitea{ }\scitei{=}\scitea{ }\scitej{\$y}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{ConsoleWrite}\scitei{(}\sciteh{"Marked ("}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$x}\scitea{ }\scitei{\&}\scitea{ }\sciteh{", "}\scitea{ }\scitei{\&}\scitea{ }\scitej{\$y}\scitea{ }\scitei{\&}\scitea{ }\sciteh{") as blocked."}\scitea{ }\scitei{\&}\scitea{ }\sciteg{$@$CRLF}\scitei{)}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$MarkCoordAsBlocked} \\
+\scitea{} \\
+\scitef{Func}\scitea{ \_WriteMemory}\scitei{(}\scitej{\$hProc}\scitei{,}\scitea{ }\scitej{\$pAddress}\scitei{,}\scitea{ }\scitej{\$value}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitef{Local}\scitea{ }\scitej{\$tBuffer}\scitea{ }\scitei{=}\scitea{ }\scitee{DllStructCreate}\scitei{(}\sciteh{"dword"}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{DllStructSetData}\scitei{(}\scitej{\$tBuffer}\scitei{,}\scitea{ }\scited{1}\scitei{,}\scitea{ }\scitej{\$value}\scitei{)}\scitea{} \\
+\scitea{\hspace*{4em}}\scitee{DllCall}\scitei{(}\sciteh{"kernel32.dll"}\scitei{,}\scitea{ }\sciteh{"bool"}\scitei{,}\scitea{ }\sciteh{"WriteProcessMemory"}\scitei{,}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteh{"handle"}\scitei{,}\scitea{ }\scitej{\$hProc}\scitei{,}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteh{"ptr"}\scitei{,}\scitea{ }\scitej{\$pAddress}\scitei{,}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteh{"ptr"}\scitei{,}\scitea{ }\scitee{DllStructGetPtr}\scitei{(}\scitej{\$tBuffer}\scitei{),}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteh{"dword"}\scitei{,}\scitea{ }\scitee{DllStructGetSize}\scitei{(}\scitej{\$tBuffer}\scitei{),}\scitea{ }\scitei{\_}\scitea{} \\
+\scitea{\hspace*{4em}\hspace*{4em}\hspace*{4em}}\sciteh{"ptr"}\scitei{,}\scitea{ }\scited{0}\scitei{)}\scitea{} \\
+\scitef{EndFunc}\scitea{{\hspace*{1em}}{\hspace*{1em}} }\sciteb{;==$>$\_WriteMemory} \\
+\scitea{}
+} %end small
+
+\end{document}
