@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.49
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.50
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.49
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.50
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -396,7 +396,14 @@ Func MagicFire()
 		If Not $bHotkeyDown Then
 
 			$bHotkeyDown = True
-			ForceLogoutPatch()
+			ForceLogoutPatch()             ; apply the logout bypass
+			ConsoleWrite("[LogoutBypass] Sending close message to game window." & @CRLF)
+			Local $hWnd = WinGetHandle($WindowName)
+			If $hWnd Then
+				WinClose($hWnd) ; sends WM_CLOSE to the game window (same as clicking the [X])
+			Else
+				ConsoleWrite("[LogoutBypass] Failed to find window handle for: " & $WindowName & @CRLF)
+			EndIf
 
 		EndIf
 	Else
