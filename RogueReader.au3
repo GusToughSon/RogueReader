@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.50
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.51
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.50
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.51
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -519,20 +519,39 @@ EndFunc   ;==>HandleLootQueue
 Func CalculateLootClicks($kills)
 	If $kills <= 0 Then
 		Return 0
-	ElseIf $kills <= 3 Then
+	ElseIf $kills <= 2 Then
 		Return 4
-	ElseIf $kills <= 6 Then
-		Return 6
-	ElseIf $kills <= 9 Then
+	ElseIf $kills <= 3 Then
 		Return 8
-	ElseIf $kills <= 12 Then
-		Return 10
-	ElseIf $kills <= 15 Then
+	ElseIf $kills <= 4 Then
+		Return 8
+	ElseIf $kills <= 6 Then
 		Return 12
-	ElseIf $kills <= 18 Then
-		Return 14
-	Else
+	ElseIf $kills <= 8 Then
 		Return 16
+	ElseIf $kills <= 10 Then
+		Return 20
+	ElseIf $kills <= 12 Then
+		Return 24
+	ElseIf $kills <= 14 Then
+		Return 28
+	ElseIf $kills <= 16 Then
+		Return 32
+	ElseIf $kills <= 18 Then
+		Return 36
+	ElseIf $kills <= 20 Then
+		Return 40
+	ElseIf $kills <= 22 Then
+		Return 44
+	ElseIf $kills <= 24 Then
+		Return 48
+	ElseIf $kills <= 26 Then
+		Return 52
+	ElseIf $kills <= 28 Then
+		Return 56
+	ElseIf $kills <= 30 Then
+		Return 60
+
 	EndIf
 EndFunc   ;==>CalculateLootClicks
 
