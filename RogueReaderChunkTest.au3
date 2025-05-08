@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.52
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.53
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.52
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.53
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -90,7 +90,7 @@ Global $LootingCheckbox
 Global $LootCheckX = -1
 Global $LootCheckY = -1
 #EndRegion Shit
-#Region; Define the game process and memory offsets
+
 Global $ProcessName = "Project Rogue Client.exe"
 Global $WindowName = "Project Rogue"
 Global $TypeOffset = 0xBE7974        ; ; 0=Player, 1=Monster, etc
@@ -103,11 +103,13 @@ Global $ChattOpenOffset = 0xB678D8   ;
 Global $SicknessOffset = 0x7C5E4    ;
 Global $BackPack = 0x731A8          ;
 Global $BackPackMax = 0x731AC          ;
-#EndRegion
+
 #Region Other Shit
 Global $MovmentSlider = 200 ;walk after removed from gui turned to solid state,
 Global $currentTime = TimerInit()
 Global $LastHealTime = TimerInit()
+Global $PosX = 0
+Global $PosY = 0
 Global $lastX = 0
 Global $lastY = 0
 Global $Running = True
@@ -134,6 +136,7 @@ Global Const $CHUNK_EMPTY = 0
 Global Const $CHUNK_ENTERING = 1
 Global Const $CHUNK_ACTIVATED = 2
 Global Const $CHUNK_DEACTIVATING = 3
+Global $g_aLastChunkColor[$CHUNK_GUI_SIDE][$CHUNK_GUI_SIDE]
 
 ; ----------[  CHUNK DATA STORAGE  ]------------------------------------------------------------------
 Global $g_aChunkState[$CHUNK_MAX][$CHUNK_MAX]               ; enum above
@@ -166,7 +169,7 @@ Global $TargetDelay = 400, $HealDelay = 1700
 ; Create the GUI
 ; -------------------
 ;...;
-Global $Gui = GUICreate($version, 248, 360, 15, 15)
+Global $Gui = GUICreate($version, 248, 550, 15, 15)
 
 Global $TypeLabel = GUICtrlCreateLabel("Target: N/A", 105, 21, 115, 15)
 GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
@@ -255,6 +258,8 @@ GUICtrlSetData($healSlider, 85)
 
 
 GUISetState(@SW_SHOW)
+InitChunkGridGUI()
+
 #EndRegion GUI
 ; --------------------------------------------------------------------------
 ;   :                      STREAMLINED MAIN LOOP
@@ -310,7 +315,7 @@ While $Running
 	EndIf
 	MagicFire()
 	GUIReadMemory()
-
+	UpdateChunkSystem()
 
 	If $Chat = 0 Then
 		If $CureStatus = 1 And $Chat = 0 Then CureMe()
@@ -673,8 +678,8 @@ Func GUIReadMemory()
 	EndIf
 
 	; Position
-	Local $PosX = _ReadMemory($hProcess, $PosXAddress)
-	Local $PosY = _ReadMemory($hProcess, $PosYAddress)
+	$PosX = _ReadMemory($hProcess, $PosXAddress)
+	$PosY = _ReadMemory($hProcess, $PosYAddress)
 	GUICtrlSetData($PosXLabel, "Pos X: " & $PosX)
 	GUICtrlSetData($PosYLabel, "Pos Y: " & $PosY)
 
@@ -1530,3 +1535,194 @@ Func _WriteByte($addr, $byte)
 			"ptr", 0)
 EndFunc   ;==>_WriteByte
 
+Func InitChunkGridGUI()
+	Local Const $CELL = 10               ; size of each square
+	Local Const $GAP = 1                 ; space between squares
+	Local Const $GRID_W = $CELL * $CHUNK_GUI_SIDE + $GAP * ($CHUNK_GUI_SIDE - 1)
+
+	; --- Get original GUI dimensions ---
+	Local $aWinPos = WinGetPos($Gui)
+	Local $winWidth = $aWinPos[2]
+
+	; --- Use fixed offset (bottom of existing controls + padding) ---
+	Local Const $START_Y = 420
+	Local Const $START_X = ($winWidth - $GRID_W) / 2
+
+	; --- Resize window to fit chunk grid ---
+	Local $newHeight = $START_Y + $GRID_W + 35
+	WinMove($Gui, "", Default, Default, $winWidth, $newHeight)
+
+	; --- Draw chunk grid ---
+	GUISetState($SW_LOCKDRAW, $Gui)
+	For $row = 0 To $CHUNK_GUI_SIDE - 1
+		For $col = 0 To $CHUNK_GUI_SIDE - 1
+			Local $x = $START_X + $col * ($CELL + $GAP)
+			Local $y = $START_Y + $row * ($CELL + $GAP)
+
+			$g_aLblChunk[$row][$col] = GUICtrlCreateLabel("", $x, $y, $CELL, $CELL)
+
+			GUICtrlSetBkColor(-1, 0x444444)
+
+		Next
+	Next
+	GUISetState($SW_UNLOCKDRAW, $Gui)
+EndFunc   ;==>InitChunkGridGUI
+
+
+Func _WorldPosToChunk($tileX, $tileY, ByRef $outCX, ByRef $outCY)
+	$outCX = Int($tileX / $CHUNK_SIZE)
+	$outCY = Int($tileY / $CHUNK_SIZE)
+	; Clamp to world
+	If $outCX < 0 Then $outCX = 0
+	If $outCY < 0 Then $outCY = 0
+	If $outCX >= $CHUNK_MAX Then $outCX = $CHUNK_MAX - 1
+	If $outCY >= $CHUNK_MAX Then $outCY = $CHUNK_MAX - 1
+EndFunc   ;==>_WorldPosToChunk
+
+Func _HandlePlayerChunkChange($newCX, $newCY)
+	; --- mark LEAVING previous chunk (start deactivation) ---
+	If $g_LastPlayerChunkX <> -1 Then
+		Local $prevCX = $g_LastPlayerChunkX, $prevCY = $g_LastPlayerChunkY
+		Switch $g_aChunkState[$prevCX][$prevCY]
+			Case $CHUNK_ACTIVATED
+				$g_aChunkState[$prevCX][$prevCY] = $CHUNK_DEACTIVATING
+				$g_aChunkDeactivateTS[$prevCX][$prevCY] = TimerInit()
+			Case $CHUNK_ENTERING
+				$g_aChunkState[$prevCX][$prevCY] = $CHUNK_EMPTY
+		EndSwitch
+	EndIf
+
+	; --- entering new chunk ---
+	Switch $g_aChunkState[$newCX][$newCY]
+		Case $CHUNK_EMPTY
+			$g_aChunkState[$newCX][$newCY] = $CHUNK_ENTERING
+			$g_aChunkEnterTS[$newCX][$newCY] = TimerInit()
+
+		Case $CHUNK_DEACTIVATING
+			; Reactivating chunk if player returns in time
+			$g_aChunkState[$newCX][$newCY] = $CHUNK_ACTIVATED
+			$g_aChunkDeactivateTS[$newCX][$newCY] = 0
+
+		Case $CHUNK_ACTIVATED
+			$g_aChunkDeactivateTS[$newCX][$newCY] = 0 ; refresh deactivation timer
+
+		Case $CHUNK_ENTERING
+			; Already entering – do nothing
+	EndSwitch
+
+	$g_LastPlayerChunkX = $newCX
+	$g_LastPlayerChunkY = $newCY
+EndFunc   ;==>_HandlePlayerChunkChange
+
+Func _ProcessChunkTimers()
+	Local Const $ACTIVATE_MS = 61.5 * 1000            ; 61 500 ms
+	Local Const $DEACTIVATE_MS = 6 * 60 * 1000        ; 360 000 ms
+	Local Const $MAX_DIST = 10                        ; chunk distance threshold
+
+	For $cx = 0 To $CHUNK_MAX - 1
+		For $cy = 0 To $CHUNK_MAX - 1
+			Switch $g_aChunkState[$cx][$cy]
+				Case $CHUNK_ENTERING
+					If TimerDiff($g_aChunkEnterTS[$cx][$cy]) >= $ACTIVATE_MS Then
+						$g_aChunkState[$cx][$cy] = $CHUNK_ACTIVATED
+						$g_aChunkDeactivateTS[$cx][$cy] = 0  ; clear
+					EndIf
+
+				Case $CHUNK_DEACTIVATING
+					; if player re-entered within 10 chunks we handled elsewhere
+					; else expire after time or if too far away
+					Local $elapsed = TimerDiff($g_aChunkDeactivateTS[$cx][$cy])
+					Local $distX = Abs($cx - $g_PlayerChunkX)
+					Local $distY = Abs($cy - $g_PlayerChunkY)
+					If $elapsed >= $DEACTIVATE_MS Or $distX > $MAX_DIST Or $distY > $MAX_DIST Then
+						$g_aChunkState[$cx][$cy] = $CHUNK_EMPTY
+					EndIf
+			EndSwitch
+		Next
+	Next
+EndFunc   ;==>_ProcessChunkTimers
+
+Func _UpdateChunkGridVisual()
+	Local $changedColor
+
+	For $dy = -$CHUNK_GRID_RADIUS To $CHUNK_GRID_RADIUS
+		For $dx = -$CHUNK_GRID_RADIUS To $CHUNK_GRID_RADIUS
+			Local $cx = $g_PlayerChunkX + $dx
+			Local $cy = $g_PlayerChunkY + $dy
+			Local $row = $dy + $CHUNK_GRID_RADIUS
+			Local $col = $dx + $CHUNK_GRID_RADIUS
+
+			Local $lblID = $g_aLblChunk[$row][$col]
+			If $cx < 0 Or $cy < 0 Or $cx >= $CHUNK_MAX Or $cy >= $CHUNK_MAX Then
+				$changedColor = 0x222222 ; out-of-world
+			Else
+				Switch $g_aChunkState[$cx][$cy]
+					Case $CHUNK_EMPTY
+						$changedColor = 0x444444
+					Case $CHUNK_ENTERING
+						Local $age = TimerDiff($g_aChunkEnterTS[$cx][$cy])
+						Local $blinkFast = ($age > 30 * 1000) ; blink faster after 30s
+						Local $period = $blinkFast ? 200 : 600
+						; Blink yellow (0xFFFF00)
+						$changedColor = (Mod($age, $period) < ($period / 2)) ? 0xFFFF00 : 0x444444
+					Case $CHUNK_ACTIVATED
+						$changedColor = 0x00CC00 ; bright green
+					Case $CHUNK_DEACTIVATING
+						Local $elapsed = TimerDiff($g_aChunkDeactivateTS[$cx][$cy])
+						Local $orangeTime = 5 * 60 * 1000 ; 300,000 ms
+						Local $maxTime = 6 * 60 * 1000 ; 360,000 ms
+
+						If $elapsed <= $orangeTime Then
+							; Green → Orange (0x00CC00 to 0xFFA500)
+							Local $ratio = $elapsed / $orangeTime
+							If $ratio > 1 Then $ratio = 1
+
+							Local $r = Int(0x00 + $ratio * (0xFF - 0x00)) ; 0 → 255
+							Local $g = Int(0xCC - $ratio * (0xCC - 0xA5)) ; 204 → 165
+							Local $b = Int(0x00 + $ratio * (0x00 - 0x00)) ; stays 0
+							$changedColor = ($r < < 16) + ($g < < 8) + $b
+
+						Else
+							; Orange → Red (0xFFA500 to 0xCC0000)
+							Local $ratio = ($elapsed - $orangeTime) / ($maxTime - $orangeTime)
+							If $ratio > 1 Then $ratio = 1
+
+							Local $r = Int(0xFF - $ratio * (0xFF - 0xCC)) ; 255 → 204
+							Local $g = Int(0xA5 - $ratio * 0xA5) ; 165 → 0
+							Local $b = 0
+							$changedColor = ($r < < 16) + ($g < < 8) + $b
+						EndIf
+
+				EndSwitch
+			EndIf
+
+			; Only update color if different
+			If $g_aLastChunkColor[$row][$col] <> $changedColor Then
+				GUICtrlSetBkColor($lblID, $changedColor)
+				$g_aLastChunkColor[$row][$col] = $changedColor
+			EndIf
+		Next
+	Next
+EndFunc   ;==>_UpdateChunkGridVisual
+
+Func UpdateChunkSystem()
+	; ---------- 1) Convert world tiles → chunk coords ----------
+	_WorldPosToChunk($PosX, $PosY, $g_PlayerChunkX, $g_PlayerChunkY)
+
+	; ---------- 2) Detect chunk change ----------
+	If $g_PlayerChunkX <> $g_LastPlayerChunkX Or $g_PlayerChunkY <> $g_LastPlayerChunkY Then
+		_HandlePlayerChunkChange($g_PlayerChunkX, $g_PlayerChunkY)
+	EndIf
+
+	; ---------- 3) Throttled state engine (4 Hz) ----------
+	If TimerDiff($g_LastStateStamp) > 250 Then
+		_ProcessChunkTimers()
+		$g_LastStateStamp = TimerInit()
+	EndIf
+
+	; ---------- 4) Throttled visual refresh (10 Hz) ----------
+	If TimerDiff($g_LastVisualStamp) > 100 Then
+		_UpdateChunkGridVisual()
+		$g_LastVisualStamp = TimerInit()
+	EndIf
+EndFunc   ;==>UpdateChunkSystem
