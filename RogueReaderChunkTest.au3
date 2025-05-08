@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.51
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.52
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.51
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.52
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -89,7 +89,7 @@ Global $LastTargetTime = TimerInit()
 Global $LootingCheckbox
 Global $LootCheckX = -1
 Global $LootCheckY = -1
-#EndRegion
+#EndRegion Shit
 #Region; Define the game process and memory offsets
 Global $ProcessName = "Project Rogue Client.exe"
 Global $WindowName = "Project Rogue"
@@ -122,18 +122,18 @@ Global $BaseAddress = 0
 Global $TypeAddress, $AttackModeAddress, $PosXAddress, $PosYAddress
 Global $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress
 Global $Type, $Chat, $Sickness, $AttackMode
-#EndRegion
+#EndRegion Other Shit
 #Region Chunk Shit
-Global Const $CHUNK_SIZE          = 16                      ; tile-width of one chunk
-Global Const $WORLD_TILES         = 4096                   ; world edge in tiles
-Global Const $CHUNK_MAX           = $WORLD_TILES / $CHUNK_SIZE   ; 256 chunks per axis
-Global Const $CHUNK_GRID_RADIUS   = 10                     ; GUI shows ±10 chunks
-Global Const $CHUNK_GUI_SIDE      = $CHUNK_GRID_RADIUS*2+1 ; 21
+Global Const $CHUNK_SIZE = 16                               ; tile-width of one chunk
+Global Const $WORLD_TILES = 4096                           ; world edge in tiles
+Global Const $CHUNK_MAX = $WORLD_TILES / $CHUNK_SIZE             ; 256 chunks per axis
+Global Const $CHUNK_GRID_RADIUS = 10                       ; GUI shows ±10 chunks
+Global Const $CHUNK_GUI_SIDE = $CHUNK_GRID_RADIUS * 2 + 1  ; 21
 ; --- state enum ---
-Global Const $CHUNK_EMPTY         = 0
-Global Const $CHUNK_ENTERING      = 1
-Global Const $CHUNK_ACTIVATED     = 2
-Global Const $CHUNK_DEACTIVATING  = 3
+Global Const $CHUNK_EMPTY = 0
+Global Const $CHUNK_ENTERING = 1
+Global Const $CHUNK_ACTIVATED = 2
+Global Const $CHUNK_DEACTIVATING = 3
 
 ; ----------[  CHUNK DATA STORAGE  ]------------------------------------------------------------------
 Global $g_aChunkState[$CHUNK_MAX][$CHUNK_MAX]               ; enum above
@@ -143,12 +143,12 @@ Global $g_aChunkDeactivateTS[$CHUNK_MAX][$CHUNK_MAX]        ; TimerInit stamp wh
 ; ----------[  GUI LABEL MATRIX ]---------------------------------------------------------------------
 Global $g_aLblChunk[$CHUNK_GUI_SIDE][$CHUNK_GUI_SIDE]       ; control IDs
 Global $g_LastVisualStamp = TimerInit()                     ; for throttling GUI repaint
-Global $g_LastStateStamp  = TimerInit()                     ; for throttling state engine
+Global $g_LastStateStamp = TimerInit()                      ; for throttling state engine
 
 ; ----------[  CURRENT PLAYER CHUNK  ]----------------------------------------------------------------
 Global $g_PlayerChunkX = -1, $g_PlayerChunkY = -1
 Global $g_LastPlayerChunkX = -1, $g_LastPlayerChunkY = -1
-#EndRegion
+#EndRegion Chunk Shit
 #Region Sickness Shit
 Global $sicknessArray = [ _
 		1, 2, 65, 66, 67, 68, 69, 72, 73, 81, 97, 98, 99, 257, 258, 513, 514, 515, 577, _
@@ -159,7 +159,7 @@ Global $sicknessArray = [ _
 		25094, 25095, 25097, 25121, 33283, 33284, 33285, 33286, 33287, 33288, _
 		33289, 33291, 33293, 33294, 33295, 33793, 41985, 41986, 41987, 41988, _
 		41989, 41990, 41991, 41993, 41995]
-#EndRegion
+#EndRegion Sickness Shit
 Global $TargetDelay = 400, $HealDelay = 1700
 #Region GUI
 ; -------------------
@@ -209,13 +209,9 @@ GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0xBEBEBE)
 Global $KillButton = GUICtrlCreateButton("Kill Rogue", 10, 315, 110, 30)
 Global $ExitButton = GUICtrlCreateButton("Exit", 120, 315, 110, 30)
-
 Global $MayhamCheckbox = GUICtrlCreateCheckbox("Mayham", 105, 175, 115, 20)
 GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0xBEBEBE)
-
-
-
 Global $ReverseLoopCheckbox = GUICtrlCreateCheckbox("Reversed Walker", 105, 215, 115, 20)
 GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 GUICtrlSetBkColor(-1, 0xBEBEBE)
@@ -252,7 +248,6 @@ Global $ToggleAll = GUICtrlCreateButton("ToggleAll", 155, 94, 71, 60)
 GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
 Global $HP2Label = GUICtrlCreateLabel("RealHp: N/A", 11, 224, 76, 21)
 GUICtrlSetBkColor(-1, 0x9D9597)
-
 Global $healSlider = GUICtrlCreateSlider(10, 270, 226, 36)
 GUICtrlSetData($healSlider, 85)
 
@@ -260,7 +255,7 @@ GUICtrlSetData($healSlider, 85)
 
 
 GUISetState(@SW_SHOW)
-#EndRegion
+#EndRegion GUI
 ; --------------------------------------------------------------------------
 ;   :                      STREAMLINED MAIN LOOP
 ; --------------------------------------------------------------------------
