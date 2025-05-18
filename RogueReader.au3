@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.53
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.54
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.53
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.54
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -141,99 +141,125 @@ Global $TargetDelay = 400, $HealDelay = 1700
 ; Create the GUI
 ; -------------------
 ;...;
+; Create the main GUI window
 Global $Gui = GUICreate($version, 248, 360, 15, 15)
 
+; Create labels
 Global $TypeLabel = GUICtrlCreateLabel("Target: N/A", 105, 21, 115, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-GUICtrlSetBkColor(-1, 0xBEBEBE)
+GUICtrlSetFont($TypeLabel, 8.5, 400, $GUI_FONTNORMAL)
+GUICtrlSetBkColor($TypeLabel, 0xBEBEBE)
+
 Global $AttackModeLabel = GUICtrlCreateLabel("Attack: N/A", 105, 37, 115, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-GUICtrlSetBkColor(-1, 0xBEBEBE)
+GUICtrlSetFont($AttackModeLabel, 8.5, 400, $GUI_FONTNORMAL)
+GUICtrlSetBkColor($AttackModeLabel, 0xBEBEBE)
+
 Global $PosXLabel = GUICtrlCreateLabel("X: N/A", 11, 23, 75, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-GUICtrlSetBkColor(-1, 0xBEBEBE)
+GUICtrlSetFont($PosXLabel, 8.5, 400, $GUI_FONTNORMAL)
+GUICtrlSetBkColor($PosXLabel, 0xBEBEBE)
+
 Global $PosYLabel = GUICtrlCreateLabel("Y: N/A", 11, 39, 75, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-GUICtrlSetBkColor(-1, 0xBEBEBE)
+GUICtrlSetFont($PosYLabel, 8.5, 400, $GUI_FONTNORMAL)
+GUICtrlSetBkColor($PosYLabel, 0xBEBEBE)
+
 Global $HPLabel = GUICtrlCreateLabel("HP: N/A /", 10, 187, 45, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-GUICtrlSetBkColor(-1, 0xBEBEBE)
+GUICtrlSetFont($HPLabel, 8.5, 400, $GUI_FONTNORMAL)
+GUICtrlSetBkColor($HPLabel, 0xBEBEBE)
+
 Global $ChatLabel = GUICtrlCreateLabel("Chat: N/A", 105, 69, 115, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-GUICtrlSetBkColor(-1, 0xBEBEBE)
+GUICtrlSetFont($ChatLabel, 8.5, 400, $GUI_FONTNORMAL)
+GUICtrlSetBkColor($ChatLabel, 0xBEBEBE)
+
 Global $SicknessLabel = GUICtrlCreateLabel("Sickness: N/A", 105, 53, 115, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-GUICtrlSetBkColor(-1, 0xBEBEBE)
+GUICtrlSetFont($SicknessLabel, 8.5, 400, $GUI_FONTNORMAL)
+GUICtrlSetBkColor($SicknessLabel, 0xBEBEBE)
+
 Global $MaxHPLabel = GUICtrlCreateLabel("N/A", 55, 187, 30, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-GUICtrlSetBkColor(-1, 0xBEBEBE)
+GUICtrlSetFont($MaxHPLabel, 8.5, 400, $GUI_FONTNORMAL)
+GUICtrlSetBkColor($MaxHPLabel, 0xBEBEBE)
+
 Global $TargetLabel = GUICtrlCreateLabel("Target: Off", 10, 124, 75, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-GUICtrlSetBkColor(-1, 0xBEBEBE)
+GUICtrlSetFont($TargetLabel, 8.5, 400, $GUI_FONTNORMAL)
+GUICtrlSetBkColor($TargetLabel, 0xBEBEBE)
+
 Global $HealerLabel = GUICtrlCreateLabel("Healer: Off", 10, 92, 75, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-GUICtrlSetBkColor(-1, 0xBEBEBE)
+GUICtrlSetFont($HealerLabel, 8.5, 400, $GUI_FONTNORMAL)
+GUICtrlSetBkColor($HealerLabel, 0xBEBEBE)
+
 Global $WalkerLabel = GUICtrlCreateLabel("Walker: Off", 10, 140, 75, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-GUICtrlSetBkColor(-1, 0xBEBEBE)
+GUICtrlSetFont($WalkerLabel, 8.5, 400, $GUI_FONTNORMAL)
+GUICtrlSetBkColor($WalkerLabel, 0xBEBEBE)
+
 Global $BackPackLabel = GUICtrlCreateLabel("Weight: N/A", 10, 203, 75, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-GUICtrlSetBkColor(-1, 0xBEBEBE)
+GUICtrlSetFont($BackPackLabel, 8.5, 400, $GUI_FONTNORMAL)
+GUICtrlSetBkColor($BackPackLabel, 0xBEBEBE)
+
 Global $CureLabel = GUICtrlCreateLabel("Cure: Off", 10, 108, 75, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-GUICtrlSetBkColor(-1, 0xBEBEBE)
+GUICtrlSetFont($CureLabel, 8.5, 400, $GUI_FONTNORMAL)
+GUICtrlSetBkColor($CureLabel, 0xBEBEBE)
+
+; Create buttons
 Global $KillButton = GUICtrlCreateButton("Kill Rogue", 10, 315, 110, 30)
 Global $ExitButton = GUICtrlCreateButton("Exit", 120, 315, 110, 30)
 
+; Create checkboxes
 Global $MayhamCheckbox = GUICtrlCreateCheckbox("Mayham", 105, 175, 115, 20)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-GUICtrlSetBkColor(-1, 0xBEBEBE)
-
-
+GUICtrlSetFont($MayhamCheckbox, 8.5, 400, $GUI_FONTNORMAL)
 
 Global $ReverseLoopCheckbox = GUICtrlCreateCheckbox("Reversed Walker", 105, 215, 115, 20)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-GUICtrlSetBkColor(-1, 0xBEBEBE)
-Global $LootingCheckbox = GUICtrlCreateCheckbox("Autoloot", 105, 195, 115, 20)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-GUICtrlSetBkColor(-1, 0xBEBEBE)
-Global $Checkbox = GUICtrlCreateCheckbox("Old Style Pothack", 105, 235, 115, 20)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-GUICtrlSetBkColor(-1, 0xBEBEBE)
-Global $Helpers = GUICtrlCreateLabel("HELPERS", 8, 75, 80, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-GUICtrlSetBkColor(-1, 0x808080)
-Global $Character = GUICtrlCreateLabel("CHARACTER", 8, 170, 80, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-GUICtrlSetBkColor(-1, 0x808080)
-Global $Position = GUICtrlCreateLabel("POSITION", 8, 5, 80, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-GUICtrlSetBkColor(-1, 0x808080)
-Global $Information = GUICtrlCreateLabel("INFORMATION", 103, 4, 120, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-GUICtrlSetBkColor(-1, 0x808080)
-Global $Options = GUICtrlCreateLabel("OPTIONS", 105, 160, 120, 11)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-GUICtrlSetBkColor(-1, 0x808080)
-Global $HealToggle = GUICtrlCreateButton("HEAL", 95, 92, 60, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-Global $CureToggle = GUICtrlCreateButton("CURE", 95, 108, 60, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-Global $TargetToggle = GUICtrlCreateButton("TARGET", 95, 124, 60, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-Global $WalkerToggle = GUICtrlCreateButton("WALKER", 95, 140, 60, 15)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-Global $ToggleAll = GUICtrlCreateButton("ToggleAll", 155, 94, 71, 60)
-GUICtrlSetFont(-1, 8.5, 400, $GUI_FONTNORMAL, "$GUI_FONTNORMAL")
-Global $HP2Label = GUICtrlCreateLabel("RealHp: N/A", 11, 224, 76, 21)
-GUICtrlSetBkColor(-1, 0x9D9597)
+GUICtrlSetFont($ReverseLoopCheckbox, 8.5, 400, $GUI_FONTNORMAL)
 
+Global $LootingCheckbox = GUICtrlCreateCheckbox("Autoloot", 105, 195, 115, 20)
+GUICtrlSetFont($LootingCheckbox, 8.5, 400, $GUI_FONTNORMAL)
+
+Global $Checkbox = GUICtrlCreateCheckbox("Old Style Pothack", 105, 235, 115, 20)
+GUICtrlSetFont($Checkbox, 8.5, 400, $GUI_FONTNORMAL)
+
+; Create labels for sections
+Global $Helpers = GUICtrlCreateLabel("HELPERS", 8, 75, 80, 15)
+GUICtrlSetFont($Helpers, 8.5, 400, $GUI_FONTNORMAL)
+GUICtrlSetBkColor($Helpers, 0x808080)
+
+Global $Character = GUICtrlCreateLabel("CHARACTER", 8, 170, 80, 15)
+GUICtrlSetFont($Character, 8.5, 400, $GUI_FONTNORMAL)
+GUICtrlSetBkColor($Character, 0x808080)
+
+Global $Position = GUICtrlCreateLabel("POSITION", 8, 5, 80, 15)
+GUICtrlSetFont($Position, 8.5, 400, $GUI_FONTNORMAL)
+GUICtrlSetBkColor($Position, 0x808080)
+
+Global $Information = GUICtrlCreateLabel("INFORMATION", 103, 4, 120, 15)
+GUICtrlSetFont($Information, 8.5, 400, $GUI_FONTNORMAL)
+GUICtrlSetBkColor($Information, 0x808080)
+
+Global $Options = GUICtrlCreateLabel("OPTIONS", 105, 160, 120, 11)
+GUICtrlSetFont($Options, 8.5, 400, $GUI_FONTNORMAL)
+GUICtrlSetBkColor($Options, 0x808080)
+
+; Create toggle buttons
+Global $HealToggle = GUICtrlCreateButton("HEAL", 95, 92, 60, 15)
+GUICtrlSetFont($HealToggle, 8.5, 400, $GUI_FONTNORMAL)
+
+Global $CureToggle = GUICtrlCreateButton("CURE", 95, 108, 60, 15)
+GUICtrlSetFont($CureToggle, 8.5, 400, $GUI_FONTNORMAL)
+
+Global $TargetToggle = GUICtrlCreateButton("TARGET", 95, 124, 60, 15)
+GUICtrlSetFont($TargetToggle, 8.5, 400, $GUI_FONTNORMAL)
+
+Global $WalkerToggle = GUICtrlCreateButton("WALKER", 95, 140, 60, 15)
+GUICtrlSetFont($WalkerToggle, 8.5, 400, $GUI_FONTNORMAL)
+
+Global $ToggleAll = GUICtrlCreateButton("ToggleAll", 155, 94, 71, 60)
+GUICtrlSetFont($ToggleAll, 8.5, 400, $GUI_FONTNORMAL)
+
+; Create a label for real HP
+Global $HP2Label = GUICtrlCreateLabel("RealHp: N/A", 11, 224, 76, 21)
+GUICtrlSetBkColor($HP2Label, 0x9D9597)
+
+; Create a slider for healing
 Global $healSlider = GUICtrlCreateSlider(10, 270, 226, 36)
 GUICtrlSetData($healSlider, 85)
 
-
-
-
+; Show the GUI
 GUISetState(@SW_SHOW)
 
 ; --------------------------------------------------------------------------
@@ -295,7 +321,7 @@ While $Running
 		If $CureStatus = 1 And $Chat = 0 Then CureMe()
 		If $HealerStatus = 1 And $Chat = 0 Then TimeToHeal()
 		If $TargetStatus = 1 Then AttackModeReader()
-		If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED Then HandleLootQueue()
+		If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED Then ScanAndLootNearbyItems()
 		; ---- Check Mayham Mode ----
 		If GUICtrlRead($MayhamCheckbox) = $GUI_CHECKED Then
 			If _IsPressed("04") Then
@@ -392,78 +418,64 @@ Func Min($a, $b)
 	EndIf
 EndFunc   ;==>Min
 
-Func QueueNearbyItemsFromMemory()
-	Global $hProcess, $BaseAddress, $PosXAddress, $PosYAddress
-	Global $LootClickQueue[100][3], $LootClickQueueSize
+Func ScanAndLootNearbyItems()
+	Global $hProcess, $BaseAddress, $WindowName
+	Global $PosXAddress, $PosYAddress
 
-	Local $playerX = _ReadMemory($hProcess, $PosXAddress)
-	Local $playerY = _ReadMemory($hProcess, $PosYAddress)
-	Local $startOffset = 0xA32A00 ; Adjust if item pool starts elsewhere
-	Local $stride = 0x10
+	; Memory locations to set cursor
+	Local $mouseXAddr = $BaseAddress + 0xA669F0
+	Local $mouseYAddr = $BaseAddress + 0xB5BC0C
+
+	; Player position
+	Local $px = _ReadMemory($hProcess, $PosXAddress)
+	Local $py = _ReadMemory($hProcess, $PosYAddress)
+
+	; Item pool
+	Local $itemBase = $BaseAddress + 0xA329FC
+	Local $stride = 0x3C
 	Local $maxItems = 100
-	$LootClickQueueSize = 0
+
+	; Direction vectors
+	Local $dxArr[9] = [-1, 0, 1, -1, 0, 1, -1, 0, 1]
+	Local $dyArr[9] = [-1, -1, -1, 0, 0, 0, 1, 1, 1]
+
+	; Screen click coordinates per tile
+	Local $clickX[9] = [320, 350, 380, 320, 350, 380, 320, 350, 380]
+	Local $clickY[9] = [320, 320, 320, 350, 350, 350, 380, 380, 380]
+
+	; Memory mouse position values per tile
+	Local $memX[9] = [160, 175, 190, 160, 175, 190, 160, 175, 190]
+	Local $memY[9] = [160, 160, 160, 175, 175, 175, 190, 190, 190]
+
+	; Optional: direction names for logging
+	Local $dirName[9] = ["NW", "N", "NE", "W", "CENTER", "E", "SW", "S", "SE"]
 
 	For $i = 0 To $maxItems - 1
-		Local $addr = $BaseAddress + $startOffset + ($i * $stride)
-		Local $packed = _ReadMemory($hProcess, $addr)
-		If $packed = 0 Then ContinueLoop
+		Local $addr = $itemBase + ($i * $stride)
+		Local $active = _ReadMemory($hProcess, $addr)
+		If $active = 0 Then ContinueLoop
 
-		Local $itemX = BitAND($packed, 0xFFFF)
-		Local $itemY = BitShift($packed, 16)
+		Local $packed = _ReadMemory($hProcess, $addr + 0xC)
+		Local $ix = BitAND($packed, 0xFFFF)
+		Local $iy = BitShift($packed, 16)
 
-		Local $dx = Abs($itemX - $playerX)
-		Local $dy = Abs($itemY - $playerY)
+		Local $dx = $ix - $px
+		Local $dy = $iy - $py
 
-		; DEBUG LOGGING
-		ConsoleWrite(StringFormat("[Debug] Item %02d @ 0x%X → Packed: %u | X: %d Y: %d | dx: %d dy: %d", _
-				$i, $addr, $packed, $itemX, $itemY, $dx, $dy) & @CRLF)
-
-		If $dx > 1 Or $dy > 1 Then ContinueLoop
-
-		; Queue it
-		Local $found = False
-		For $j = 0 To $LootClickQueueSize - 1
-			If $LootClickQueue[$j][0] = $itemX And $LootClickQueue[$j][1] = $itemY Then
-				$LootClickQueue[$j][2] += 1
-				$found = True
+		; Find matching direction
+		For $d = 0 To 8
+			If $dx = $dxArr[$d] And $dy = $dyArr[$d] Then
+				_WriteMemory($hProcess, $mouseXAddr, $memX[$d])
+				_WriteMemory($hProcess, $mouseYAddr, $memY[$d])
+				ControlClick($WindowName, "", "", "right", 1, $clickX[$d], $clickY[$d])
+				ConsoleWrite(StringFormat("[Loot] ✅ ΔX=%d ΔY=%d (%s) → Clicked (%d,%d)" & @CRLF, _
+						$dx, $dy, $dirName[$d], $clickX[$d], $clickY[$d]))
+				Sleep(100)
 				ExitLoop
 			EndIf
 		Next
-
-		If Not $found Then
-			$LootClickQueue[$LootClickQueueSize][0] = $itemX
-			$LootClickQueue[$LootClickQueueSize][1] = $itemY
-			$LootClickQueue[$LootClickQueueSize][2] = 1
-			$LootClickQueueSize += 1
-		EndIf
 	Next
-
-	ConsoleWrite("[Loot] Queue count = " & $LootClickQueueSize & @CRLF)
-	If $LootClickQueueSize = 0 Then ConsoleWrite("[Loot] No adjacent loot found." & @CRLF)
-EndFunc   ;==>QueueNearbyItemsFromMemory
-
-
-
-Func QueueLootPattern()
-	Global $LootQueue
-
-	; Screen click coordinates
-	Local $rawX[8] = [320, 350, 385, 325, 385, 325, 350, 385]
-	Local $rawY[8] = [325, 320, 325, 355, 355, 385, 390, 385]
-
-	; Shuffle logic
-	Local $used[8] = [False, False, False, False, False, False, False, False]
-	For $i = 0 To 7
-		Do
-			Local $rand = Random(0, 7, 1)
-		Until Not $used[$rand]
-		$LootQueue[$i][0] = $rawX[$rand]
-		$LootQueue[$i][1] = $rawY[$rand]
-		$used[$rand] = True
-	Next
-
-	ConsoleWrite("[Loot] New loot pattern queued." & @CRLF)
-EndFunc   ;==>QueueLootPattern
+EndFunc   ;==>ScanAndLootNearbyItems
 
 ; ------------------------------------------------------------------------------
 ;                               HANDLE LOOT QUEUE
@@ -577,62 +589,6 @@ Func ClickTile($x, $y)
 	MouseClick("right", $x, $y, 1, 0)
 EndFunc   ;==>ClickTile
 
-Func ClickQueuedLootTiles()
-	Global $hProcess, $BaseAddress, $WindowName
-	Global $LootClickQueue, $LootClickQueueSize
-
-	Local $memX[8] = [192, 175, 160, 162, 162, 175, 192, 192]
-	Local $memY[8] = [161, 159, 161, 176, 191, 194, 191, 176]
-	Local $clickX[8] = [385, 350, 320, 325, 325, 350, 385, 385]
-	Local $clickY[8] = [325, 320, 325, 355, 385, 390, 385, 355]
-
-	For $i = 0 To $LootClickQueueSize - 1
-		Local $itemX = $LootClickQueue[$i][0]
-		Local $itemY = $LootClickQueue[$i][1]
-		Local $count = $LootClickQueue[$i][2]
-
-		; Determine direction from player
-		Local $playerX = _ReadMemory($hProcess, $PosXAddress)
-		Local $playerY = _ReadMemory($hProcess, $PosYAddress)
-		Local $dx = $itemX - $playerX
-		Local $dy = $itemY - $playerY
-
-		Local $index = -1
-		Switch True
-			Case $dx = 1 And $dy = 0 ; East
-				$index = 0
-			Case $dx = -1 And $dy = 0 ; West
-				$index = 2
-			Case $dx = 0 And $dy = -1 ; North
-				$index = 1
-			Case $dx = 0 And $dy = 1 ; South
-				$index = 4
-			Case $dx = 1 And $dy = -1 ; NE
-				$index = 7
-			Case $dx = 1 And $dy = 1 ; SE
-				$index = 6
-			Case $dx = -1 And $dy = -1 ; NW
-				$index = 3
-			Case $dx = -1 And $dy = 1 ; SW
-				$index = 5
-		EndSwitch
-
-		If $index = -1 Then
-			ConsoleWrite("[Loot] Direction not adjacent — dx=" & $dx & " dy=" & $dy & @CRLF)
-			ContinueLoop
-		EndIf
-
-		_WriteMemory($hProcess, $BaseAddress + 0xA669F0, $memX[$index])
-		_WriteMemory($hProcess, $BaseAddress + 0xB5BC0C, $memY[$index])
-
-		For $j = 1 To $count
-			ControlClick($WindowName, "", "", "right", 1, $clickX[$index], $clickY[$index])
-			Sleep(5)
-		Next
-
-		ConsoleWrite("[Loot] Clicked (" & $clickX[$index] & "," & $clickY[$index] & ") x" & $count & @CRLF)
-	Next
-EndFunc   ;==>ClickQueuedLootTiles
 
 Func GetDirectionIndex($tileX, $tileY)
 	Global $hProcess, $PosXAddress, $PosYAddress
