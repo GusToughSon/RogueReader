@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.59
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.60
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.59
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.60
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -277,7 +277,17 @@ While $Running
 		Case $KillButton
 			Local $hWnd = WinGetHandle($WindowName)
 			If $hWnd Then
-				ProcessClose($ProcessName)
+				ForceLogoutPatch()
+
+				; Simulate clicking the Close button
+				DllCall("user32.dll", "int", "PostMessage", _
+						"hwnd", $hWnd, _
+						"uint", 0x0010, _ ; WM_CLOSE
+						"wparam", 0, _
+						"lparam", 0)
+
+				; Optionally use ProcessClose if that fails
+				; ProcessClose($ProcessName)
 			Else
 				ConsoleWrite("Failed to find window handle for: " & $WindowName & @CRLF)
 			EndIf
@@ -406,6 +416,23 @@ Func LoadButtonConfig()
 		ConsoleWrite("[Info] Hotkey for " & $aKeys[$i][0] & " set to " & $sKey & @CRLF)
 	Next
 EndFunc   ;==>LoadButtonConfig
+
+Func ForceLogoutPatch()
+	Global $hProcess, $BaseAddress
+	If $hProcess = 0 Or $BaseAddress = 0 Then
+		ConsoleWrite("[LogoutBypass] No valid process or base address." & @CRLF)
+		Return
+	EndIf
+
+	Local $patchAddr = $BaseAddress + 0x3A18A
+	Local $patchBytes[5] = [0x90, 0x90, 0x90, 0x90, 0x90]
+
+	For $i = 0 To 4
+		_WriteByte($patchAddr + $i, $patchBytes[$i])
+	Next
+
+	ConsoleWrite("[LogoutBypass] Logout test patched. BX test + JNE disabled." & @CRLF)
+EndFunc   ;==>ForceLogoutPatch
 
 Func Min($a, $b)
 	If $a < $b Then
@@ -810,12 +837,13 @@ EndFunc   ;==>ToggleWalker
 
 Func ToggleAllHelpers()
 	Global $HealerStatus, $CureStatus, $TargetStatus, $MoveToLocationsStatus
-
+	Local $LootCheckBox = GUICtrlRead($LootingCheckbox)
 	Local $TotalOn = 0
 	If $HealerStatus Then $TotalOn += 1
 	If $CureStatus Then $TotalOn += 1
 	If $TargetStatus Then $TotalOn += 1
 	If $MoveToLocationsStatus = 1 Then $TotalOn += 1
+	If $LootCheckBox = 1 Then $TotalOn += 1
 
 	If $TotalOn >= 1 Then
 		; Turn all OFF
@@ -823,7 +851,7 @@ Func ToggleAllHelpers()
 		$CureStatus = 0
 		$TargetStatus = 0
 		$MoveToLocationsStatus = 0
-
+		GUICtrlSetState($LootingCheckbox, $GUI_UNCHECKED)
 		GUICtrlSetData($HealerLabel, "Healer: Off")
 		GUICtrlSetData($CureLabel, "Cure: Off")
 		GUICtrlSetData($TargetLabel, "Target: Off")
@@ -836,7 +864,7 @@ Func ToggleAllHelpers()
 		$CureStatus = 1
 		$TargetStatus = 1
 		$MoveToLocationsStatus = 1
-
+		GUICtrlSetState($LootingCheckbox, $GUI_CHECKED)
 		GUICtrlSetData($HealerLabel, "Healer: On")
 		GUICtrlSetData($CureLabel, "Cure: On")
 		GUICtrlSetData($TargetLabel, "Target: On")
