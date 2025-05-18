@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.58
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.59
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.58
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.59
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -353,19 +353,16 @@ Exit
 Func LoadButtonConfig()
 	Local $sButtonConfigFile = @ScriptDir & "\NewButtonConfig.ini"
 
-	; Remove old/unused entries
-	IniDelete($sButtonConfigFile, "Hotkeys", "TogglePauseHotkey")
-	IniDelete($sButtonConfigFile, "Hotkeys", "PlayLocationsHotkey")
-
 	; Define the hotkeys and default values
-	Local $aKeys[7][2] = [ _
+	Local $aKeys[8][2] = [ _
 			["HealHotkey", "{" & Chr(96) & "}"], _
 			["CureHotkey", "{-}"], _
 			["TargetHotkey", "{=}"], _
 			["ExitHotkey", "{#}"], _
 			["SaveLocationHotkey", "{F7}"], _
 			["EraseLocationsHotkey", "{F8}"], _
-			["MoveToLocationsHotkey", "{!}"] _
+			["MoveToLocationsHotkey", "{!}"], _
+			["LootHotkey", "{|}"] _
 			]
 
 	Local $bMissingKeys = False
@@ -402,6 +399,8 @@ Func LoadButtonConfig()
 				HotKeySet($sKey, "EraseLocations")
 			Case "MoveToLocationsHotkey"
 				HotKeySet($sKey, "MoveToLocations")
+			Case "LootHotkey"
+				HotKeySet($sKey, "ToggleLooter")
 		EndSwitch
 
 		ConsoleWrite("[Info] Hotkey for " & $aKeys[$i][0] & " set to " & $sKey & @CRLF)
@@ -475,49 +474,9 @@ Func ScanAndLootNearbyItems()
 	Next
 EndFunc   ;==>ScanAndLootNearbyItems
 
-Func CalculateLootClicks($kills)
-	If $kills <= 0 Then
-		Return 0
-	ElseIf $kills <= 2 Then
-		Return 4
-	ElseIf $kills <= 3 Then
-		Return 8
-	ElseIf $kills <= 4 Then
-		Return 8
-	ElseIf $kills <= 6 Then
-		Return 12
-	ElseIf $kills <= 8 Then
-		Return 16
-	ElseIf $kills <= 10 Then
-		Return 20
-	ElseIf $kills <= 12 Then
-		Return 24
-	ElseIf $kills <= 14 Then
-		Return 28
-	ElseIf $kills <= 16 Then
-		Return 32
-	ElseIf $kills <= 18 Then
-		Return 36
-	ElseIf $kills <= 20 Then
-		Return 40
-	ElseIf $kills <= 22 Then
-		Return 44
-	ElseIf $kills <= 24 Then
-		Return 48
-	ElseIf $kills <= 26 Then
-		Return 52
-	ElseIf $kills <= 28 Then
-		Return 56
-	ElseIf $kills <= 30 Then
-		Return 60
-
-	EndIf
-EndFunc   ;==>CalculateLootClicks
-
 Func ClickTile($x, $y)
 	MouseClick("right", $x, $y, 1, 0)
 EndFunc   ;==>ClickTile
-
 
 Func GetDirectionIndex($tileX, $tileY)
 	Global $hProcess, $PosXAddress, $PosYAddress
@@ -534,7 +493,6 @@ Func GetDirectionIndex($tileX, $tileY)
 	Next
 	Return -1
 EndFunc   ;==>GetDirectionIndex
-
 
 Func CreateButtonDefaultConfig()
 	Local $sButtonConfigFile = @ScriptDir & "\NewButtonConfig.ini"
@@ -762,7 +720,6 @@ Func ChangeAddressToBase()
 	$BackPackMaxAddress = $BaseAddress + $BackPackMax
 EndFunc   ;==>ChangeAddressToBase
 
-
 ; --------------------------------------------------------------------------
 ;                           Hotkey Toggle Functions
 ; --------------------------------------------------------------------------
@@ -785,6 +742,20 @@ Func TargetKeyShit()
 	GUICtrlSetData($TargetLabel, "Target: " & ($TargetStatus ? "On" : "Off"))
 	ConsoleWrite("[Hotkey] Target toggled to: " & ($TargetStatus ? "On" : "Off") & @CRLF)
 EndFunc   ;==>TargetKeyShit
+
+Func ToggleLooter()
+	; Read the current state of the checkbox
+	Local $checked = GUICtrlRead($LootingCheckbox)
+
+	; Toggle the checkbox
+	If $checked = $GUI_CHECKED Then
+		GUICtrlSetState($LootingCheckbox, $GUI_UNCHECKED)
+		ConsoleWrite("AutoLoot Toggled OFf" & @CRLF)
+	Else
+		GUICtrlSetState($LootingCheckbox, $GUI_CHECKED)
+		ConsoleWrite("AutoLoot Toggled on" & @CRLF)
+	EndIf
+EndFunc   ;==>ToggleLooter
 
 
 Func KilledWithFire()
