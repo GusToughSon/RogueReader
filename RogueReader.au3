@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.54
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.55
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.54
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.55
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -470,82 +470,13 @@ Func ScanAndLootNearbyItems()
 				ControlClick($WindowName, "", "", "right", 1, $clickX[$d], $clickY[$d])
 				ConsoleWrite(StringFormat("[Loot] ✅ ΔX=%d ΔY=%d (%s) → Clicked (%d,%d)" & @CRLF, _
 						$dx, $dy, $dirName[$d], $clickX[$d], $clickY[$d]))
-				Sleep(100)
+				;				Sleep(100)
 				ExitLoop
 			EndIf
 		Next
 	Next
 EndFunc   ;==>ScanAndLootNearbyItems
 
-; ------------------------------------------------------------------------------
-;                               HANDLE LOOT QUEUE
-; ------------------------------------------------------------------------------
-Func HandleLootQueue()
-	Global $hProcess, $BaseAddress, $WindowName
-	Global $LootQueued, $LootCount, $LootReady
-	Global $MoveToLocationsStatus, $PausedWalkerForLoot
-	Global $PosXAddress, $PosYAddress
-	Global $LastPlayerX, $LastPlayerY
-	Global $LootIdleTimer, $LootIdleWaiting
-	Global $LootingCheckbox
-
-	; Only proceed if checkbox is checked
-	If GUICtrlRead($LootingCheckbox) <> $GUI_CHECKED Then
-		If $LootQueued Or $LootIdleWaiting Then
-			ConsoleWrite("[Loot] Checkbox OFF — clearing queued loot." & @CRLF)
-		EndIf
-		$LootQueued = False
-		$LootCount = 0
-		$LootReady = False
-		$LootIdleWaiting = False
-		Return
-	EndIf
-
-	; Must have queued loot and be idle
-	If Not $LootQueued Or $LootCount = 0 Then Return
-	If Not $LootIdleWaiting Then Return
-	If TimerDiff($LootIdleTimer) < 275 Then Return
-
-	Local $playerX = _ReadMemory($hProcess, $PosXAddress)
-	Local $playerY = _ReadMemory($hProcess, $PosYAddress)
-
-	If $playerX <> $LastPlayerX Or $playerY <> $LastPlayerY Then
-		ConsoleWrite("[Loot] Player moved before looting. Cancelling." & @CRLF)
-		$LootQueued = False
-		$LootCount = 0
-		$LootReady = False
-		$LootIdleWaiting = False
-		Return
-	EndIf
-
-	; Pause walker if moving
-	If $MoveToLocationsStatus = 1 Then
-		$MoveToLocationsStatus = 0
-		$PausedWalkerForLoot = True
-		ConsoleWrite("[Loot] Walker paused for looting." & @CRLF)
-	EndIf
-
-	; Build and click loot queue
-	QueueNearbyItemsFromMemory()
-	If $LootClickQueueSize > 0 Then
-		ClickQueuedLootTiles()
-	Else
-		ConsoleWrite("[Loot] No adjacent loot found." & @CRLF)
-	EndIf
-
-	; Reset loot state
-	$LootQueued = False
-	$LootCount = 0
-	$LootReady = False
-	$LootIdleWaiting = False
-
-	; Resume walker if needed
-	If $PausedWalkerForLoot Then
-		$MoveToLocationsStatus = 1
-		$PausedWalkerForLoot = False
-		ConsoleWrite("[Loot] Walker resumed after looting." & @CRLF)
-	EndIf
-EndFunc   ;==>HandleLootQueue
 Func CalculateLootClicks($kills)
 	If $kills <= 0 Then
 		Return 0
@@ -1445,7 +1376,7 @@ Func AttackModeReader()
 
 	If $LastPlayerX <> 0 And $LastPlayerY <> 0 Then
 		If $playerX <> $LastPlayerX Or $playerY <> $LastPlayerY Then
-			ConsoleWrite("[Loot] Player moved manually — cancelling queued loot." & @CRLF)
+			;ConsoleWrite("[Loot] Player moved manually — cancelling queued loot." & @CRLF)
 			$LootQueued = False
 			$LootCount = 0
 			$LootReady = False
@@ -1456,35 +1387,13 @@ Func AttackModeReader()
 	$LastPlayerX = $playerX
 	$LastPlayerY = $playerY
 
-	If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED Then
-		If $Type = 1 Then ; Target acquired
-			If Not $HadTarget Then
-				$HadTarget = True
-				$LastTargetHeld = TimerInit()
-				If $LootIdleWaiting Then
-					ConsoleWrite("[Loot] New target acquired — cancelled loot idle wait." & @CRLF)
-					$LootIdleWaiting = False
-				EndIf
-			EndIf
-		ElseIf $Type = 65535 Then ; No target
-			If $HadTarget Then
-				If TimerDiff($LastTargetHeld) >= 100 Then
-					$LootCount += 1
-					$LootQueued = True
-					ConsoleWrite("[Loot] Monster kill detected. Loot count: " & $LootCount & @CRLF)
-				EndIf
-				$HadTarget = False
-				$LootIdleTimer = TimerInit()
-				$LootIdleWaiting = True
-			EndIf
-		EndIf
-	EndIf
+
 
 	; Auto retarget if targeting ON
 	If $TargetStatus = 1 And $Type = 65535 And $Chat = 0 Then
 		If TimerDiff($currentTime) >= $TargetDelay Then
 			ControlSend($WindowName, "", "", "{TAB}")
-			ConsoleWrite("[Target] Retargeting..." & @CRLF)
+			;ConsoleWrite("[Target] Retargeting..." & @CRLF)
 			$currentTime = TimerInit()
 		EndIf
 	EndIf
