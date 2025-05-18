@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.55
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.56
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.55
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.56
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -276,12 +276,10 @@ While $Running
 		Case $KillButton
 			Local $hWnd = WinGetHandle($WindowName)
 			If $hWnd Then
-
 				ProcessClose($ProcessName)
 			Else
 				ConsoleWrite(" Failed to find window handle for: " & $WindowName & @CRLF)
 			EndIf
-
 		Case $HealToggle
 			ToggleHealer()
 		Case $CureToggle
@@ -316,25 +314,27 @@ While $Running
 
 	GUIReadMemory()
 
-
 	If $Chat = 0 Then
-		If $CureStatus = 1 And $Chat = 0 Then CureMe()
-		If $HealerStatus = 1 And $Chat = 0 Then TimeToHeal()
+		If $CureStatus = 1 Then CureMe()
+		If $HealerStatus = 1 Then TimeToHeal()
 		If $TargetStatus = 1 Then AttackModeReader()
 		If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED Then ScanAndLootNearbyItems()
+
+		; ---- Auto-resume walker after combat ends ----
+		If $MoveToLocationsStatus = 0 And $TargetStatus = 1 And $Type = 65535 And $Chat = 0 Then
+			ConsoleWrite("[Walker] Combat ended — resuming walker." & @CRLF)
+			$MoveToLocationsStatus = 1
+		EndIf
+
 		; ---- Check Mayham Mode ----
 		If GUICtrlRead($MayhamCheckbox) = $GUI_CHECKED Then
 			If _IsPressed("04") Then
-				;ConsoleWrite("[Mayham] Middle mouse detected. Sending right click." & @CRLF)
 				MouseClick("right")
-				Sleep(10)     ; or whatever delay you want
-			Else
-				;ConsoleWrite("[Mayham] Middle mouse NOT held." & @CRLF)
+				Sleep(10)
 			EndIf
-		Else
-			;ConsoleWrite("[Mayham] Mayham checkbox not checked." & @CRLF)
 		EndIf
 
+		; ---- Handle walking ----
 		If $MoveToLocationsStatus = 1 And Not $LootQueued And $Chat = 0 Then
 			Local $result = MoveToLocationsStep($aLocations, $iCurrentIndex)
 			If @error Then $MoveToLocationsStatus = 0
@@ -1016,7 +1016,7 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 	Global $MoveToLocationsStatus
 	Global $TargetStatus, $LootingCheckbox
 	Global $LootQueued, $LootCount, $LootIdleWaiting, $LootIdleTimer
-	Global $PausedWalkerForLoot
+	Global $PausedWalkerForLoot, $Type
 
 	Static $lastMoveTime = TimerInit()
 	Static $stuckCount = 0
@@ -1045,7 +1045,15 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 
 	Local $currentX = _ReadMemory($hProcess, $PosXAddress)
 	Local $currentY = _ReadMemory($hProcess, $PosYAddress)
-	Local $Type = _ReadMemory($hProcess, $TypeAddress)
+	$Type = _ReadMemory($hProcess, $TypeAddress)
+
+	; === Pause walker during combat ===
+	If $Type = 1 Then ; Target is a monster
+		ConsoleWrite("[Walker] Target detected — pausing walker during combat." & @CRLF)
+		Return SetError(7, 0, "Paused for combat")
+	EndIf
+
+	; === Resume logic: handled elsewhere, this function is called when walking is resumed ===
 
 	; === Always loot if checkbox is ON ===
 	If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED Then
@@ -1064,7 +1072,6 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 			Return SetError(6, 0, "Looted during walk")
 		EndIf
 	EndIf
-
 
 	; === Stuck/bypass logic ===
 	If $currentX = $lastX And $currentY = $lastY Then
