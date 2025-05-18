@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.56
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.57
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.56
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.57
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -107,7 +107,7 @@ Global $BackPack = 0x731A8          ;
 Global $BackPackMax = 0x731AC          ;
 
 Global $MovmentSlider = 200 ;walk after removed from gui turned to solid state,
-
+Global $AutoResumeWalker = False
 Global $currentTime = TimerInit()
 Global $LastHealTime = TimerInit()
 Global $lastX = 0
@@ -273,26 +273,32 @@ While $Running
 			_WinAPI_CloseHandle($hProcess)
 			GUIDelete($Gui)
 			Exit
+
 		Case $KillButton
 			Local $hWnd = WinGetHandle($WindowName)
 			If $hWnd Then
 				ProcessClose($ProcessName)
 			Else
-				ConsoleWrite(" Failed to find window handle for: " & $WindowName & @CRLF)
+				ConsoleWrite("Failed to find window handle for: " & $WindowName & @CRLF)
 			EndIf
+
 		Case $HealToggle
 			ToggleHealer()
+
 		Case $CureToggle
 			ToggleCure()
+
 		Case $TargetToggle
 			ToggleTarget()
+
 		Case $WalkerToggle
 			ToggleWalker()
+
 		Case $ToggleAll
 			ToggleAllHelpers()
 	EndSwitch
 
-	; ---- Now background work ----
+	; ---- Background processing ----
 	Local $ProcessID = ProcessExists($ProcessName)
 	If Not $ProcessID Then
 		If $hProcess <> 0 Then _WinAPI_CloseHandle($hProcess)
@@ -320,28 +326,20 @@ While $Running
 		If $TargetStatus = 1 Then AttackModeReader()
 		If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED Then ScanAndLootNearbyItems()
 
-		; ---- Auto-resume walker after combat ends ----
-		If $MoveToLocationsStatus = 0 And $TargetStatus = 1 And $Type = 65535 And $Chat = 0 Then
-			ConsoleWrite("[Walker] Combat ended — resuming walker." & @CRLF)
-			$MoveToLocationsStatus = 1
+		; ---- Mayham mode ----
+		If GUICtrlRead($MayhamCheckbox) = $GUI_CHECKED And _IsPressed("04") Then
+			MouseClick("right")
+			Sleep(10)
 		EndIf
 
-		; ---- Check Mayham Mode ----
-		If GUICtrlRead($MayhamCheckbox) = $GUI_CHECKED Then
-			If _IsPressed("04") Then
-				MouseClick("right")
-				Sleep(10)
-			EndIf
-		EndIf
-
-		; ---- Handle walking ----
+		; ---- Walker execution ----
 		If $MoveToLocationsStatus = 1 And Not $LootQueued And $Chat = 0 Then
 			Local $result = MoveToLocationsStep($aLocations, $iCurrentIndex)
 			If @error Then $MoveToLocationsStatus = 0
 		EndIf
 	EndIf
 
-	Sleep(50) ; lighter sleep, much more responsive
+	Sleep(50)
 WEnd
 
 GUIDelete($Gui)
@@ -609,14 +607,18 @@ Func GUIReadMemory()
 		GUICtrlSetData($TypeLabel, "Type: Unknown (" & $Type & ")")
 	EndIf
 
-	; Walker On/Off
-	If $MoveToLocationsStatus = 0 Then
-		GUICtrlSetData($WalkerLabel, "Walker: Off")
-	ElseIf $MoveToLocationsStatus = 1 Then
-		GUICtrlSetData($WalkerLabel, "Walker: On")
-	Else
-		GUICtrlSetData($WalkerLabel, "Error: Broken")
-	EndIf
+	; Walker On/Off or Paused
+	Switch $MoveToLocationsStatus
+		Case 0
+			GUICtrlSetData($WalkerLabel, "Walker: Off")
+		Case 1
+			GUICtrlSetData($WalkerLabel, "Walker: On")
+		Case 2
+			GUICtrlSetData($WalkerLabel, "Walker: Paused")
+		Case Else
+			GUICtrlSetData($WalkerLabel, "Walker: Error")
+	EndSwitch
+
 
 	; Attack Mode
 	$AttackMode = _ReadMemory($hProcess, $AttackModeAddress)
@@ -781,7 +783,9 @@ Func TargetKeyShit()
 	Global $TargetStatus
 	$TargetStatus = Not $TargetStatus
 	GUICtrlSetData($TargetLabel, "Target: " & ($TargetStatus ? "On" : "Off"))
+	ConsoleWrite("[Hotkey] Target toggled to: " & ($TargetStatus ? "On" : "Off") & @CRLF)
 EndFunc   ;==>TargetKeyShit
+
 
 Func KilledWithFire()
 	Global $Debug
@@ -816,6 +820,7 @@ Func ToggleTarget()
 	GUICtrlSetData($TargetLabel, "Target: " & ($TargetStatus ? "On" : "Off"))
 	ConsoleWrite("[GUI] Target toggled to: " & ($TargetStatus ? "On" : "Off") & @CRLF)
 EndFunc   ;==>ToggleTarget
+
 
 Func ToggleWalker()
 	Global $MoveToLocationsStatus, $aLocations, $iCurrentIndex
@@ -994,18 +999,18 @@ Func MoveToLocations()
 		$iCurrentIndex = FindClosestLocationIndex($currentX, $currentY, $aLocations)
 
 		If $iCurrentIndex = -1 Then
-			ConsoleWrite("[Error] Could not find a closest location index (no valid data?)." & @CRLF)
+			ConsoleWrite("[Walker] Error: No valid location found." & @CRLF)
 			Return
 		EndIf
-		$MoveToLocationsStatus = 1
-		ConsoleWrite("move on" & @CRLF)
 
-	ElseIf $MoveToLocationsStatus = 1 Then
-		$MoveToLocationsStatus = 0
-		ConsoleWrite("move off" & @CRLF)
+		$MoveToLocationsStatus = 1
+		GUICtrlSetData($WalkerLabel, "Walker: On")
+		ConsoleWrite("[Walker] Activated." & @CRLF)
 
 	Else
-		MsgBox(0, "Error", "You shouldn't have gotten this error", 5)
+		$MoveToLocationsStatus = 0
+		GUICtrlSetData($WalkerLabel, "Walker: Off")
+		ConsoleWrite("[Walker] Deactivated." & @CRLF)
 	EndIf
 EndFunc   ;==>MoveToLocations
 
@@ -1018,11 +1023,7 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 	Global $LootQueued, $LootCount, $LootIdleWaiting, $LootIdleTimer
 	Global $PausedWalkerForLoot, $Type
 
-	Static $lastMoveTime = TimerInit()
-	Static $stuckCount = 0
-	Static $lastTargetX = -1, $lastTargetY = -1
-
-	If $MoveToLocationsStatus = 0 Then Return SetError(1, 0, "Walker turned off mid-step")
+	If $MoveToLocationsStatus <> 1 Then Return SetError(1, 0, "Walker not active")
 
 	If Not IsArray($aLocations) Then Return SetError(2, 0, "Invalid input")
 	If $iCurrentIndex < 0 Or $iCurrentIndex >= UBound($aLocations) Then Return SetError(3, 0, "Index out of range")
@@ -1030,12 +1031,6 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 	Local $reverse = (GUICtrlRead($ReverseLoopCheckbox) = $GUI_CHECKED)
 	Local $targetX = $aLocations[$iCurrentIndex][0]
 	Local $targetY = $aLocations[$iCurrentIndex][1]
-
-	If $lastTargetX <> $targetX Or $lastTargetY <> $targetY Then
-		$stuckCount = 0
-		$lastTargetX = $targetX
-		$lastTargetY = $targetY
-	EndIf
 
 	If IsBlockedCoord($targetX, $targetY) Then
 		ConsoleWrite("Skipping blocked coordinate (" & $targetX & ", " & $targetY & ")" & @CRLF)
@@ -1045,65 +1040,6 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 
 	Local $currentX = _ReadMemory($hProcess, $PosXAddress)
 	Local $currentY = _ReadMemory($hProcess, $PosYAddress)
-	$Type = _ReadMemory($hProcess, $TypeAddress)
-
-	; === Pause walker during combat ===
-	If $Type = 1 Then ; Target is a monster
-		ConsoleWrite("[Walker] Target detected — pausing walker during combat." & @CRLF)
-		Return SetError(7, 0, "Paused for combat")
-	EndIf
-
-	; === Resume logic: handled elsewhere, this function is called when walking is resumed ===
-
-	; === Always loot if checkbox is ON ===
-	If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED Then
-		QueueNearbyItemsFromMemory()
-		If $LootClickQueueSize > 0 Then
-			ConsoleWrite("[Walker] Loot found adjacent — pausing walk and looting immediately." & @CRLF)
-
-			; Force-click queued loot immediately
-			ClickQueuedLootTiles()
-
-			; Reset walker pause state after looting
-			$LootQueued = False
-			$LootCount = 0
-			$LootIdleWaiting = False
-
-			Return SetError(6, 0, "Looted during walk")
-		EndIf
-	EndIf
-
-	; === Stuck/bypass logic ===
-	If $currentX = $lastX And $currentY = $lastY Then
-		If TimerDiff($lastMoveTime) > 1000 Then
-			Local $bypassSuccess = TryBypass()
-			Local $nx = _ReadMemory($hProcess, $PosXAddress)
-			Local $ny = _ReadMemory($hProcess, $PosYAddress)
-
-			If $bypassSuccess And ($nx <> $currentX Or $ny <> $currentY) Then
-				MarkCoordAsBlocked($lastTargetX, $lastTargetY)
-				$iCurrentIndex = NextIndex($iCurrentIndex, UBound($aLocations), $reverse)
-				$lastMoveTime = TimerInit()
-				$lastX = $nx
-				$lastY = $ny
-				Return True
-			Else
-				$stuckCount += 1
-				If $stuckCount >= 3 Then
-					MarkCoordAsBlocked($targetX, $targetY)
-					ConsoleWrite("Skipping stuck tile (" & $targetX & ", " & $targetY & ")" & @CRLF)
-					$iCurrentIndex = NextIndex($iCurrentIndex, UBound($aLocations), $reverse)
-					$stuckCount = 0
-					Return True
-				EndIf
-			EndIf
-		EndIf
-	Else
-		$lastMoveTime = TimerInit()
-	EndIf
-
-	$lastX = $currentX
-	$lastY = $currentY
 
 	If $currentX = $targetX And $currentY = $targetY Then
 		ConsoleWrite("Arrived at location index: " & $iCurrentIndex & @CRLF)
@@ -1111,7 +1047,7 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 		Return True
 	EndIf
 
-	; === Movement logic ===
+	; Movement
 	If $currentX < $targetX Then
 		ControlSend($WindowName, "", "", "{d down}")
 		Sleep(30)
@@ -1373,6 +1309,9 @@ Func AttackModeReader()
 	Global $HadTarget, $LastTargetHeld
 	Global $currentTime, $TargetDelay
 	Global $LootIdleTimer, $LootIdleWaiting
+	Global $MoveToLocationsStatus, $AutoResumeWalker
+
+	Static $noTargetStart = 0
 
 	$Chat = _ReadMemory($hProcess, $ChattOpenAddress)
 	$Type = _ReadMemory($hProcess, $TypeAddress)
@@ -1383,7 +1322,6 @@ Func AttackModeReader()
 
 	If $LastPlayerX <> 0 And $LastPlayerY <> 0 Then
 		If $playerX <> $LastPlayerX Or $playerY <> $LastPlayerY Then
-			;ConsoleWrite("[Loot] Player moved manually — cancelling queued loot." & @CRLF)
 			$LootQueued = False
 			$LootCount = 0
 			$LootReady = False
@@ -1394,14 +1332,33 @@ Func AttackModeReader()
 	$LastPlayerX = $playerX
 	$LastPlayerY = $playerY
 
-
-
-	; Auto retarget if targeting ON
+	; Auto retarget if no target is active
 	If $TargetStatus = 1 And $Type = 65535 And $Chat = 0 Then
 		If TimerDiff($currentTime) >= $TargetDelay Then
 			ControlSend($WindowName, "", "", "{TAB}")
-			;ConsoleWrite("[Target] Retargeting..." & @CRLF)
 			$currentTime = TimerInit()
+		EndIf
+	EndIf
+
+	; --- Combat detected: pause walker only ---
+	If $MoveToLocationsStatus = 1 And $Type = 1 Then
+		ConsoleWrite("[Walker] Combat detected — pausing walker." & @CRLF)
+		$MoveToLocationsStatus = 2
+		$noTargetStart = 0 ; reset no-target timer
+	EndIf
+
+	; --- Combat ended: wait 350ms of no target before resuming ---
+	If $MoveToLocationsStatus = 2 Then
+		If $Type = 65535 Then
+			If $noTargetStart = 0 Then $noTargetStart = TimerInit()
+			If TimerDiff($noTargetStart) >= 350 Then
+				ConsoleWrite("[Walker] No target for 350ms — resuming walker." & @CRLF)
+				$MoveToLocationsStatus = 1
+				$noTargetStart = 0
+			EndIf
+		Else
+			; Target reacquired — reset delay
+			$noTargetStart = 0
 		EndIf
 	EndIf
 EndFunc   ;==>AttackModeReader
