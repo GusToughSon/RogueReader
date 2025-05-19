@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.60
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.61
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.60
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.61
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -372,7 +372,7 @@ Func LoadButtonConfig()
 			["SaveLocationHotkey", "{F7}"], _
 			["EraseLocationsHotkey", "{F8}"], _
 			["MoveToLocationsHotkey", "{!}"], _
-			["LootHotkey", "{|}"] _
+			["LootHotkey", "{@}"] _
 			]
 
 	Local $bMissingKeys = False
@@ -523,14 +523,15 @@ EndFunc   ;==>GetDirectionIndex
 
 Func CreateButtonDefaultConfig()
 	Local $sButtonConfigFile = @ScriptDir & "\NewButtonConfig.ini"
-	Local $aKeys[7][2] = [ _
+	Local $aKeys[8][2] = [ _
 			["HealHotkey", "{" & Chr(96) & "}"], _
 			["CureHotkey", "{-}"], _
 			["TargetHotkey", "{=}"], _
 			["ExitHotkey", "{#}"], _
 			["SaveLocationHotkey", "{F7}"], _
 			["EraseLocationsHotkey", "{F8}"], _
-			["MoveToLocationsHotkey", "{!}"] _
+			["MoveToLocationsHotkey", "{!}"], _
+			["LootHotkey", "{@}"] _
 			]
 	For $i = 0 To UBound($aKeys) - 1
 		IniWrite($sButtonConfigFile, "Hotkeys", $aKeys[$i][0], $aKeys[$i][1])
