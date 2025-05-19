@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.61
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.62
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.61
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.62
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -39,8 +39,7 @@
 #include <Process.au3>
 #include <Array.au3> ; For _ArraySearch
 #include <Misc.au3>
-Global Const $VK_ALT = "12"
-Global Const $VK_X = "58"
+
 Global $bHotkeyDown = False
 ; ---------------------------------------------------------------------------------
 ; 1) Define fallback constants for Lock/Unlock if your AutoIt version doesn't have them
@@ -368,7 +367,7 @@ Func LoadButtonConfig()
 			["HealHotkey", "{" & Chr(96) & "}"], _
 			["CureHotkey", "{-}"], _
 			["TargetHotkey", "{=}"], _
-			["ExitHotkey", "{#}"], _
+			["ExitHotkey", "{/}"], _
 			["SaveLocationHotkey", "{F7}"], _
 			["EraseLocationsHotkey", "{F8}"], _
 			["MoveToLocationsHotkey", "{!}"], _
@@ -527,7 +526,7 @@ Func CreateButtonDefaultConfig()
 			["HealHotkey", "{" & Chr(96) & "}"], _
 			["CureHotkey", "{-}"], _
 			["TargetHotkey", "{=}"], _
-			["ExitHotkey", "{#}"], _
+			["ExitHotkey", "{/}"], _
 			["SaveLocationHotkey", "{F7}"], _
 			["EraseLocationsHotkey", "{F8}"], _
 			["MoveToLocationsHotkey", "{!}"], _
