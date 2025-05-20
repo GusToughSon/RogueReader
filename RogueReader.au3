@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.65
+#AutoIt3Wrapper_Res_Fileversion=5.1.0.2
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -15,22 +15,7 @@
 #AutoIt3Wrapper_Run_Tidy=y
 #AutoIt3Wrapper_Tidy_Stop_OnError=n
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
-#Region ;**** Directives created by AutoIt3Wrapper_GUI ****
-#AutoIt3Wrapper_Icon=Include\RogueReader.ico
-#AutoIt3Wrapper_Compression=4
-#AutoIt3Wrapper_UseX64=y
-#AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.65
-#AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
-#AutoIt3Wrapper_Res_ProductName=Rogue Reader
-#AutoIt3Wrapper_Res_ProductVersion=4
-#AutoIt3Wrapper_Res_CompanyName=Training Trainers.LLC
-#AutoIt3Wrapper_Res_LegalCopyright=Use only for authorized security testing.
-#AutoIt3Wrapper_Res_LegalTradeMarks=TrainingTrainersLLC
-#AutoIt3Wrapper_Res_Language=1033
-#AutoIt3Wrapper_Run_AU3Check=n
-#AutoIt3Wrapper_Tidy_Stop_OnError=n
-#EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
+
 
 #include <GUIConstantsEx.au3>
 #include <File.au3>
@@ -203,7 +188,7 @@ Global $ExitButton = GUICtrlCreateButton("Exit", 120, 315, 110, 30)
 ; Create checkboxes
 Global $MayhamCheckbox = GUICtrlCreateCheckbox("Mayham", 105, 175, 115, 20)
 GUICtrlSetFont($MayhamCheckbox, 8.5, 400, $GUI_FONTNORMAL)
-
+GUICtrlSetState($MayhamCheckbox, $GUI_CHECKED)
 Global $ReverseLoopCheckbox = GUICtrlCreateCheckbox("Reversed Walker", 105, 215, 115, 20)
 GUICtrlSetFont($ReverseLoopCheckbox, 8.5, 400, $GUI_FONTNORMAL)
 
@@ -873,6 +858,7 @@ Func ToggleAllHelpers()
 		$CureStatus = 1
 		$TargetStatus = 1
 		;$MoveToLocationsStatus = 1
+		GUICtrlSetState($MayhamCheckbox, $GUI_CHECKED)
 		GUICtrlSetState($LootingCheckbox, $GUI_CHECKED)
 		GUICtrlSetData($HealerLabel, "Healer: On")
 		GUICtrlSetData($CureLabel, "Cure: On")
