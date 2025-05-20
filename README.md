@@ -42,7 +42,7 @@ Let’s pop the hood and see the goodies under there!
 | Heal           | \`          |
 | Cure           | -           |
 | Target         | =           |
-| Exit Script    | #           |
+| Exit Script    | /           |
 | Save Location  | F7          |
 | Erase Locations| F8          |
 | Start Walker   | !           |
