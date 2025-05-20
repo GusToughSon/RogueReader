@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.1.0.2
+#AutoIt3Wrapper_Res_Fileversion=5.1.0.3
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -89,6 +89,7 @@ Global $ChattOpenOffset = 0xB678D8   ;
 Global $SicknessOffset = 0x7C5E4    ;
 Global $BackPack = 0x731A8          ;
 Global $BackPackMax = 0x731AC          ;
+Global $LastProcessID = 0
 
 Global $MovmentSlider = 200 ;walk after removed from gui turned to solid state,
 Global $AutoResumeWalker = False
@@ -293,24 +294,33 @@ While $Running
 	EndSwitch
 
 	; ---- Background processing ----
-	Local $ProcessID = ProcessExists($ProcessName)
-	If Not $ProcessID Then
+	; Check current process
+	Local $CurrentPID = ProcessExists($ProcessName)
+
+	If $CurrentPID = 0 Then
 		If $hProcess <> 0 Then _WinAPI_CloseHandle($hProcess)
 		$hProcess = 0
 		$BaseAddress = 0
-		Sleep(10)
+		$LastProcessID = 0
+		Sleep(100)
 		ContinueLoop
 	EndIf
 
-	If $hProcess = 0 Then
+	; Check if new process instance launched
+	If $CurrentPID <> $LastProcessID Then
+		ConsoleWrite("[Watcher] Detected new process (PID changed): Reconnecting..." & @CRLF)
+		If $hProcess <> 0 Then _WinAPI_CloseHandle($hProcess)
+		$hProcess = 0
+		$BaseAddress = 0
+		$LastProcessID = $CurrentPID
 		ConnectToBaseAddress()
-		If $BaseAddress = 0 Or $hProcess = 0 Then
-			Sleep(10)
-			ContinueLoop
-		Else
-			ChangeAddressToBase()
-		EndIf
 	EndIf
+
+	If $hProcess = 0 Or $BaseAddress = 0 Then
+		Sleep(100)
+		ContinueLoop
+	EndIf
+
 
 	GUIReadMemory()
 
@@ -536,20 +546,31 @@ EndFunc   ;==>CreateButtonDefaultConfig
 ;   Function to Open Process & Retrieve Base Address
 ; ------------------------------------------------------------------------------
 Func ConnectToBaseAddress()
-	Global $hProcess
-	Global $ProcessID
-	Global $BaseAddress
+	Global $hProcess, $BaseAddress
+
+	Local $ProcessID = ProcessExists($ProcessName)
+	If $ProcessID = 0 Then
+		ConsoleWrite("[Reconnect] Game process not found." & @CRLF)
+		Return SetError(1)
+	EndIf
 
 	$hProcess = _WinAPI_OpenProcess(0x1F0FFF, False, $ProcessID)
 	If $hProcess = 0 Then
-		ConsoleWrite("[Error] Failed to open process! Try running as administrator." & @CRLF)
-		Return
+		ConsoleWrite("[Reconnect] Failed to open process! Try running as admin." & @CRLF)
+		Return SetError(2)
 	EndIf
 
 	$BaseAddress = _GetModuleBase_EnumModules($hProcess)
 	If $BaseAddress = 0 Then
-		ConsoleWrite("[Error] Failed to obtain a valid base address!" & @CRLF)
+		ConsoleWrite("[Reconnect] Failed to obtain base address!" & @CRLF)
+		_WinAPI_CloseHandle($hProcess)
+		$hProcess = 0
+		Return SetError(3)
 	EndIf
+
+	ChangeAddressToBase()
+	ConsoleWrite("[Reconnect] Successfully reconnected to new game instance." & @CRLF)
+	Return 1
 EndFunc   ;==>ConnectToBaseAddress
 
 ; ------------------------------------------------------------------------------
