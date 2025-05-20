@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.62
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.64
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.62
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.64
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -449,6 +449,10 @@ Func ScanAndLootNearbyItems()
 	Local $mouseXAddr = $BaseAddress + 0xA669F0
 	Local $mouseYAddr = $BaseAddress + 0xB5BC0C
 
+	; Snapshot original in-memory cursor location
+	Local $origMemX = _ReadMemory($hProcess, $mouseXAddr)
+	Local $origMemY = _ReadMemory($hProcess, $mouseYAddr)
+
 	; Player position
 	Local $px = _ReadMemory($hProcess, $PosXAddress)
 	Local $py = _ReadMemory($hProcess, $PosYAddress)
@@ -470,13 +474,11 @@ Func ScanAndLootNearbyItems()
 	Local $memX[9] = [160, 175, 190, 160, 175, 190, 160, 175, 190]
 	Local $memY[9] = [160, 160, 160, 175, 175, 175, 190, 190, 190]
 
-	; Optional: direction names for logging
 	Local $dirName[9] = ["NW", "N", "NE", "W", "CENTER", "E", "SW", "S", "SE"]
 
 	For $i = 0 To $maxItems - 1
 		Local $addr = $itemBase + ($i * $stride)
-		Local $active = _ReadMemory($hProcess, $addr)
-		If $active = 0 Then ContinueLoop
+		If _ReadMemory($hProcess, $addr) = 0 Then ContinueLoop
 
 		Local $packed = _ReadMemory($hProcess, $addr + 0xC)
 		Local $ix = BitAND($packed, 0xFFFF)
@@ -485,15 +487,22 @@ Func ScanAndLootNearbyItems()
 		Local $dx = $ix - $px
 		Local $dy = $iy - $py
 
-		; Find matching direction
 		For $d = 0 To 8
 			If $dx = $dxArr[$d] And $dy = $dyArr[$d] Then
+				; Set in-memory cursor
 				_WriteMemory($hProcess, $mouseXAddr, $memX[$d])
 				_WriteMemory($hProcess, $mouseYAddr, $memY[$d])
+
+				; Click via ControlClick
 				ControlClick($WindowName, "", "", "right", 1, $clickX[$d], $clickY[$d])
-				ConsoleWrite(StringFormat("[Loot] ✅ ΔX=%d ΔY=%d (%s) → Clicked (%d,%d)" & @CRLF, _
+
+				; Restore in-memory cursor after clicking
+				_WriteMemory($hProcess, $mouseXAddr, $origMemX)
+				_WriteMemory($hProcess, $mouseYAddr, $origMemY)
+
+				ConsoleWrite(StringFormat("[Loot+Restore] ✅ ΔX=%d ΔY=%d (%s) → Clicked (%d,%d) & Restored MemCoords" & @CRLF, _
 						$dx, $dy, $dirName[$d], $clickX[$d], $clickY[$d]))
-				;				Sleep(100)
+
 				ExitLoop
 			EndIf
 		Next
@@ -868,7 +877,7 @@ Func ToggleAllHelpers()
 		GUICtrlSetData($HealerLabel, "Healer: On")
 		GUICtrlSetData($CureLabel, "Cure: On")
 		GUICtrlSetData($TargetLabel, "Target: On")
-		GUICtrlSetData($WalkerLabel, "Walker: On")
+		;GUICtrlSetData($WalkerLabel, "Walker: On")
 
 		ConsoleWrite("[GUI] ToggleAll: All turned ON" & @CRLF)
 	EndIf
