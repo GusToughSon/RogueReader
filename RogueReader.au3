@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.64
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.65
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -20,7 +20,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.0.0.64
+#AutoIt3Wrapper_Res_Fileversion=5.0.0.65
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -872,7 +872,7 @@ Func ToggleAllHelpers()
 		$HealerStatus = 1
 		$CureStatus = 1
 		$TargetStatus = 1
-		$MoveToLocationsStatus = 1
+		;$MoveToLocationsStatus = 1
 		GUICtrlSetState($LootingCheckbox, $GUI_CHECKED)
 		GUICtrlSetData($HealerLabel, "Healer: On")
 		GUICtrlSetData($CureLabel, "Cure: On")
