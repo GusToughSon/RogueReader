@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.1.0.5
+#AutoIt3Wrapper_Res_Fileversion=5.1.1.1
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -654,7 +654,6 @@ Func GUIReadMemory()
 			GUICtrlSetData($WalkerLabel, "Walker: Error")
 	EndSwitch
 
-
 	; Attack Mode
 	$AttackMode = _ReadMemory($hProcess, $AttackModeAddress)
 	If $AttackMode = 0 Then
@@ -697,39 +696,21 @@ Func GUIReadMemory()
 	GUICtrlSetData($BackPackLabel, "Weight " & $bpWeight & " / " & $bpMax)
 
 	; --- Death Detection via sudden teleport ---
-	Local Static $lastX = -1, $lastY = -1
+	Static $lastX = -1, $lastY = -1
 	If $lastX <> -1 And $lastY <> -1 Then
 		Local $dx = Abs($PosX - $lastX)
 		Local $dy = Abs($PosY - $lastY)
 		If $dx > 25 Or $dy > 25 Then
 			ConsoleWrite("[DeathDetect] Large movement detected: ΔX=" & $dx & ", ΔY=" & $dy & ". Assuming death." & @CRLF)
 
-			; Disable all helpers
-			If $MoveToLocationsStatus = 1 Then
+			; Turn off walker
+			If $MoveToLocationsStatus <> 0 Then
 				$MoveToLocationsStatus = 0
 				GUICtrlSetData($WalkerLabel, "Walker: Off")
-				ConsoleWrite("[DeathDetect] Walker disabled." & @CRLF)
+				ConsoleWrite("[DeathDetect] Walker turned OFF." & @CRLF)
 			EndIf
-			;
-			;			If $TargetStatus = 1 Then
-			;				$TargetStatus = 0
-			;				GUICtrlSetData($TargetLabel, "Target: Off")
-			;				ConsoleWrite("[DeathDetect] Targeting disabled." & @CRLF)
-			;			EndIf
-			;
-			;			If $HealerStatus = 1 Then
-			;				$HealerStatus = 0
-			;				GUICtrlSetData($HealerLabel, "Healer: Off")
-			;				ConsoleWrite("[DeathDetect] Healer disabled." & @CRLF)
-			;			EndIf
-			;
-			;			If $CureStatus = 1 Then
-			;				$CureStatus = 0
-			;				GUICtrlSetData($CureLabel, "Cure: Off")
-			;				ConsoleWrite("[DeathDetect] Cure disabled." & @CRLF)
-			;			EndIf
 
-			; Clear any loot
+			; Clear loot status
 			$LootQueued = False
 			$LootCount = 0
 			$LootReady = False
