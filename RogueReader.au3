@@ -38,7 +38,7 @@ If Not IsDeclared("SW_UNLOCKDRAW") Then
 EndIf
 
 Opt("MouseCoordMode", 2)
-
+Global $Beep = 1
 Global $version = FileGetVersion(@ScriptFullPath)
 Global Const $locationFile = @ScriptDir & "\Locations.ini"
 Global $currentLocations = 1
@@ -439,6 +439,8 @@ EndFunc   ;==>Min
 Func ScanAndLootNearbyItems()
 	Global $hProcess, $BaseAddress, $WindowName
 	Global $PosXAddress, $PosYAddress
+	Global $Beep ; <-- This must be declared globally elsewhere
+
 	Local Const $iniPath = @ScriptDir & "\Loot.ini"
 
 	Local $mouseXAddr = $BaseAddress + 0xA669F0
@@ -474,11 +476,20 @@ Func ScanAndLootNearbyItems()
 		Local $TypeOffset = $typeBase + ($i * $stride)
 		Local $itemID = Hex(_ReadMemory($hProcess, $TypeOffset), 6)
 
-		; 🔄 LIVE read Loot.ini
+		; 🔄 Read Loot.ini
 		Local $lootValue = IniRead($iniPath, "Loot", $itemID, "UNTRACKED")
 
 		If $lootValue = "UNTRACKED" Then
-			IniWrite($iniPath, "Loot", $itemID, "Item|True") ; Just "Item"
+			IniWrite($iniPath, "Loot", $itemID, "Item|True")
+			ConsoleWrite("[Loot] 📥 New item added: " & $itemID & @CRLF)
+
+			If $Beep = 1 Then
+				If FileExists(@ScriptDir & "\Include\Click.wav") Then
+					SoundPlay(@ScriptDir & "\Include\Click.wav")
+				EndIf
+
+			EndIf
+
 			$lootValue = "Item|True"
 		EndIf
 
@@ -1371,18 +1382,10 @@ Func AttackModeReader()
 	$LastPlayerX = $playerX
 	$LastPlayerY = $playerY
 
-	; --- Retarget if no target is selected ---
+	; Auto retarget if no target is active
 	If $TargetStatus = 1 And $Type = 65535 And $Chat = 0 Then
 		If TimerDiff($currentTime) >= $TargetDelay Then
-			Send("{SHIFTUP}") ; Prevent Shift getting stuck globally
-
-			Local $hWnd = WinGetHandle($WindowName)
-			If WinExists($WindowName) And $hWnd Then
-				ControlSend($WindowName, "", "", "{TAB}")
-			Else
-				ConsoleWrite("[Retarget] Warning: Game window not found!" & @CRLF)
-			EndIf
-
+			ControlSend($WindowName, "", "", "{TAB}")
 			$currentTime = TimerInit()
 		EndIf
 	EndIf
@@ -1404,6 +1407,7 @@ Func AttackModeReader()
 				$noTargetStart = 0
 			EndIf
 		Else
+			; Target reacquired — reset delay
 			$noTargetStart = 0
 		EndIf
 	EndIf
