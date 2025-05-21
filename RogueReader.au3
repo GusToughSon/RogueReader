@@ -1371,10 +1371,18 @@ Func AttackModeReader()
 	$LastPlayerX = $playerX
 	$LastPlayerY = $playerY
 
-	; Auto retarget if no target is active
+	; --- Retarget if no target is selected ---
 	If $TargetStatus = 1 And $Type = 65535 And $Chat = 0 Then
 		If TimerDiff($currentTime) >= $TargetDelay Then
-			ControlSend($WindowName, "", "", "{TAB}")
+			Send("{SHIFTUP}") ; Prevent Shift getting stuck globally
+
+			Local $hWnd = WinGetHandle($WindowName)
+			If WinExists($WindowName) And $hWnd Then
+				ControlSend($WindowName, "", "", "{TAB}")
+			Else
+				ConsoleWrite("[Retarget] Warning: Game window not found!" & @CRLF)
+			EndIf
+
 			$currentTime = TimerInit()
 		EndIf
 	EndIf
@@ -1396,7 +1404,6 @@ Func AttackModeReader()
 				$noTargetStart = 0
 			EndIf
 		Else
-			; Target reacquired — reset delay
 			$noTargetStart = 0
 		EndIf
 	EndIf
