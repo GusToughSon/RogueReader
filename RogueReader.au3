@@ -79,16 +79,16 @@ Global $LootClickQueueSize = 0
 ; Define the game process and memory offsets
 Global $ProcessName = "Project Rogue Client.exe"
 Global $WindowName = "Project Rogue"
-Global $TypeOffset = 0xBE7974        ; ; 0=Player, 1=Monster, etc
-Global $AttackModeOffset = 0xB6D458  ;              ----
+Global $TypeOffset = 0xBF91C8        ;  ---- ; 0=Player, 1=Monster, etc
+Global $AttackModeOffset = 0xB6D458  ; ----
 Global $PosXOffset = 0xBFBE68        ; ----
-Global $PosYOffset = 0xBFBE60        ;
-Global $HPOffset = 0x7C400          ;
-Global $MaxHPOffset = 0x7C404       ; ----
+Global $PosYOffset = 0xBFBE60        ; ----
+Global $HPOffset = 0x8DC70         ; ----
+Global $MaxHPOffset = 0x8DC74      ; ----
 Global $ChattOpenOffset = 0xB79130  ;  ----
-Global $SicknessOffset = 0x7C5E4    ;
-Global $BackPack = 0x731A8          ;
-Global $BackPackMax = 0x731AC          ;
+Global $SicknessOffset = 0x8DE54    ; ----
+Global $BackPack = 0x751E0         ; ----
+Global $BackPackMax = 0x751E4         ;
 Global $LastProcessID = 0
 
 Global $MovmentSlider = 200 ;walk after removed from gui turned to solid state,
