@@ -3,10 +3,10 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=6.0.0.2
+#AutoIt3Wrapper_Res_Fileversion=6.0.0.3
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
-#AutoIt3Wrapper_Res_ProductVersion=4
+#AutoIt3Wrapper_Res_ProductVersion=6
 #AutoIt3Wrapper_Res_CompanyName=Training Trainers.LLC
 #AutoIt3Wrapper_Res_LegalCopyright=Use only for authorized security testing.
 #AutoIt3Wrapper_Res_LegalTradeMarks=TrainingTrainersLLC
