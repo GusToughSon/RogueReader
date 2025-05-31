@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=5.1.1.1
+#AutoIt3Wrapper_Res_Fileversion=6.0.0.2
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -80,12 +80,12 @@ Global $LootClickQueueSize = 0
 Global $ProcessName = "Project Rogue Client.exe"
 Global $WindowName = "Project Rogue"
 Global $TypeOffset = 0xBE7974        ; ; 0=Player, 1=Monster, etc
-Global $AttackModeOffset = 0xB5BC00  ;
-Global $PosYOffset = 0xBF9E08        ;
-Global $PosXOffset = 0xBF9E10        ;
+Global $AttackModeOffset = 0xB6D458  ;              ----
+Global $PosXOffset = 0xBFBE68        ; ----
+Global $PosYOffset = 0xBFBE60        ;
 Global $HPOffset = 0x7C400          ;
-Global $MaxHPOffset = 0x7C404       ;
-Global $ChattOpenOffset = 0xB678D8   ;
+Global $MaxHPOffset = 0x7C404       ; ----
+Global $ChattOpenOffset = 0xB79130  ;  ----
 Global $SicknessOffset = 0x7C5E4    ;
 Global $BackPack = 0x731A8          ;
 Global $BackPackMax = 0x731AC          ;
