@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=6.0.0.2
+#AutoIt3Wrapper_Res_Fileversion=5.1.1.1
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=4
@@ -80,12 +80,12 @@ Global $LootClickQueueSize = 0
 Global $ProcessName = "Project Rogue Client.exe"
 Global $WindowName = "Project Rogue"
 Global $TypeOffset = 0xBE7974        ; ; 0=Player, 1=Monster, etc
-Global $AttackModeOffset = 0xB6D458  ;              ----
-Global $PosXOffset = 0xBFBE68        ; ----
-Global $PosYOffset = 0xBFBE60        ;
+Global $AttackModeOffset = 0xB5BC00  ;
+Global $PosYOffset = 0xBF9E08        ;
+Global $PosXOffset = 0xBF9E10        ;
 Global $HPOffset = 0x7C400          ;
-Global $MaxHPOffset = 0x7C404       ; ----
-Global $ChattOpenOffset = 0xB79130  ;  ----
+Global $MaxHPOffset = 0x7C404       ;
+Global $ChattOpenOffset = 0xB678D8   ;
 Global $SicknessOffset = 0x7C5E4    ;
 Global $BackPack = 0x731A8          ;
 Global $BackPackMax = 0x731AC          ;
@@ -187,14 +187,9 @@ Global $KillButton = GUICtrlCreateButton("Kill Rogue", 10, 315, 110, 30)
 Global $ExitButton = GUICtrlCreateButton("Exit", 120, 315, 110, 30)
 
 ; Create checkboxes
-Global $MayhamCheckbox = GUICtrlCreateCheckbox("Mayham", 105, 175, 60, 20)
+Global $MayhamCheckbox = GUICtrlCreateCheckbox("Mayham", 105, 175, 115, 20)
 GUICtrlSetFont($MayhamCheckbox, 8.5, 400, $GUI_FONTNORMAL)
 GUICtrlSetState($MayhamCheckbox, $GUI_CHECKED)
-
-Global $JugernautCheckbox = GUICtrlCreateCheckbox("Jugernaut", 170, 175, 115, 20)
-GUICtrlSetFont($JugernautCheckbox, 8.5, 400, $GUI_FONTNORMAL)
-
-
 Global $ReverseLoopCheckbox = GUICtrlCreateCheckbox("Reversed Walker", 105, 215, 115, 20)
 GUICtrlSetFont($ReverseLoopCheckbox, 8.5, 400, $GUI_FONTNORMAL)
 
@@ -257,7 +252,6 @@ GUISetState(@SW_SHOW)
 ; --------------------------------------------------------------------------
 While $Running
 	Local $msg = GUIGetMsg()
-	; ---- Handle GUI messages first ----
 	Switch $msg
 		Case $ExitButton, $GUI_EVENT_CLOSE
 			_WinAPI_CloseHandle($hProcess)
@@ -268,40 +262,23 @@ While $Running
 			Local $hWnd = WinGetHandle($WindowName)
 			If $hWnd Then
 				ForceLogoutPatch()
-
-				; Simulate clicking the Close button
-				DllCall("user32.dll", "int", "PostMessage", _
-						"hwnd", $hWnd, _
-						"uint", 0x0010, _ ; WM_CLOSE
-						"wparam", 0, _
-						"lparam", 0)
-
-				; Optionally use ProcessClose if that fails
-				; ProcessClose($ProcessName)
-			Else
-				ConsoleWrite("Failed to find window handle for: " & $WindowName & @CRLF)
+				DllCall("user32.dll", "int", "PostMessage", "hwnd", $hWnd, "uint", 0x0010, "wparam", 0, "lparam", 0)
 			EndIf
 
 		Case $HealToggle
 			ToggleHealer()
-
 		Case $CureToggle
 			ToggleCure()
-
 		Case $TargetToggle
 			ToggleTarget()
-
 		Case $WalkerToggle
 			ToggleWalker()
-
 		Case $ToggleAll
 			ToggleAllHelpers()
 	EndSwitch
 
-	; ---- Background processing ----
-	; Check current process
+	; ------------------- PROCESS MANAGEMENT -------------------
 	Local $CurrentPID = ProcessExists($ProcessName)
-
 	If $CurrentPID = 0 Then
 		If $hProcess <> 0 Then _WinAPI_CloseHandle($hProcess)
 		$hProcess = 0
@@ -311,9 +288,7 @@ While $Running
 		ContinueLoop
 	EndIf
 
-	; Check if new process instance launched
 	If $CurrentPID <> $LastProcessID Then
-		ConsoleWrite("[Watcher] Detected new process (PID changed): Reconnecting..." & @CRLF)
 		If $hProcess <> 0 Then _WinAPI_CloseHandle($hProcess)
 		$hProcess = 0
 		$BaseAddress = 0
@@ -326,23 +301,31 @@ While $Running
 		ContinueLoop
 	EndIf
 
-
+	; ------------------- MEMORY AND GUI -------------------
 	GUIReadMemory()
 
+	; ------------------- AUTO-LOG LOCATION IF MOVED -------------------
+	Local $curX = _ReadMemory($hProcess, $PosXAddress)
+	Local $curY = _ReadMemory($hProcess, $PosYAddress)
+	If $curX <> $lastX Or $curY <> $lastY Then
+		SaveIfNewLocation($curX, $curY)
+		$lastX = $curX
+		$lastY = $curY
+	EndIf
+
+	; ------------------- FEATURE MODULES -------------------
 	If $Chat = 0 Then
 		If $CureStatus = 1 Then CureMe()
 		If $HealerStatus = 1 Then TimeToHeal()
 		If $TargetStatus = 1 Then AttackModeReader()
 		If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED Then ScanAndLootNearbyItems()
 
-		; ---- Mayham mode ----
 		If GUICtrlRead($MayhamCheckbox) = $GUI_CHECKED And _IsPressed("04") Then
 			MouseClick("right")
 			Sleep(10)
 		EndIf
 
-		; ---- Walker execution ----
-		If $MoveToLocationsStatus = 1 And Not $LootQueued And $Chat = 0 Then
+		If $MoveToLocationsStatus = 1 And Not $LootQueued Then
 			Local $result = MoveToLocationsStep($aLocations, $iCurrentIndex)
 			If @error Then $MoveToLocationsStatus = 0
 		EndIf
@@ -1058,7 +1041,6 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 	Global $TargetStatus, $LootingCheckbox
 	Global $LootQueued, $LootCount, $LootIdleWaiting, $LootIdleTimer
 	Global $PausedWalkerForLoot, $Type
-	Global $JugernautCheckbox
 
 	If $MoveToLocationsStatus <> 1 Then Return SetError(1, 0, "Walker not active")
 
@@ -1077,21 +1059,6 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 
 	Local $currentX = _ReadMemory($hProcess, $PosXAddress)
 	Local $currentY = _ReadMemory($hProcess, $PosYAddress)
-
-	; Jugernaut Mode Block Detection
-	If GUICtrlRead($JugernautCheckbox) = $GUI_CHECKED Then
-		Static $BlockStart = 0
-		If $currentX = $lastX And $currentY = $lastY Then
-			If $BlockStart = 0 Then $BlockStart = TimerInit()
-			If TimerDiff($BlockStart) > 500 Then
-				ConsoleWrite("[Jugernaut] Blocked for over 1.5s — initiating combat sweep." & @CRLF)
-				JugernautCombatHandler()
-				$BlockStart = 0
-			EndIf
-		Else
-			$BlockStart = 0
-		EndIf
-	EndIf
 
 	If $currentX = $targetX And $currentY = $targetY Then
 		ConsoleWrite("Arrived at location index: " & $iCurrentIndex & @CRLF)
@@ -1119,9 +1086,6 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 		Sleep(30)
 		ControlSend($WindowName, "", "", "{w up}")
 	EndIf
-
-	$lastX = $currentX
-	$lastY = $currentY
 
 	Return True
 EndFunc   ;==>MoveToLocationsStep
@@ -1365,7 +1329,6 @@ Func AttackModeReader()
 	Global $currentTime, $TargetDelay
 	Global $LootIdleTimer, $LootIdleWaiting
 	Global $MoveToLocationsStatus, $AutoResumeWalker
-	Global $JugernautCheckbox
 
 	Static $noTargetStart = 0
 
@@ -1388,6 +1351,7 @@ Func AttackModeReader()
 	$LastPlayerX = $playerX
 	$LastPlayerY = $playerY
 
+	; Auto retarget if no target is active
 	If $TargetStatus = 1 And $Type = 65535 And $Chat = 0 Then
 		If TimerDiff($currentTime) >= $TargetDelay Then
 			ControlSend($WindowName, "", "", "{TAB}")
@@ -1395,16 +1359,14 @@ Func AttackModeReader()
 		EndIf
 	EndIf
 
-	If GUICtrlRead($JugernautCheckbox) = $GUI_CHECKED Then
-		Return
-	EndIf
-
+	; --- Combat detected: pause walker only ---
 	If $MoveToLocationsStatus = 1 And $Type = 1 Then
 		ConsoleWrite("[Walker] Combat detected — pausing walker." & @CRLF)
 		$MoveToLocationsStatus = 2
-		$noTargetStart = 0
+		$noTargetStart = 0 ; reset no-target timer
 	EndIf
 
+	; --- Combat ended: wait 350ms of no target before resuming ---
 	If $MoveToLocationsStatus = 2 Then
 		If $Type = 65535 Then
 			If $noTargetStart = 0 Then $noTargetStart = TimerInit()
@@ -1414,6 +1376,7 @@ Func AttackModeReader()
 				$noTargetStart = 0
 			EndIf
 		Else
+			; Target reacquired — reset delay
 			$noTargetStart = 0
 		EndIf
 	EndIf
@@ -1469,29 +1432,17 @@ Func _WriteByte($addr, $byte)
 			"ptr", 0)
 EndFunc   ;==>_WriteByte
 
-Func JugernautCombatHandler()
-	Global $TypeAddress, $WindowName, $hProcess
-	Global $Type, $TargetDelay
+Func SaveIfNewLocation($x, $y)
+	; These are already declared as Global elsewhere; no need to redeclare
+	; Just reference them directly
 
-	Local $TargetHeldStart = 0
-	Local $CombatStart = TimerInit()
+	For $i = 0 To UBound($aLocations) - 1
+		If $aLocations[$i][0] = $x And $aLocations[$i][1] = $y Then Return
+	Next
 
-	Do
-		$Type = _ReadMemory($hProcess, $TypeAddress)
-
-		If $Type = 65535 Then
-			ControlSend($WindowName, "", "", "{TAB}")
-			Sleep(200)
-			$TargetHeldStart = 0
-		Else
-			If $TargetHeldStart = 0 Then $TargetHeldStart = TimerInit()
-			If TimerDiff($TargetHeldStart) > 3500 Then
-				ConsoleWrite("[Jugernaut] Target held > 3.5s — cycling." & @CRLF)
-				ControlSend($WindowName, "", "", "{TAB}")
-				$TargetHeldStart = TimerInit()
-			EndIf
-		EndIf
-
-		Sleep(100)
-	Until $Type = 65535
-EndFunc   ;==>JugernautCombatHandler
+	Local $data = " : Location" & $currentLocations & "=X:" & $x & ";Y:" & $y & @CRLF
+	_FileWriteLog($locationFile, $data)
+	$currentLocations += 1
+	$aLocations = LoadLocations()
+	ConsoleWrite("[AutoLog] New location saved: X=" & $x & ", Y=" & $y & @CRLF)
+EndFunc   ;==>SaveIfNewLocation
