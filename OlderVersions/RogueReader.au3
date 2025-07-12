@@ -3,10 +3,10 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=6.0.0.4
+#AutoIt3Wrapper_Res_Fileversion=6.0.0.2
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
-#AutoIt3Wrapper_Res_ProductVersion=6
+#AutoIt3Wrapper_Res_ProductVersion=4
 #AutoIt3Wrapper_Res_CompanyName=Training Trainers.LLC
 #AutoIt3Wrapper_Res_LegalCopyright=Use only for authorized security testing.
 #AutoIt3Wrapper_Res_LegalTradeMarks=TrainingTrainersLLC
@@ -448,12 +448,11 @@ Func ScanAndLootNearbyItems()
 
 	Local Const $iniPath = @ScriptDir & "\Loot.ini"
 
-	; ✅ NEW MEMORY OFFSETS
-	Local $mouseXAddr = $BaseAddress + 0xA44254
-	Local $mouseYAddr = $BaseAddress + 0xA44258
-	Local $itemBase = $BaseAddress + 0xA4425C
-	Local $typeBase = $BaseAddress + 0xA44260
+	Local $mouseXAddr = $BaseAddress + 0xA669F0
+	Local $mouseYAddr = $BaseAddress + 0xB5BC0C
 
+	Local $itemBase = $BaseAddress + 0xA329FC
+	Local $typeBase = $BaseAddress + 0xA32A00
 	Local $stride = 0x3C
 	Local $maxItems = 100
 
@@ -493,15 +492,13 @@ Func ScanAndLootNearbyItems()
 				If FileExists(@ScriptDir & "\Include\Click.wav") Then
 					SoundPlay(@ScriptDir & "\Include\Click.wav")
 				EndIf
+
 			EndIf
 
 			$lootValue = "Item|True"
 		EndIf
 
-		; ✅ FIXED: Always re-split lootValue after updating
 		Local $parts = StringSplit($lootValue, "|", 2)
-		If @error Or UBound($parts) < 2 Then ContinueLoop
-
 		Local $itemName = $parts[0]
 		Local $isLootable = ($parts[1] = "True")
 
