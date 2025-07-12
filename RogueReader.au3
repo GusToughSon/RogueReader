@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=6.0.0.5
+#AutoIt3Wrapper_Res_Fileversion=6.0.0.6
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=6
@@ -449,10 +449,10 @@ Func ScanAndLootNearbyItems()
 	Local Const $iniPath = @ScriptDir & "\Loot.ini"
 
 	; ✅ NEW MEMORY OFFSETS
-	Local $mouseXAddr = $BaseAddress + 0xA44254
+	Local $mouseXAddr = $BaseAddress + 0xA44260
 	Local $mouseYAddr = $BaseAddress + 0xA44258
 	Local $itemBase = $BaseAddress + 0xA4425C
-	Local $typeBase = $BaseAddress + 0xA44260
+	Local $typeBase = $BaseAddress + 0xA44254
 
 	Local $stride = 0x3C
 	Local $maxItems = 100
