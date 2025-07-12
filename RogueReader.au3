@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=6.0.0.4
+#AutoIt3Wrapper_Res_Fileversion=6.0.0.5
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=6
@@ -489,11 +489,11 @@ Func ScanAndLootNearbyItems()
 			IniWrite($iniPath, "Loot", $itemID, "Item|True")
 			ConsoleWrite("[Loot] 📥 New item added: " & $itemID & @CRLF)
 
-			If $Beep = 1 Then
-				If FileExists(@ScriptDir & "\Include\Click.wav") Then
-					SoundPlay(@ScriptDir & "\Include\Click.wav")
-				EndIf
-			EndIf
+			;If $Beep = 1 Then
+			;	If FileExists(@ScriptDir & "\Include\Click.wav") Then
+			;		SoundPlay(@ScriptDir & "\Include\Click.wav")
+			;	EndIf
+			;EndIf
 
 			$lootValue = "Item|True"
 		EndIf
