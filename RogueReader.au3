@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=6.1.0.2
+#AutoIt3Wrapper_Res_Fileversion=6.1.1.2
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=6
@@ -444,51 +444,107 @@ EndFunc   ;==>Min
 Func ScanAndLootNearbyItems()
 	Global $hProcess, $BaseAddress, $WindowName
 	Global $PosXAddress, $PosYAddress
+	Global $Beep ; <-- This must be declared globally elsewhere
 
-	; ✅ NEW OFFSETS
+	Local Const $iniPath = @ScriptDir & "\Loot.ini"
+
+	; ✅ NEW MEMORY OFFSETS
 	Local $mouseXAddr = $BaseAddress + 0xA78248
 	Local $mouseYAddr = $BaseAddress + 0xB6D464
 	Local $itemBase = $BaseAddress + 0xA44254
 	Local $typeBase = $BaseAddress + 0xA4425C
 
 	Local $stride = 0x3C
-	Local $maxItems = 10 ; scan first 10 slots
+	Local $maxItems = 100
 
-	; 📝 Save original mouse pos
-	Local $origMouseX = _ReadMemory($hProcess, $mouseXAddr)
-	Local $origMouseY = _ReadMemory($hProcess, $mouseYAddr)
+	Local $origMemX = _ReadMemory($hProcess, $mouseXAddr)
+	Local $origMemY = _ReadMemory($hProcess, $mouseYAddr)
+
+	Local $px = _ReadMemory($hProcess, $PosXAddress)
+	Local $py = _ReadMemory($hProcess, $PosYAddress)
+
+	Local $dxArr[9] = [-1, 0, 1, -1, 0, 1, -1, 0, 1]
+	Local $dyArr[9] = [-1, -1, -1, 0, 0, 0, 1, 1, 1]
+	Local $clickX[9] = [320, 350, 380, 320, 350, 380, 320, 350, 380]
+	Local $clickY[9] = [320, 320, 320, 350, 350, 350, 380, 380, 380]
+	Local $memX[9] = [160, 175, 190, 160, 175, 190, 160, 175, 190]
+	Local $memY[9] = [160, 160, 160, 175, 175, 175, 190, 190, 190]
+	Local $dirName[9] = ["NW", "N", "NE", "W", "CENTER", "E", "SW", "S", "SE"]
 
 	For $i = 0 To $maxItems - 1
 		Local $addr = $itemBase + ($i * $stride)
-		Local $typeAddr = $typeBase + ($i * $stride)
+		If _ReadMemory($hProcess, $addr) = 0 Then ContinueLoop
 
-		Local $itemID = _ReadMemory($hProcess, $addr)
-		Local $itemType = _ReadMemory($hProcess, $typeAddr)
+		Local $packed = _ReadMemory($hProcess, $addr + 0xC)
+		Local $ix = BitAND($packed, 0xFFFF)
+		Local $iy = BitShift($packed, 16)
 
-		; Skip empty slots
-		If $itemID = 0 Or $itemType = 0 Then ContinueLoop
+		Local $TypeOffset = $typeBase + ($i * $stride)
+		Local $itemID = Hex(_ReadMemory($hProcess, $TypeOffset), 6)
 
-		; Read packed position
-		Local $packedPos = _ReadMemory($hProcess, $addr + 0xC)
-		Local $ix = BitAND($packedPos, 0xFFFF)
-		Local $iy = BitShift($packedPos, 16)
+		; 🔄 Read Loot.ini
+		Local $lootValue = IniRead($iniPath, "Loot", $itemID, "UNTRACKED")
 
-		; Move mouse to item
-		_WriteMemory($hProcess, $mouseXAddr, $ix)
-		_WriteMemory($hProcess, $mouseYAddr, $iy)
+		If $lootValue = "UNTRACKED" Then
+			IniWrite($iniPath, "Loot", $itemID, "Item|True")
+			ConsoleWrite("[Loot] 📥 New item added: " & $itemID & @CRLF)
 
-		; Click to loot
-		ControlClick($WindowName, "", "", "right", 1)
+			;If $Beep = 1 Then
+			;	If FileExists(@ScriptDir & "\Include\Click.wav") Then
+			;		SoundPlay(@ScriptDir & "\Include\Click.wav")
+			;	EndIf
+			;EndIf
 
-		ConsoleWrite(StringFormat("[Loot] ✅ Item %02d ID: %06X Pos: (%d,%d) Type: %06X" & @CRLF, _
-				$i, $itemID, $ix, $iy, $itemType))
+			$lootValue = "Item|True"
+		EndIf
+
+		; ✅ FIXED: Always re-split lootValue after updating
+		Local $parts = StringSplit($lootValue, "|", 2)
+		If @error Or UBound($parts) < 2 Then ContinueLoop
+
+		Local $itemName = $parts[0]
+		Local $isLootable = ($parts[1] = "True")
+
+		Local $dx = $ix - $px
+		Local $dy = $iy - $py
+
+		If Not $isLootable Then
+			Local $newX = $ix + ($dx * 10)
+			Local $newY = $iy + ($dy * 10)
+
+			For $j = 0 To $maxItems - 1
+				If $j = $i Then ContinueLoop
+				Local $otherPacked = _ReadMemory($hProcess, $itemBase + ($j * $stride) + 0xC)
+				Local $ox = BitAND($otherPacked, 0xFFFF)
+				Local $oy = BitShift($otherPacked, 16)
+				If $ox = $newX And $oy = $newY Then
+					$newX += 1
+					$newY += 1
+				EndIf
+			Next
+
+			Local $newPacked = BitOR(BitShift($newY, -16), $newX)
+			_WriteMemory($hProcess, $addr + 0xC, $newPacked)
+
+			ConsoleWrite(StringFormat("[Denied] ❌ %s moved to (%d,%d) [%s]" & @CRLF, $itemID, $newX, $newY, $itemName))
+			ContinueLoop
+		EndIf
+
+		For $d = 0 To 8
+			If $dx = $dxArr[$d] And $dy = $dyArr[$d] Then
+				_WriteMemory($hProcess, $mouseXAddr, $memX[$d])
+				_WriteMemory($hProcess, $mouseYAddr, $memY[$d])
+
+				ControlClick($WindowName, "", "", "right", 1, $clickX[$d], $clickY[$d])
+
+				_WriteMemory($hProcess, $mouseXAddr, $origMemX)
+				_WriteMemory($hProcess, $mouseYAddr, $origMemY)
+
+				ConsoleWrite(StringFormat("[Loot] ✅ %s (%s) at (%d,%d)" & @CRLF, $itemID, $dirName[$d], $ix, $iy))
+				ExitLoop
+			EndIf
+		Next
 	Next
-
-	; Restore original mouse pos
-	_WriteMemory($hProcess, $mouseXAddr, $origMouseX)
-	_WriteMemory($hProcess, $mouseYAddr, $origMouseY)
-
-	ConsoleWrite("ScanAndLootNearbyItems: Complete" & @CRLF)
 EndFunc   ;==>ScanAndLootNearbyItems
 
 Func ClickTile($x, $y)
