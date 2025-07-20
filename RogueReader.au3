@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=6.1.1.3
+#AutoIt3Wrapper_Res_Fileversion=6.2.1.6
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=6
@@ -111,7 +111,7 @@ Global $HPAddress, $MaxHPAddress, $ChattOpenAddress, $SicknessAddress
 Global $Type, $Chat, $Sickness, $AttackMode
 
 Global $sicknessArray = [ _
-		1, 2, 65, 66, 67, 68, 69, 72, 73, 81, 97, 98, 99, 129, 257, 258, 513, 514, 515, 577, _
+		1, 2, 65, 66, 67, 68, 69, 72, 73, 81, 97, 98, 99, 129, 257, 258, 513, 514, 515, 577, 641, _
 		8193, 8194, 8195, 8257, 8258, 8705, 8706, 8707, 8708, 8709, 8712, 8713, _
 		8721, 8737, 8769, 8770, 16385, 16386, 16449, 16450, 16451, 16452, 16897, _
 		16898, 24577, 24578, 24579, 24581, 24582, 24583, 24585, 24609, 24641, _
@@ -266,21 +266,21 @@ While $Running
 
 		Case $KillButton
 			Local $hWnd = WinGetHandle($WindowName)
-			If $hWnd Then
-				ForceLogoutPatch()
+			;If $hWnd Then
+			;ForceLogoutPatch()
 
-				; Simulate clicking the Close button
-				DllCall("user32.dll", "int", "PostMessage", _
-						"hwnd", $hWnd, _
-						"uint", 0x0010, _ ; WM_CLOSE
-						"wparam", 0, _
-						"lparam", 0)
+			; Simulate clicking the Close button
+			;DllCall("user32.dll", "int", "PostMessage", _
+			;		"hwnd", $hWnd, _
+			;		"uint", 0x0010, _ ; WM_CLOSE
+			;		"wparam", 0, _
+			;		"lparam", 0)
 
-				; Optionally use ProcessClose if that fails
-				; ProcessClose($ProcessName)
-			Else
-				ConsoleWrite("Failed to find window handle for: " & $WindowName & @CRLF)
-			EndIf
+			; Optionally use ProcessClose if that fails
+			; ProcessClose($ProcessName)
+			;Else
+			;	ConsoleWrite("Failed to find window handle for: " & $WindowName & @CRLF)
+			;;EndIf
 
 		Case $HealToggle
 			ToggleHealer()
@@ -333,7 +333,7 @@ While $Running
 		If $CureStatus = 1 Then CureMe()
 		If $HealerStatus = 1 Then TimeToHeal()
 		If $TargetStatus = 1 Then AttackModeReader()
-		If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED Then ScanAndLootNearbyItems()
+		If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED And $AttackMode = +1 Then ScanAndLootNearbyItems()
 
 		; ---- Mayham mode ----
 		If GUICtrlRead($MayhamCheckbox) = $GUI_CHECKED And _IsPressed("04") Then
