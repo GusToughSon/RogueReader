@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=6.2.1.7
+#AutoIt3Wrapper_Res_Fileversion=6.2.1.10
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=6
@@ -266,21 +266,9 @@ While $Running
 
 		Case $KillButton
 			Local $hWnd = WinGetHandle($WindowName)
-			;If $hWnd Then
-			;ForceLogoutPatch()
-
-			; Simulate clicking the Close button
-			;DllCall("user32.dll", "int", "PostMessage", _
-			;		"hwnd", $hWnd, _
-			;		"uint", 0x0010, _ ; WM_CLOSE
-			;		"wparam", 0, _
-			;		"lparam", 0)
-
-			; Optionally use ProcessClose if that fails
-			; ProcessClose($ProcessName)
-			;Else
-			;	ConsoleWrite("Failed to find window handle for: " & $WindowName & @CRLF)
-			;;EndIf
+			If $hWnd Then
+				ProcessClose($ProcessName)
+			EndIf
 
 		Case $HealToggle
 			ToggleHealer()
@@ -336,9 +324,20 @@ While $Running
 		If GUICtrlRead($LootingCheckbox) = $GUI_CHECKED And $AttackMode = +1 Then ScanAndLootNearbyItems()
 
 		; ---- Mayham mode ----
-		If GUICtrlRead($MayhamCheckbox) = $GUI_CHECKED And _IsPressed("04") Then
+
+		If GUICtrlRead($MayhamCheckbox) = $GUI_CHECKED And _IsPressed("12") And _IsPressed("04") Then ; ALT + MMB
+			Local $Mouse = MouseGetPos()
+			;ConsoleWrite("ALT + MMB" & @CRLF)
+			;BackPack Drop Location 730, 320
+			MouseClickDrag("left", $Mouse[0], $Mouse[1], 730, 320, 0)
+			MouseMove($Mouse[0], $Mouse[1], 0)
+
+
+		ElseIf GUICtrlRead($MayhamCheckbox) = $GUI_CHECKED And _IsPressed("04") Then
+			;ConsoleWrite("MMB" & @CRLF)
 			MouseClick("right")
 			Sleep(10)
+
 		EndIf
 
 		; ---- Walker execution ----
@@ -416,22 +415,6 @@ Func LoadButtonConfig()
 	Next
 EndFunc   ;==>LoadButtonConfig
 
-Func ForceLogoutPatch()
-	Global $hProcess, $BaseAddress
-	If $hProcess = 0 Or $BaseAddress = 0 Then
-		ConsoleWrite("[LogoutBypass] No valid process or base address." & @CRLF)
-		Return
-	EndIf
-
-	Local $patchAddr = $BaseAddress + 0x3A18A
-	Local $patchBytes[5] = [0x90, 0x90, 0x90, 0x90, 0x90]
-
-	For $i = 0 To 4
-		_WriteByte($patchAddr + $i, $patchBytes[$i])
-	Next
-
-	ConsoleWrite("[LogoutBypass] Logout test patched. BX test + JNE disabled." & @CRLF)
-EndFunc   ;==>ForceLogoutPatch
 
 Func Min($a, $b)
 	If $a < $b Then
@@ -1129,91 +1112,7 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 	Return True
 EndFunc   ;==>MoveToLocationsStep
 
-Func NextIndex($iCurrent, $iBound, $reverse)
-	If $reverse Then
-		$iCurrent -= 1
-		If $iCurrent < 0 Then $iCurrent = $iBound - 1
-	Else
-		$iCurrent += 1
-		If $iCurrent >= $iBound Then $iCurrent = 0
-	EndIf
-	Return $iCurrent
-EndFunc   ;==>NextIndex
 
-Func QuickKey($key, $window, $hold)
-	ControlSend($window, "", "", StringReplace($key, "}", " down}"))
-	Sleep($hold)
-	ControlSend($window, "", "", StringReplace($key, "}", " up}"))
-EndFunc   ;==>QuickKey
-
-
-Func TryBypass()
-	Global $WindowName, $hProcess, $PosXAddress, $PosYAddress
-	Global $lastX, $lastY, $aLocations, $iCurrentIndex
-
-	Local $cx = _ReadMemory($hProcess, $PosXAddress)
-	Local $cy = _ReadMemory($hProcess, $PosYAddress)
-	Local $tx = $aLocations[$iCurrentIndex][0]
-	Local $ty = $aLocations[$iCurrentIndex][1]
-
-	Local $dx = $tx - $cx
-	Local $dy = $ty - $cy
-
-	Local $main = "", $side1 = "", $side2 = ""
-
-	If Abs($dx) >= Abs($dy) Then
-		If $dx < 0 Then
-			$main = "{a}"
-			$side1 = "{w}"
-			$side2 = "{s}"
-		Else
-			$main = "{d}"
-			$side1 = "{w}"
-			$side2 = "{s}"
-		EndIf
-	Else
-		If $dy < 0 Then
-			$main = "{w}"
-			$side1 = "{d}"
-			$side2 = "{a}"
-		Else
-			$main = "{s}"
-			$side1 = "{a}"
-			$side2 = "{d}"
-		EndIf
-	EndIf
-
-	Local $HoldTime = 75
-
-	QuickKey($side1, $WindowName, $HoldTime)
-	QuickKey($side1, $WindowName, $HoldTime)
-
-	Local $nx = _ReadMemory($hProcess, $PosXAddress)
-	Local $ny = _ReadMemory($hProcess, $PosYAddress)
-	If $nx <> $cx Or $ny <> $cy Then
-		ConsoleWrite("Bypass via " & $side1 & " worked. Resuming: " & $main & @CRLF)
-		QuickKey($main, $WindowName, $HoldTime)
-		$lastX = $nx
-		$lastY = $ny
-		Return True
-	EndIf
-
-	QuickKey($side2, $WindowName, $HoldTime)
-	QuickKey($side2, $WindowName, $HoldTime)
-
-	$nx = _ReadMemory($hProcess, $PosXAddress)
-	$ny = _ReadMemory($hProcess, $PosYAddress)
-	If $nx <> $cx Or $ny <> $cy Then
-		ConsoleWrite("Bypass via " & $side2 & " worked. Resuming: " & $main & @CRLF)
-		QuickKey($main, $WindowName, $HoldTime)
-		$lastX = $nx
-		$lastY = $ny
-		Return True
-	EndIf
-
-	ConsoleWrite("Bypass failed: no movement after sidesteps." & @CRLF)
-	Return False
-EndFunc   ;==>TryBypass
 
 Func FindClosestLocationIndex($currentX, $currentY, $aLocations)
 	If Not IsArray($aLocations) Or UBound($aLocations, 0) = 0 Then
@@ -1422,22 +1321,6 @@ Func AttackModeReader()
 	EndIf
 EndFunc   ;==>AttackModeReader
 
-Func IsBlockedCoord($x, $y)
-	For $i = 0 To UBound($aTempBlocked) - 1
-		If $aTempBlocked[$i][0] = $x And $aTempBlocked[$i][1] = $y Then
-			Return True
-		EndIf
-	Next
-	Return False
-EndFunc   ;==>IsBlockedCoord
-
-Func MarkCoordAsBlocked($x, $y)
-	ReDim $aTempBlocked[UBound($aTempBlocked) + 1][2]
-	$aTempBlocked[UBound($aTempBlocked) - 1][0] = $x
-	$aTempBlocked[UBound($aTempBlocked) - 1][1] = $y
-	ConsoleWrite("Marked (" & $x & ", " & $y & ") as blocked." & @CRLF)
-EndFunc   ;==>MarkCoordAsBlocked
-
 Func _WriteMemory($hProc, $pAddress, $value)
 	Local $tBuffer = DllStructCreate("dword")
 	DllStructSetData($tBuffer, 1, $value)
@@ -1448,17 +1331,6 @@ Func _WriteMemory($hProc, $pAddress, $value)
 			"dword", DllStructGetSize($tBuffer), _
 			"ptr", 0)
 EndFunc   ;==>_WriteMemory
-
-Func Mayham()
-	While _IsPressed("04") ; "04" = Middle Mouse Button
-		If GUICtrlRead($MayhamCheckbox) = $GUI_CHECKED Then
-			MouseClick("right")
-			Sleep(10) ; Spam rate (adjust if needed)
-		Else
-			ExitLoop ; Stop immediately if box unchecked
-		EndIf
-	WEnd
-EndFunc   ;==>Mayham
 
 Func _WriteByte($addr, $byte)
 	Global $hProcess
@@ -1488,7 +1360,7 @@ Func JugernautCombatHandler()
 			$TargetHeldStart = 0
 		Else
 			If $TargetHeldStart = 0 Then $TargetHeldStart = TimerInit()
-			If TimerDiff($TargetHeldStart) > 3500 Then
+			If TimerDiff($TargetHeldStart) > 1800 Then
 				ConsoleWrite("[Jugernaut] Target held > 3.5s — cycling." & @CRLF)
 				ControlSend($WindowName, "", "", "{TAB}")
 				$TargetHeldStart = TimerInit()
