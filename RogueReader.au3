@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=6.2.1.6
+#AutoIt3Wrapper_Res_Fileversion=6.2.1.7
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=6
@@ -1086,7 +1086,7 @@ Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 		Static $BlockStart = 0
 		If $currentX = $lastX And $currentY = $lastY Then
 			If $BlockStart = 0 Then $BlockStart = TimerInit()
-			If TimerDiff($BlockStart) > 500 Then
+			If TimerDiff($BlockStart) > 100 Then
 				ConsoleWrite("[Jugernaut] Blocked for over 1.5s — initiating combat sweep." & @CRLF)
 				JugernautCombatHandler()
 				$BlockStart = 0
