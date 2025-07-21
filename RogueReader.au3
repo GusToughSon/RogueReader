@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=6.2.2.1
+#AutoIt3Wrapper_Res_Fileversion=6.2.2.2
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=6
@@ -1052,6 +1052,17 @@ Func MarkCoordAsBlocked($x, $y)
 	ConsoleWrite("Marked (" & $x & ", " & $y & ") as blocked." & @CRLF)
 EndFunc   ;==>MarkCoordAsBlocked
 
+Func NextIndex($iCurrent, $iBound, $reverse)
+	If $reverse Then
+		$iCurrent -= 1
+		If $iCurrent < 0 Then $iCurrent = $iBound - 1
+	Else
+		$iCurrent += 1
+		If $iCurrent >= $iBound Then $iCurrent = 0
+	EndIf
+	Return $iCurrent
+EndFunc   ;==>NextIndex
+
 Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 	Global $hProcess, $PosXAddress, $PosYAddress, $TypeAddress
 	Global $WindowName, $lastX, $lastY
@@ -1262,7 +1273,7 @@ Func TimeToHeal()
 					ConsoleWrite("Healed: Stationary for " & $TimeSinceLastMove & "ms | HP < threshold." & @CRLF)
 					$LastHealTime = TimerInit()
 				Else
-					ConsoleWrite("Waiting: Haven't moved yet OR not stationary long enough." & @CRLF)
+					;ConsoleWrite("Waiting: Haven't moved yet OR not stationary long enough." & @CRLF)
 				EndIf
 			EndIf
 		EndIf
