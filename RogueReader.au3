@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=6.2.2.2
+#AutoIt3Wrapper_Res_Fileversion=6.2.2.3
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=6
@@ -112,7 +112,7 @@ Global $Type, $Chat, $Sickness, $AttackMode
 
 Global $sicknessArray = [ _
 		1, 2, 65, 66, 67, 68, 69, 72, 73, 81, 97, 98, 99, 129, 257, 258, 513, 514, 515, 577, 641, _
-		8193, 8194, 8195, 8257, 8258, 8705, 8706, 8707, 8708, 8709, 8712, 8713, _
+		4097, 4098, 8193, 8194, 8195, 8257, 8258, 8705, 8706, 8707, 8708, 8709, 8712, 8713, _
 		8721, 8737, 8769, 8770, 16385, 16386, 16449, 16450, 16451, 16452, 16897, _
 		16898, 24577, 24578, 24579, 24581, 24582, 24583, 24585, 24609, 24641, _
 		24642, 24643, 24645, 24646, 24647, 24649, 25089, 25090, 25091, 25093, _
