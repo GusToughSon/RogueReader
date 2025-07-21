@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Compression=4
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=Trainer for ProjectRogue
-#AutoIt3Wrapper_Res_Fileversion=6.2.1.10
+#AutoIt3Wrapper_Res_Fileversion=6.2.2.1
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Rogue Reader
 #AutoIt3Wrapper_Res_ProductVersion=6
@@ -1035,6 +1035,22 @@ Func MoveToLocations()
 		ConsoleWrite("[Walker] Deactivated." & @CRLF)
 	EndIf
 EndFunc   ;==>MoveToLocations
+
+Func IsBlockedCoord($x, $y)
+	For $i = 0 To UBound($aTempBlocked) - 1
+		If $aTempBlocked[$i][0] = $x And $aTempBlocked[$i][1] = $y Then
+			Return True
+		EndIf
+	Next
+	Return False
+EndFunc   ;==>IsBlockedCoord
+
+Func MarkCoordAsBlocked($x, $y)
+	ReDim $aTempBlocked[UBound($aTempBlocked) + 1][2]
+	$aTempBlocked[UBound($aTempBlocked) - 1][0] = $x
+	$aTempBlocked[UBound($aTempBlocked) - 1][1] = $y
+	ConsoleWrite("Marked (" & $x & ", " & $y & ") as blocked." & @CRLF)
+EndFunc   ;==>MarkCoordAsBlocked
 
 Func MoveToLocationsStep($aLocations, ByRef $iCurrentIndex)
 	Global $hProcess, $PosXAddress, $PosYAddress, $TypeAddress
